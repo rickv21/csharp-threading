@@ -17,9 +17,15 @@ Must haves:
 - De applicatie moet tijdens het kopieeren het proces kunnen annuleren.
 - Het moet mogelijk zijn om het aantal threads kunnen te bepalen.
 - De applicatie heeft een interface.
+<<<<<<< Updated upstream
 - Twee schermen naast elkaar om bestanden makkelijk te slepen naar de andere path. 
 - proces balken om de voortgang van bepaalde taken in te kunnen zien. 
 - Toetscombinaties
+=======
+- Filebrowser
+- Toetscombinaties
+- Twee schermen naast elkaar om gemakkelijk bestanden van de ene path naar de andere path te slepen. 
+>>>>>>> Stashed changes
 
 Should haves:
 - De applicatie moet bestanden kunnen uploaden
