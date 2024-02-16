@@ -17,12 +17,17 @@ Must haves:
 - De applicatie moet tijdens het kopieeren het proces kunnen annuleren.
 - Het moet mogelijk zijn om het aantal threads kunnen te bepalen.
 - De applicatie heeft een interface.
+- Twee schermen naast elkaar om bestanden makkelijk te slepen naar de andere path. 
+- proces balken om de voortgang van bepaalde taken in te kunnen zien. 
+- Toetscombinaties
 
 Should haves:
 - De applicatie moet bestanden kunnen uploaden
 - De applicatie moet kunnen verifieren dat de bestanden goed zijn overgekomen.
 - De gebruiker kan de overschrijf gedrag bepalen.
 - De applicatie heeft een filter functie voor bestanden (regex)
+- Synchronisatie functie. Hierbij worden twee mappen met elkaar vergeleken. Wanneer de eerste map bepaalde bestanden niet heeft, worden die gekopieerd. 
+- File browser
 
 Could haves:
 
@@ -30,7 +35,8 @@ Could haves:
 - De applicatie moet de bij elkaar gecomprimeerde bestanden, decomprimeren.
 - Een tekst bestand kunnen uitlezen op inhoud en daarop filteren. Bijvoorbeeld meerdere tekst bestanden kunnen selecteren en zoeken op het woord 'test'.
 - De applicatie kan op de achtergrond als een service gedraait worden. Hierbij kan een key aan gekoppeld worden om de applicatie aan te roepen voor bepaalde acties.
-
+- Favorieten mappen lijst. Als je snel naar map E wilt, kan je die aan de lijst toevoegen. 
+- Zoekdiepte bepalen in niveau's in de mappenstructuur. 
 
 Won't have:
 
