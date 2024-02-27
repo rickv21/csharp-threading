@@ -30,6 +30,7 @@ Must haves:
 - Favorieten mappen lijst. Als je snel naar map E wilt, kan je die aan de lijst toevoegen. 
 
 Should haves:
+- Theming
 - Synchronisatie functie. Hierbij worden twee mappen met elkaar vergeleken. Wanneer de eerste map bepaalde bestanden niet heeft, worden die gekopieerd. 
 - De applicatie moet meerdere bestanden bij elkaar kunnen comprimeren.
 - De applicatie moet de bij elkaar gecomprimeerde bestanden, decomprimeren.
