@@ -46,7 +46,10 @@ Won't have:
 - Er komt geen mobiele versie. 
 
 ## Threading technieken
-
+- Locking: om te voorkomen dat meerdere threads toegang hebben tot dezelfde bestanden of mappen. 
+- Threadpool: Voor het managen van asynchrone taken die parallel uitgevoerd kan worden, zoals het lezen en schrijven van bestanden, het verwerken van bestandverwerkingen en het bijwerken van de gerbruikersinterface.
+- Asynchronous I/O: voor het lezen, schrijven, hernoemen en verwijderen van bestanden. 
+- Async & await: voor het kopieeren en verplaatsen van bestanden. Het kunnen annuleren van een proces/thread. 
 
 ## Klassendiagram
 
