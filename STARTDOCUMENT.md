@@ -53,7 +53,7 @@ Won't have:
 
 ## Klassendiagram
 
-![Class Diagram](img/classdiagram.png "First Version of the class diagram")
+![Class Diagram](./img/classdiagram.png "First Version of the class diagram")
 
 
 ## Planning
