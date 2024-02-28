@@ -17,28 +17,43 @@ Must haves:
 - De applicatie moet tijdens het kopieeren het proces kunnen annuleren.
 - Het moet mogelijk zijn om het aantal threads kunnen te bepalen.
 - De applicatie heeft een interface.
+- Filebrowser
+- Toetscombinaties
+- Twee schermen naast elkaar om gemakkelijk bestanden van de ene path naar de andere path te slepen. 
+- De applicatie moet kunnen verifieren dat de bestanden goed zijn overgekomen.
+- De gebruiker kan de overschrijf gedrag bepalen. Wanneer er bijvoorbeeld twee threads zijn die invloed hebben op dezelfde bestand kan je bepalen welke thread overschreden moet worden.
+- De applicatie heeft een filter functie voor bestanden (regex)
+- Bestanden kunnen sorteren.
+- Verschillende weergaves bv lijst of raster. 
+- Maken van symbolic links.
+- Tabjes toevoegen
+- Favorieten mappen lijst. Als je snel naar map E wilt, kan je die aan de lijst toevoegen. 
 
 Should haves:
-- De applicatie moet bestanden kunnen uploaden
-- De applicatie moet kunnen verifieren dat de bestanden goed zijn overgekomen.
-- De gebruiker kan de overschrijf gedrag bepalen.
-- De applicatie heeft een filter functie voor bestanden (regex)
-
-Could haves:
-
+- Theming
+- Synchronisatie functie. Hierbij worden twee mappen met elkaar vergeleken. Wanneer de eerste map bepaalde bestanden niet heeft, worden die gekopieerd. 
 - De applicatie moet meerdere bestanden bij elkaar kunnen comprimeren.
 - De applicatie moet de bij elkaar gecomprimeerde bestanden, decomprimeren.
+- Front end heeft dark mode.
+
+Could haves:
 - Een tekst bestand kunnen uitlezen op inhoud en daarop filteren. Bijvoorbeeld meerdere tekst bestanden kunnen selecteren en zoeken op het woord 'test'.
 - De applicatie kan op de achtergrond als een service gedraait worden. Hierbij kan een key aan gekoppeld worden om de applicatie aan te roepen voor bepaalde acties.
-
+- Zoekdiepte bepalen in niveau's in de mappenstructuur. 
 
 Won't have:
 
 - Er komt geen mobiele versie. 
 
+## Threading technieken
+- Locking: om te voorkomen dat meerdere threads toegang hebben tot dezelfde bestanden of mappen. 
+- Threadpool: Voor het managen van asynchrone taken die parallel uitgevoerd kan worden, zoals het lezen en schrijven van bestanden, het verwerken van bestandverwerkingen en het bijwerken van de gerbruikersinterface.
+- Asynchronous I/O: voor het lezen, schrijven, hernoemen en verwijderen van bestanden. 
+- Async & await: voor het kopieeren en verplaatsen van bestanden. Het kunnen annuleren van een proces/thread. 
+
 ## Klassendiagram
 
-![Class Diagram](img/classdiagram.png "First Version of the class diagram")
+![Class Diagram](./img/classdiagram.png "First Version of the class diagram")
 
 
 ## Planning
