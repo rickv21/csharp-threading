@@ -28,6 +28,12 @@ build_metadata.AdditionalFiles.ManifestResourceName = csharp_threading.AppShell.
 build_metadata.AdditionalFiles.TargetPath = AppShell.xaml
 build_metadata.AdditionalFiles.RelativePath = AppShell.xaml
 
+[/Users/thijsbv/Dev/Periode3/csharp-threading/csharp-threading/csharp-threading/MainPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = csharp_threading.MainPage.xaml
+build_metadata.AdditionalFiles.TargetPath = MainPage.xaml
+build_metadata.AdditionalFiles.RelativePath = MainPage.xaml
+
 [/Users/thijsbv/Dev/Periode3/csharp-threading/csharp-threading/csharp-threading/Resources/Styles/Colors.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = csharp_threading.Resources.Styles.Colors.xaml
@@ -39,9 +45,3 @@ build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = csharp_threading.Resources.Styles.Styles.xaml
 build_metadata.AdditionalFiles.TargetPath = Resources/Styles/Styles.xaml
 build_metadata.AdditionalFiles.RelativePath = Resources/Styles/Styles.xaml
-
-[/Users/thijsbv/Dev/Periode3/csharp-threading/csharp-threading/csharp-threading/Views/MainPage.xaml]
-build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = csharp_threading.Views.MainPage.xaml
-build_metadata.AdditionalFiles.TargetPath = Views/MainPage.xaml
-build_metadata.AdditionalFiles.RelativePath = Views/MainPage.xaml

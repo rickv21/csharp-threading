@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("csharp-threading")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+e609e618cfa2bfd36718c43695ca0a783206e671")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+593d7e07629c2f851587a1a558a77ee181246c6f")]
 [assembly: System.Reflection.AssemblyProductAttribute("csharp-threading")]
 [assembly: System.Reflection.AssemblyTitleAttribute("csharp-threading")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

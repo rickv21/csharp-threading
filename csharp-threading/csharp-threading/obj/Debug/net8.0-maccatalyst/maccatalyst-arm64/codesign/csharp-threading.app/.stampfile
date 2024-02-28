@@ -1,1 +1,0 @@
--v --force --timestamp=none --sign - --entitlements /Users/thijsbv/Dev/Periode3/csharp-threading/csharp-threading/csharp-threading/obj/Debug/net8.0-maccatalyst/maccatalyst-arm64/Entitlements.xcent /Users/thijsbv/Dev/Periode3/csharp-threading/csharp-threading/csharp-threading/bin/Debug/net8.0-maccatalyst/maccatalyst-arm64/csharp-threading.app
