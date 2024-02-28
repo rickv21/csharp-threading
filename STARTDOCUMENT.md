@@ -3,9 +3,9 @@
 Startdocument van **Monique Sabong**, **Rick Vinke** en **Thijs Janse**.
 
 ## Applicatie Beschrijving
-Voor het vak Threading in C# gaan wij een filemanager applicatie maken. Voor deze applicatie hebben wij gekozen, omdat er veel threading mogelijkheden zijn. Met deze applicatie kan je gemakkelijk zien wat de snelheids verschil is tussen de threads. 
+Voor het vak Threading in C# gaan wij een filemanager applicatie voor Windows maken. Voor deze applicatie hebben wij gekozen, omdat er veel threading mogelijkheden zijn. Met deze applicatie kan je gemakkelijk zien wat de snelheids verschil is tussen de threads. 
 
-De applicatie zal ontwikkeld worden met **C# .NET versie 8** en **.NET Maui**.
+De applicatie zal ontwikkeld worden met **C# .NET versie 8** en **.NET Maui**. 
 
 
 ## MosCow analyse
