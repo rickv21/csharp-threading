@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FileManager.Views.FileOverviewPage"
+             xmlns:local="clr-namespace:FileManager.ViewModels">
+    <ContentPage.BindingContext>
+        <local:FileOverviewViewModel />
+        <!-- Replace YourViewModel with your actual view model class -->
+    </ContentPage.BindingContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50*" />
+            <ColumnDefinition Width="50*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left side -->
+        <ScrollView Grid.Column="0">
+            <StackLayout>
+                <!-- Content for the left ScrollView -->
+                <CollectionView ItemsSource="{Binding Files}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Horizontal">
+                                <Image Source="pictogram1.png" WidthRequest="50" HeightRequest="50" />
+                                <Label Text="{Binding}" />
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </ScrollView>
+
+        <!-- Right side -->
+        <ScrollView Grid.Column="1">
+            <StackLayout>
+                <!-- Content for the right ScrollView -->
+                <CollectionView ItemsSource="{Binding Files}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Horizontal">
+                                <Image Source="pictogram2.png" WidthRequest="50" HeightRequest="50" />
+                                <Label Text="{Binding}" />
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
