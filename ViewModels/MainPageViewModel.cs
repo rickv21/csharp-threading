@@ -17,7 +17,7 @@ namespace FileManager.ViewModels
         {
             IncrementCountCommand = new Command(IncrementCount);
             _count = new Count();
-            _count.PropertyChanged += (sender, args) =>
+            PropertyChanged += (sender, args) =>
             {
                 if (args.PropertyName == nameof(Count.Value))
                 {
@@ -30,6 +30,7 @@ namespace FileManager.ViewModels
         {
             _count.Increment();
             SemanticScreenReader.Announce(CounterText);
+            OnPropertyChanged(nameof(CounterText));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
