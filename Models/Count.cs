@@ -2,7 +2,7 @@
 
 namespace FileManager.Models
 {
-    public class Count : INotifyPropertyChanged
+    public class Count
     {
         private int _value;
 
@@ -14,7 +14,6 @@ namespace FileManager.Models
                 if (_value != value)
                 {
                     _value = value;
-                    OnPropertyChanged(nameof(Value));
                 }
             }
         }
@@ -27,13 +26,6 @@ namespace FileManager.Models
         public void Increment()
         {
             Value++;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
