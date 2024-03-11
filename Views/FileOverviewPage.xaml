@@ -21,8 +21,8 @@
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <StackLayout Orientation="Horizontal">
-                                <Image Source="pictogram1.png" WidthRequest="50" HeightRequest="50" />
-                                <Label Text="{Binding}" />
+                                <Image Source="{Binding ImageSource}" WidthRequest="50" HeightRequest="50" />
+                                <Label Text="{Binding FileName}" />
                             </StackLayout>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -38,8 +38,8 @@
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <StackLayout Orientation="Horizontal">
-                                <Image Source="pictogram2.png" WidthRequest="50" HeightRequest="50" />
-                                <Label Text="{Binding}" />
+                                <Image Source="{Binding ImageSource}" WidthRequest="50" HeightRequest="50" />
+                                <Label Text="{Binding FileName}" />
                             </StackLayout>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

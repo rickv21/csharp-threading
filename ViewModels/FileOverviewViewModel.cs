@@ -1,73 +1,48 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using FileManager.Models;
 
 namespace FileManager.ViewModels;
 
 public class FileOverviewViewModel : INotifyPropertyChanged
 {
-    private ObservableCollection<string> files;
-    public ObservableCollection<string> Files
+    private ObservableCollection<FileItem> _files;
+    public ObservableCollection<FileItem> Files
     {
-        get { return files; }
+        get { return _files; }
         set
         {
-            files = value;
+            _files = value;
         }
     }
     public event PropertyChangedEventHandler? PropertyChanged;
 
+   
     public FileOverviewViewModel()
     {
-        Files = new ObservableCollection<string>();
-        Files.Add("aap");
-        Files.Add("beer");
-        Files.Add("neushoorn");
-        Files.Add("youri");
-        Files.Add("blue eyes white dragon");
-        Files.Add("moss giant");
-        Files.Add("lvl 13 skeleton");
-        Files.Add("aap 2");
-        Files.Add("aap");
-        Files.Add("beer");
-        Files.Add("neushoorn");
-        Files.Add("youri");
-        Files.Add("blue eyes white dragon");
-        Files.Add("moss giant");
-        Files.Add("lvl 13 skeleton");
-        Files.Add("aap");
-        Files.Add("beer");
-        Files.Add("neushoorn");
-        Files.Add("youri");
-        Files.Add("blue eyes white dragon");
-        Files.Add("moss giant");
-        Files.Add("lvl 13 skeleton");
-        Files.Add("aap 2");
-        Files.Add("aap");
-        Files.Add("beer");
-        Files.Add("neushoorn");
-        Files.Add("youri");
-        Files.Add("blue eyes white dragon");
-        Files.Add("moss giant");
-        Files.Add("lvl 13 skeleton");
-        Files.Add("aap");
-        Files.Add("beer");
-        Files.Add("neushoorn");
-        Files.Add("youri");
-        Files.Add("blue eyes white dragon");
-        Files.Add("moss giant");
-        Files.Add("lvl 13 skeleton");
-        Files.Add("aap");
-        Files.Add("beer");
-        Files.Add("neushoorn");
-        Files.Add("youri");
-        Files.Add("blue eyes white dragon");
-        Files.Add("moss giant");
-        Files.Add("lvl 13 skeleton");
-        Files.Add("aap 2");
-        Files.Add("aap 2");
-        Files.Add("aap 2");
-        Files.Add("aap 2");
+        _files = new ObservableCollection<FileItem>();
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+
+
     }
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
