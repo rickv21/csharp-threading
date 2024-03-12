@@ -53,6 +53,8 @@ namespace FileManager.ViewModels
         private void IncrementCount()
         {
             _count.Increment();
+            configModel.ClickCount = _count.Value;
+            configModel.Save();
             SemanticScreenReader.Announce(CounterText);
             OnPropertyChanged(nameof(CounterText));
         }
