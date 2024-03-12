@@ -22,25 +22,25 @@ public class FileOverviewViewModel : INotifyPropertyChanged
     public FileOverviewViewModel()
     {
         _files = new ObservableCollection<FileItem>();
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "Resources\\Images\\folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
+        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
 
 
     }

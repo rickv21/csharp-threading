@@ -7,9 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a6621599-d8c6-44d7-bc79-5034b3aa4d5d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/AppShell.xaml" beforeDir="false" afterPath="$PROJECT_DIR$/AppShell.xaml" afterDir="false" />
-    </list>
+    <list default="true" id="a6621599-d8c6-44d7-bc79-5034b3aa4d5d" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -64,6 +62,7 @@
       <workItem from="1710156737383" duration="2232000" />
       <workItem from="1710159412138" duration="75000" />
       <workItem from="1710159837225" duration="431000" />
+      <workItem from="1710239158031" duration="486000" />
     </task>
     <servers />
   </component>
