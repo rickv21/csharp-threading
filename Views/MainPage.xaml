@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FileManager.MainPage">
+             x:Class="FileManager.Views.MainPage">
 
     <ScrollView>
         <VerticalStackLayout
@@ -15,7 +15,7 @@
 
             <Label
                 x:Name="TitleLabel"
-                Text="Hello, World!"
+                Text="{Binding LabelText}"
                 Style="{StaticResource Headline}"
                 SemanticProperties.HeadingLevel="Level1" />
 
@@ -26,6 +26,7 @@
                 SemanticProperties.Description="Welcome to dot net Multi platform App U I" />
 
             <Button
+                x:Name="CounterBtn"
                 Text="{Binding CounterText}"
                 SemanticProperties.Hint="Counts the number of times you click"
                 Command="{Binding IncrementCountCommand}"
