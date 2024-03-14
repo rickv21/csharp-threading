@@ -20,7 +20,7 @@ public partial class FileOverviewPage : ContentPage
 
     void OnItemTapped(object sender, EventArgs e)
     {
-        var item = ((sender as StackLayout).BindingContext as FileItem);
+        var item = ((sender as StackLayout).BindingContext as Item);
         if (RightCollection.SelectedItems.Contains(item))
         {
             RightCollection.SelectedItems.Remove(item);
@@ -35,11 +35,18 @@ public partial class FileOverviewPage : ContentPage
     {
         var dragGestureRecognizer = (DragGestureRecognizer)sender;
         var stackLayout = (StackLayout)dragGestureRecognizer.Parent;
-        var item = (FileItem)stackLayout.BindingContext;
+        var item = (Item)stackLayout.BindingContext;
 
         e.Data.Properties.Add("files", RightCollection.SelectedItems);
         // Replace YourItemType with the type of the items in your CollectionView
         // Replace YourCollectionViewName with the name of your CollectionView
     }
+
+    //void OnCollectionViewSizeChanged(object sender, EventArgs e)
+    //{
+    //    // Replace YourCollectionViewName with the name of your CollectionView
+    //    RightCollection.ItemsSource = null;
+    //    RightCollection.ItemsSource = Files;
+    //}
 
 }

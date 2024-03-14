@@ -6,19 +6,16 @@ using System.Threading.Tasks;
 
 namespace FileManager.Models
 {
-    public class FileItem
+    public class FileItem : Item
     {
-        private string _fileName;
-        private string _imageSource;
+        public int Size { get; set; }
+        public string FileExtension { get; set; }
 
-        public FileItem(string fileName, string imageSource) 
+        public FileItem(string fileName, string filePath, int size, String type) : base(fileName, filePath)
         {
-            FileName = fileName;
-            ImageSource = imageSource;
-
+            Size = size;
+            FileExtension = type;
+            Type = FileType.File;
         }
-
-        public string FileName { get { return _fileName; } set { _fileName = value; } }
-        public string ImageSource { get { return _imageSource; } set { _imageSource = value; } }
     }
 }
