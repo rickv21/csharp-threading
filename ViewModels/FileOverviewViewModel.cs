@@ -24,7 +24,7 @@ public class FileOverviewViewModel : INotifyPropertyChanged
 
     public FileOverviewViewModel()
     {
-        _currentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + Path.DirectorySeparatorChar + "Text";
+        _currentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         DirectoryInfo d = new DirectoryInfo(_currentPath);
         _files = new ObservableCollection<Item>();
 
