@@ -21,27 +21,16 @@ public class FileOverviewViewModel : INotifyPropertyChanged
    
     public FileOverviewViewModel()
     {
+        DirectoryInfo d = new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
         _files = new ObservableCollection<FileItem>();
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
 
+        FileInfo[] Files = d.GetFiles(); //Getting Text files
+ 
+
+        foreach (FileInfo file in Files)
+        {
+            _files.Add(new FileItem(file.Name, "folder_icon.jpg"));
+        }
 
     }
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
