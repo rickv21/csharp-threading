@@ -53,7 +53,7 @@
         <!-- Right side -->
         <Border Grid.Column="1">
             <StackLayout BackgroundColor="#252526">
-                <Label Text="Right Side" HorizontalOptions="Start" Margin="5, 0, 10, 5" />
+                <Entry Text="{Binding CurrentPath}" BackgroundColor="#4b4b4d" IsReadOnly="True"  Margin="5, 0, 0, 5" />
                 <!-- Add label here -->
 
                 <!-- Content for the right ScrollView -->
