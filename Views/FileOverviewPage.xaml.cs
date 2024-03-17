@@ -14,6 +14,5 @@ public partial class FileOverviewPage : ContentPage
     {
         InitializeComponent();
         BindingContext = new FileOverviewViewModel();
-
     }
 }

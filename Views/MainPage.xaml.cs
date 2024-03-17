@@ -1,6 +1,6 @@
 ﻿using FileManager.ViewModels;
 
-namespace FileManager
+namespace FileManager.Views
 {
     public partial class MainPage : ContentPage
     {
