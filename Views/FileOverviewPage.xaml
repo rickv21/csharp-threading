@@ -53,7 +53,7 @@
         <!-- Right side -->
         <Border Grid.Column="1">
             <StackLayout BackgroundColor="#252526">
-                <Entry Text="{Binding CurrentPath}" BackgroundColor="#4b4b4d" IsReadOnly="True"  Margin="5, 0, 0, 5" />
+                <Entry Text="{Binding CurrentPath}" ReturnCommand="{Binding PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
@@ -68,7 +68,7 @@
                 </Grid>
              
                 <!-- Add label here -->
-
+                <ActivityIndicator x:Name="LoadingIndicator" IsRunning="{Binding IsLoading}" />
                 <!-- Content for the right ScrollView -->
                 <CollectionView ItemsSource="{Binding Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand">
                     <CollectionView.ItemTemplate>

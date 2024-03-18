@@ -15,6 +15,7 @@ public class FileOverviewViewModel : INotifyPropertyChanged
 {
     private ObservableCollection<Item> _files;
     private String _currentPath;
+    private String previousPath;
     private ConcurrentDictionary<string, byte[]> _fileIconCache = new ConcurrentDictionary<string, byte[]>();
     public ObservableCollection<Item> Files
     {
@@ -31,10 +32,25 @@ public class FileOverviewViewModel : INotifyPropertyChanged
         {
             _currentPath = value;
             OnPropertyChanged(nameof(CurrentPath));
+           // PathChanged(value);
         }
     }
+
+    private bool _isLoading;
+    public bool IsLoading
+    {
+        get { return _isLoading; }
+        set
+        {
+            _isLoading = value;
+            OnPropertyChanged(nameof(IsLoading));
+        }
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
     public ICommand ItemDoubleTappedCommand { get; }
+
+    public ICommand PathChangedCommand { get; }
 
     public FileOverviewViewModel()
     {
@@ -43,11 +59,11 @@ public class FileOverviewViewModel : INotifyPropertyChanged
         _files = new ObservableCollection<Item>();
 
         ItemDoubleTappedCommand = new Command<Item>(OnItemDoubleTapped);
-
+        PathChangedCommand = new Command<string>(PathChanged);
         FillList(d);
     }
 
-    public ImageSource GetFileIcon(string filePath)
+    public async Task<ImageSource> GetFileIcon(string filePath)
     {
         if(Directory.Exists(filePath))
         {
@@ -59,11 +75,11 @@ public class FileOverviewViewModel : INotifyPropertyChanged
         if (_fileIconCache.TryGetValue(extension, out var byteArray))
         {
             MemoryStream ms2 = new MemoryStream(byteArray);
-            return new StreamImageSource { Stream = token => Task.FromResult<Stream>(ms2) };
+            return new StreamImageSource { Stream = token => Task.FromResult<Stream>(new MemoryStream(byteArray)) };
         }
 
         // Otherwise, get the icon from the file, add it to the cache, and return it
-        Icon rawIcon = Icon.ExtractAssociatedIcon(filePath);
+        Icon rawIcon = await Task.Run(() => Icon.ExtractAssociatedIcon(filePath));
         Bitmap bitmap = rawIcon.ToBitmap();
 
         // Save the Bitmap to a MemoryStream
@@ -75,11 +91,30 @@ public class FileOverviewViewModel : INotifyPropertyChanged
 
         // Reset the position of MemoryStream and create a StreamImageSource
         ms.Position = 0;
-        return new StreamImageSource { Stream = token => Task.FromResult<Stream>(ms) };
+        return new StreamImageSource { Stream = token => Task.FromResult<Stream>(new MemoryStream(ms.ToArray())) };
     }
 
 
-    void OnItemDoubleTapped(Item item)
+    void PathChanged(string value)
+    {
+        DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPath);
+        if (_files == null)
+        {
+   
+            // previousPath = _currentPath;
+            return;
+        }
+        if (!Directory.Exists(directoryInfo.FullName))
+        {
+            CurrentPath = previousPath;
+            return;
+        }
+        _files.Clear();
+        FillList(directoryInfo);
+    }
+
+
+        void OnItemDoubleTapped(Item item)
     {
         System.Diagnostics.Debug.WriteLine("Testing - " + item.FilePath);
         if (item is DirectoryItem)
@@ -92,10 +127,11 @@ public class FileOverviewViewModel : INotifyPropertyChanged
                 {
                     _files.Clear();
                     CurrentPath = "";
+                    previousPath = _currentPath;
                     DriveInfo[] allDrives = DriveInfo.GetDrives();
                     foreach (DriveInfo drive in allDrives)
                     {
-                        _files.Add(new DirectoryItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, 0, "folder_icon.png"));
+                        _files.Add(new DirectoryItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, 0, "drive_icon.png"));
                     }
                    
     
@@ -103,6 +139,7 @@ public class FileOverviewViewModel : INotifyPropertyChanged
                 }
 
                 CurrentPath = directoryInfo.FullName;
+                previousPath = _currentPath;
                 _files.Clear();
                 FillList(directoryInfo);
                 return;
@@ -113,6 +150,7 @@ public class FileOverviewViewModel : INotifyPropertyChanged
                 // If the item is a folder, update the Files collection to show the contents of the folder
                 DirectoryInfo directoryInfo = new DirectoryInfo(item.FilePath);
                 CurrentPath = item.FilePath;
+                previousPath = _currentPath;
                 _files.Clear();
                 FillList(directoryInfo);
                 return;
@@ -125,13 +163,10 @@ public class FileOverviewViewModel : INotifyPropertyChanged
     }
 
 
-    private void FillList(DirectoryInfo d)
+    private async Task FillList(DirectoryInfo d)
     {
-      //  if (d.Parent != null)
-      //  {
-
-            _files.Add(new DirectoryItem("...", "", 0, "folder_icon.png"));
-        //}
+        IsLoading = true;
+         _files.Add(new DirectoryItem("...", "", 0, "folder_icon.png"));
         try
         {
 
@@ -146,16 +181,17 @@ public class FileOverviewViewModel : INotifyPropertyChanged
                 fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, "folder_icon.png"));
             });
 
-            Parallel.ForEach(d.EnumerateFiles(), file =>
+            await Task.WhenAll(d.EnumerateFiles().Select(async file =>
             {
                 FileInfo fileInfo = new FileInfo(file.FullName);
                 long sizeInBytes = fileInfo.Length;
                 double sizeInMB = (double)sizeInBytes / 1024 / 1024;
 
 
+                var icon = await GetFileIcon(fileInfo.FullName);
 
-                fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, Math.Round(sizeInMB, 2), fileInfo.Extension, GetFileIcon(fileInfo.FullName)));
-            });
+                fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, Math.Round(sizeInMB, 2), fileInfo.Extension, icon));
+            }));
 
        
 
@@ -163,13 +199,12 @@ public class FileOverviewViewModel : INotifyPropertyChanged
             {
                 _files.Add(item);
             }
+            IsLoading = false;
 
         } catch {
         //Check for no permission.
         
         }
-
-
     }
 
 

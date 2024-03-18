@@ -57,6 +57,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Images\drive_icon.png" />
 	  <None Remove="Resources\Images\folder_icon.png" />
 	</ItemGroup>
 
