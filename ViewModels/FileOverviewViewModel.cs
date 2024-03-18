@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Runtime;
 using System.Runtime.CompilerServices;
@@ -14,6 +15,7 @@ public class FileOverviewViewModel : INotifyPropertyChanged
 {
     private ObservableCollection<Item> _files;
     private String _currentPath;
+    private ConcurrentDictionary<string, byte[]> _fileIconCache = new ConcurrentDictionary<string, byte[]>();
     public ObservableCollection<Item> Files
     {
         get { return _files; }
@@ -41,8 +43,41 @@ public class FileOverviewViewModel : INotifyPropertyChanged
         _files = new ObservableCollection<Item>();
 
         ItemDoubleTappedCommand = new Command<Item>(OnItemDoubleTapped);
+
         FillList(d);
     }
+
+    public ImageSource GetFileIcon(string filePath)
+    {
+        if(Directory.Exists(filePath))
+        {
+            return ImageSource.FromResource("folder_icon.png");
+        }
+        string extension = Path.GetExtension(filePath);
+
+        // If the icon for this extension is already in the cache, return it
+        if (_fileIconCache.TryGetValue(extension, out var byteArray))
+        {
+            MemoryStream ms2 = new MemoryStream(byteArray);
+            return new StreamImageSource { Stream = token => Task.FromResult<Stream>(ms2) };
+        }
+
+        // Otherwise, get the icon from the file, add it to the cache, and return it
+        Icon rawIcon = Icon.ExtractAssociatedIcon(filePath);
+        Bitmap bitmap = rawIcon.ToBitmap();
+
+        // Save the Bitmap to a MemoryStream
+        MemoryStream ms = new MemoryStream();
+        bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+
+        // Convert the MemoryStream to a byte array and add it to the cache
+        _fileIconCache[extension] = ms.ToArray();
+
+        // Reset the position of MemoryStream and create a StreamImageSource
+        ms.Position = 0;
+        return new StreamImageSource { Stream = token => Task.FromResult<Stream>(ms) };
+    }
+
 
     void OnItemDoubleTapped(Item item)
     {
@@ -52,6 +87,21 @@ public class FileOverviewViewModel : INotifyPropertyChanged
             if (item.FileName == "...")
             {
                 DirectoryInfo directoryInfo = Directory.GetParent(_currentPath);
+
+                if(directoryInfo == null)
+                {
+                    _files.Clear();
+                    CurrentPath = "";
+                    DriveInfo[] allDrives = DriveInfo.GetDrives();
+                    foreach (DriveInfo drive in allDrives)
+                    {
+                        _files.Add(new DirectoryItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, 0, "folder_icon.png"));
+                    }
+                   
+    
+                    return;
+                }
+
                 CurrentPath = directoryInfo.FullName;
                 _files.Clear();
                 FillList(directoryInfo);
@@ -77,10 +127,11 @@ public class FileOverviewViewModel : INotifyPropertyChanged
 
     private void FillList(DirectoryInfo d)
     {
-        if (d.Parent != null)
-        {
-            _files.Add(new DirectoryItem("...", "", 0));
-        }
+      //  if (d.Parent != null)
+      //  {
+
+            _files.Add(new DirectoryItem("...", "", 0, "folder_icon.png"));
+        //}
         try
         {
 
@@ -90,13 +141,20 @@ public class FileOverviewViewModel : INotifyPropertyChanged
             {
                 // It's a directory
                 DirectoryInfo dirInfo = new DirectoryInfo(dir.FullName);
-                fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0));
+                System.Diagnostics.Debug.WriteLine(dir.FullName);
+
+                fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, "folder_icon.png"));
             });
 
             Parallel.ForEach(d.EnumerateFiles(), file =>
             {
                 FileInfo fileInfo = new FileInfo(file.FullName);
-                fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, 0, ""));
+                long sizeInBytes = fileInfo.Length;
+                double sizeInMB = (double)sizeInBytes / 1024 / 1024;
+
+
+
+                fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, Math.Round(sizeInMB, 2), fileInfo.Extension, GetFileIcon(fileInfo.FullName)));
             });
 
        
@@ -110,6 +168,8 @@ public class FileOverviewViewModel : INotifyPropertyChanged
         //Check for no permission.
         
         }
+
+
     }
 
 

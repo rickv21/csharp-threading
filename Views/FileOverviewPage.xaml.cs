@@ -20,7 +20,7 @@ public partial class FileOverviewPage : ContentPage
 
     void OnItemTapped(object sender, EventArgs e)
     {
-        var item = ((sender as StackLayout).BindingContext as Item);
+        var item = ((sender as Grid).BindingContext as Item);
         if (RightCollection.SelectedItems.Contains(item))
         {
             RightCollection.SelectedItems.Remove(item);
@@ -34,8 +34,8 @@ public partial class FileOverviewPage : ContentPage
     void onDragStarting(object sender, DragStartingEventArgs e)
     {
         var dragGestureRecognizer = (DragGestureRecognizer)sender;
-        var stackLayout = (StackLayout)dragGestureRecognizer.Parent;
-        var item = (Item)stackLayout.BindingContext;
+        var grid = (Grid)dragGestureRecognizer.Parent;
+        var item = (Item)grid.BindingContext;
 
         e.Data.Properties.Add("files", RightCollection.SelectedItems);
         // Replace YourItemType with the type of the items in your CollectionView

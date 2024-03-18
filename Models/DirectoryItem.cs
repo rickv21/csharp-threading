@@ -10,7 +10,7 @@ namespace FileManager.Models
     {
         public int ItemCount { get; set; }
 
-        public DirectoryItem(string fileName, string filePath, int itemCount) : base(fileName, filePath)
+        public DirectoryItem(string fileName, string filePath, int itemCount, ImageSource icon) : base(fileName, filePath, icon)
         {
             ItemCount = itemCount;
             Type = FileType.Dir;

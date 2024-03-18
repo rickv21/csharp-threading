@@ -54,21 +54,39 @@
         <Border Grid.Column="1">
             <StackLayout BackgroundColor="#252526">
                 <Entry Text="{Binding CurrentPath}" BackgroundColor="#4b4b4d" IsReadOnly="True"  Margin="5, 0, 0, 5" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Text="" Grid.Column="0" />
+                    <Label Text="Filename" Grid.Column="1" />
+                    <Label Text="Type" Grid.Column="2" />
+                    <Label Text="Size (MB)" Grid.Column="3" />
+                </Grid>
+             
                 <!-- Add label here -->
 
                 <!-- Content for the right ScrollView -->
                 <CollectionView ItemsSource="{Binding Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <StackLayout Orientation="Horizontal">
-
-                                <StackLayout.GestureRecognizers>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="70" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.GestureRecognizers>
                                     <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
                                     <TapGestureRecognizer Tapped="OnItemTapped" />
                                     <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
            
                        
-                                </StackLayout.GestureRecognizers>
+                                </Grid.GestureRecognizers>
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal" />
@@ -79,10 +97,11 @@
                                         </VisualState>
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
-                                <Image Source="{Binding ImageSource}" WidthRequest="50" HeightRequest="50" />
-                                <Label Text="{Binding FileName}" />
-                                <Label Margin="50, 0, 0, 0" Text="{Binding Type}" />
-                            </StackLayout>
+                                <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" Grid.Column="0"/>
+                                <Label Margin="0, 15, 20, 0" Text="{Binding FileName}" Grid.Column="1"/>
+                                <Label Margin="0, 15, 0, 0" Text="{Binding FileExtension}" Grid.Column="2" />
+                                <Label Margin="0, 15, 0, 0" Text="{Binding Size}" Grid.Column="3" />
+                            </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>

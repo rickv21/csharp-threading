@@ -11,15 +11,15 @@ namespace FileManager.Models
         public string FileName { get; set; }
         public string FilePath { get; set; }
         public string Date { get; set; }
-        public string ImageSource { get; set; }
+        public ImageSource Icon { get; set; }
         public FileType Type { get; set; } //Make it only settable internally.
 
-        public Item(string fileName, string filePath) 
+        public Item(string fileName, string filePath, ImageSource icon) 
         {
             FileName = fileName;
             FilePath = filePath;
             Date = ""; //Temp
-            ImageSource = "folder_icon.jpg";
+            Icon = icon;
         }
 
 
