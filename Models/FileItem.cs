@@ -9,14 +9,12 @@ namespace FileManager.Models
 {
     public class FileItem : Item
     {
-        public double Size { get; set; }
-        public string FileExtension { get; set; }
 
-        public FileItem(string fileName, string filePath, double size, String type, ImageSource icon) : base(fileName, filePath, icon)
+        public FileItem(string fileName, string filePath, string size, String type, ImageSource icon, short side, Boolean hidden) : base(fileName, filePath, icon, side, hidden)
         {
             Size = size;
-            FileExtension = type;
-            Type = FileType.File;
+            FileInfo = type + " " + FileInfo;
+            Type = ItemType.File;
         }
     }
 }

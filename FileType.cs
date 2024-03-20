@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace FileManager
 {
-    public enum FileType
+    public enum ItemType
     {
         Dir,
-        File
+        File,
+        Drive,
+        TopDir
     }
 }
