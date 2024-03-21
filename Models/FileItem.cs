@@ -3,22 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace FileManager.Models
 {
-    public class FileItem
+    public class FileItem : Item
     {
-        private string _fileName;
-        private string _imageSource;
 
-        public FileItem(string fileName, string imageSource) 
+        public FileItem(string fileName, string filePath, string size, String type, ImageSource icon, short side, Boolean hidden) : base(fileName, filePath, icon, side, hidden)
         {
-            FileName = fileName;
-            ImageSource = imageSource;
-
+            Size = size;
+            FileInfo = type + " " + FileInfo;
+            Type = ItemType.File;
         }
-
-        public string FileName { get { return _fileName; } set { _fileName = value; } }
-        public string ImageSource { get { return _imageSource; } set { _imageSource = value; } }
     }
 }

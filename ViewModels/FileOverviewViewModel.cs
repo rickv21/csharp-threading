@@ -1,59 +1,48 @@
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Runtime;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using FileManager.Models;
 
 namespace FileManager.ViewModels;
 
-public class FileOverviewViewModel : INotifyPropertyChanged
+public class FileOverviewViewModel : ViewModelBase
 {
-    private ObservableCollection<FileItem> _files;
-    public ObservableCollection<FileItem> Files
+
+    private FileListViewModel _leftSideViewModel;
+    public FileListViewModel LeftSideViewModel
     {
-        get { return _files; }
+        get { return _leftSideViewModel; }
         set
         {
-            _files = value;
+            _leftSideViewModel = value;
+            OnPropertyChanged(nameof(LeftSideViewModel));
         }
     }
-    public event PropertyChangedEventHandler? PropertyChanged;
 
-   
+    private FileListViewModel _rightSideViewModel;
+    public FileListViewModel RightSideViewModel
+    {
+        get { return _rightSideViewModel; }
+        set
+        {
+            _rightSideViewModel = value;
+            OnPropertyChanged(nameof(RightSideViewModel));
+        }
+    }
+
+    private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new ConcurrentDictionary<string, byte[]>();
+
     public FileOverviewViewModel()
     {
-        _files = new ObservableCollection<FileItem>();
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-        _files.Add(new FileItem("asdfghjk", "folder_icon.jpg"));
-
-
-    }
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
+        RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
     }
 
-    protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
-    {
-        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-        field = value;
-        OnPropertyChanged(propertyName);
-        return true;
-    }
+
 }
