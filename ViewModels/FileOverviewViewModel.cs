@@ -44,5 +44,26 @@ public class FileOverviewViewModel : ViewModelBase
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
     }
 
+    public async Task<string> SelectActionAsync()
+    {
+        return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Move");
+    }
 
+    public async Task<string> PromptUserAsync(string message)
+    {
+        return await Application.Current.MainPage.DisplayPromptAsync("Enter Number", message, "OK", "Cancel", "0", maxLength: 10, keyboard: Keyboard.Numeric);
+    }
+
+    public async Task ProcessActionAsync(string action, int number)
+    {
+        switch (action)
+        {
+            case "Move":
+                // Perform Move action based on 'number'
+                break;
+            case "Copy":
+                // Perform Copy action based on 'number'
+                break;
+        }
+    }
 }

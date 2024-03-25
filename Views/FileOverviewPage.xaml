@@ -46,6 +46,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Grid.GestureRecognizers>
                                         <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                        <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
@@ -106,7 +107,8 @@
                     <Label Text="Filename" Grid.Column="1" />
                     <Label Text="Info" Grid.Column="2" />
                     <Label Text="Size" Grid.Column="3" />
-                </Grid>
+                    <Label x:Name="DragDropLabel" Text="Drag an item and drop it here" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
+                    </Grid>
              
                 <!-- Add label here -->
 
@@ -122,8 +124,9 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.GestureRecognizers>
-                                    <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
-                                    <TapGestureRecognizer Tapped="OnItemTapped" />
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                        <TapGestureRecognizer Tapped="OnItemTapped" />
+                                        <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                 <VisualStateManager.VisualStateGroups>

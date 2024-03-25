@@ -6,16 +6,20 @@ using System.Text;
 using System.Threading.Tasks;
 using FileManager.Models;
 using FileManager.ViewModels;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.UI.StartScreen;
 
 namespace FileManager.Views;
 
 public partial class FileOverviewPage : ContentPage
 {
-    
+    private FileOverviewViewModel viewModel;
+
     public FileOverviewPage()
     {
         InitializeComponent();
-        BindingContext = new FileOverviewViewModel();
+        viewModel = new FileOverviewViewModel();
+        BindingContext = viewModel;
     }
 
 
@@ -23,7 +27,7 @@ public partial class FileOverviewPage : ContentPage
     {
         var item = ((sender as Grid).BindingContext as Item);
 
-        if(item.Type == ItemType.Drive ||  item.Type == ItemType.TopDir)
+        if (item.Type == ItemType.Drive || item.Type == ItemType.TopDir)
         {
             return;
         }
@@ -57,7 +61,7 @@ public partial class FileOverviewPage : ContentPage
         }
 
 
-    
+
     }
 
     void onDragStarting(object sender, DragStartingEventArgs e)
@@ -73,8 +77,8 @@ public partial class FileOverviewPage : ContentPage
             return;
         }
 
-      
-        if(item.Side == 0)
+
+        if (item.Side == 0)
         {
             //Left side.
             foreach (var debugItem in LeftCollection.SelectedItems)
@@ -85,7 +89,7 @@ public partial class FileOverviewPage : ContentPage
             e.Data.Properties.Add("files", LeftCollection.SelectedItems);
 
         }
-        else if(item.Side == 1)
+        else if (item.Side == 1)
         {
             //Right side.
             foreach (var debugItem in RightCollection.SelectedItems)
@@ -99,11 +103,48 @@ public partial class FileOverviewPage : ContentPage
 
     }
 
-    //void OnCollectionViewSizeChanged(object sender, EventArgs e)
-    //{
-    //    // Replace YourCollectionViewName with the name of your CollectionView
-    //    RightCollection.ItemsSource = null;
-    //    RightCollection.ItemsSource = Files;
-    //}
+    void OnItemDrop(object sender, DropEventArgs e)
+    {
 
+        //TODO: Add current dragged item to selected items.
+        var dragGestureRecognizer = (DropGestureRecognizer)sender;
+        var grid = (Grid)dragGestureRecognizer.Parent;
+        var item = (Item)grid.BindingContext;
+
+
+        if (item.Side == 0)
+        {
+            _ = OnItemDropAsync(0);
+        }
+        else if (item.Side == 1)
+        {
+            _ = OnItemDropAsync(1);
+        }
+
+    }
+
+    async Task OnItemDropAsync(int side)
+    {
+        string action = await viewModel.SelectActionAsync();
+        if (action != null && action != "Cancel")
+        {
+            string userInput = await viewModel.PromptUserAsync($"Number of threads for {action.ToLower()}:");
+            if (userInput != null)
+            {
+                if (int.TryParse(userInput, out int number) && number > 0 && number <= 7)
+                {
+                    await viewModel.ProcessActionAsync(action, number);
+                }
+                else if (number > 7)
+                {
+                    await DisplayAlert("Error", "Number of threads cannot exceed 7.", "OK");
+                }
+                else
+                {
+                    await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
+                }
+            }
+        }
+    }
 }
+
