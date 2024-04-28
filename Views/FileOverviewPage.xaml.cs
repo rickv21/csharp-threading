@@ -106,34 +106,36 @@ public partial class FileOverviewPage : ContentPage
     void OnItemDrop(object sender, DropEventArgs e)
     {
 
-        //TODO: Add current dragged item to selected items.
-        var dragGestureRecognizer = (DropGestureRecognizer)sender;
-        var grid = (Grid)dragGestureRecognizer.Parent;
-        var item = (Item)grid.BindingContext;
 
+        var droppedItems = e.Data.Properties["files"] as IList<object>;
 
-        if (item.Side == 0)
+        if (droppedItems != null && droppedItems.Count > 0)
         {
-            _ = OnItemDropAsync(0);
-        }
-        else if (item.Side == 1)
-        {
-            _ = OnItemDropAsync(1);
+            foreach (var droppedItem in droppedItems)
+            {
+                var item = droppedItem as Item;
+                if (item != null)
+                {
+                    _ = OnItemDropAsync(item);
+                }
+            }
         }
 
     }
 
-    async Task OnItemDropAsync(int side)
+    async Task OnItemDropAsync(Item item)
     {
         string action = await viewModel.SelectActionAsync();
         if (action != null && action != "Cancel")
         {
-            string userInput = await viewModel.PromptUserAsync($"Number of threads for {action.ToLower()}:");
-            if (userInput != null)
+            (string, string?) userInput = await viewModel.PromptUserAsync($"Number of threads for {action.ToLower()}:", item.Type == ItemType.Dir);
+            var numnerOfThreads = userInput.Item1;
+            var regex = userInput.Item2;
+            if (userInput.Item1 != null)
             {
-                if (int.TryParse(userInput, out int number) && number > 0 && number <= 7)
+                if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= 7)
                 {
-                    await viewModel.ProcessActionAsync(action, number);
+                    await viewModel.ProcessActionAsync(action, number, regex);
                 }
                 else if (number > 7)
                 {

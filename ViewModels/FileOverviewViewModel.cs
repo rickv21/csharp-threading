@@ -49,12 +49,21 @@ public class FileOverviewViewModel : ViewModelBase
         return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Move");
     }
 
-    public async Task<string> PromptUserAsync(string message)
+    public async Task<(string, string?)> PromptUserAsync(string message, bool isDir = false)
     {
-        return await Application.Current.MainPage.DisplayPromptAsync("Enter Number", message, "OK", "Cancel", "0", maxLength: 10, keyboard: Keyboard.Numeric);
+        string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", message, "OK", "Cancel", "0", maxLength: 10, keyboard: Keyboard.Numeric);
+
+        if (isDir)
+        {
+            string directoryName = await Application.Current.MainPage.DisplayPromptAsync("Enter regex", "Please enter a regex:", "OK", "Cancel", null, maxLength: 100);
+
+            return (number, directoryName);
+        }
+
+        return (number, null);
     }
 
-    public async Task ProcessActionAsync(string action, int number)
+    public async Task ProcessActionAsync(string action, int number, string regex)
     {
         switch (action)
         {

@@ -107,7 +107,6 @@
                     <Label Text="Filename" Grid.Column="1" />
                     <Label Text="Info" Grid.Column="2" />
                     <Label Text="Size" Grid.Column="3" />
-                    <Label x:Name="DragDropLabel" Text="Drag an item and drop it here" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
                     </Grid>
              
                 <!-- Add label here -->
