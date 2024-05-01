@@ -26,8 +26,10 @@ namespace FileManager.ViewModels
             set
             {
                 _files = value;
+                OnPropertyChanged(nameof(Files));
             }
         }
+
         public String CurrentPath
         {
             get { return _currentPath; }
@@ -52,11 +54,13 @@ namespace FileManager.ViewModels
 
         public ICommand ItemDoubleTappedCommand { get; }
         public ICommand PathChangedCommand { get; }
+        public ICommand SortFilesCommand { get; }
 
 
         public FileListViewModel(ConcurrentDictionary<string, byte[]> fileIconCache, short side)
         {
             this.side = side;
+            SortFilesCommand = new Command(SortFilesAlphabetically);
             _files = new ObservableCollection<Item>();
             _fileIconCache = fileIconCache;
             CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -66,7 +70,53 @@ namespace FileManager.ViewModels
             PathChangedCommand = new Command<string>(PathChanged);
 
             Task.Run(() => FillList(d));
-      
+        }
+
+        private void SortFilesAlphabetically()
+        {
+            Files = SortFileNames(_files);
+        }
+
+        //TODO Minor bug with certain filenames
+        private static ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files)
+        {
+            ObservableCollection<Item> sortedItems = new ObservableCollection<Item>();
+            sortedItems.Add(files.FirstOrDefault(file => file.FileName.Equals("...")));
+            bool isSorted = IsSortedAlphabetically(files);
+
+            if (isSorted)
+            {
+                foreach (var file in files.Where(file => file.FileName != "...")
+                         .OrderByDescending(file => file.FileName))
+                {
+                    sortedItems.Add(file);
+                }
+            }
+            else
+            {
+                foreach (var file in files.Where(file => file.FileName != "...")
+                        .OrderBy(file => file.FileName))
+                {
+                    sortedItems.Add(file);
+                }
+            }
+
+            return sortedItems;
+        }
+
+        private static bool IsSortedAlphabetically(ObservableCollection<Item> files)
+        {
+            bool isSorted = true;
+            for (int i = 1; i < files.Count; i++)
+            {
+                if (String.Compare(files[i].FileName, files[i - 1].FileName, StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    isSorted = false;
+                    break;
+                }
+            }
+
+            return isSorted;
         }
 
         public async Task<ImageSource> GetFileIcon(string filePath)
@@ -126,7 +176,7 @@ namespace FileManager.ViewModels
 
         void OnItemDoubleTapped(Item item)
         {
-            System.Diagnostics.Debug.WriteLine("Testing - " + item.FilePath);
+            Debug.WriteLine("Testing - " + item.FilePath);
             if (item is DirectoryItem)
             {
                 if (item.FileName == "...")
@@ -149,7 +199,7 @@ namespace FileManager.ViewModels
                 if (Directory.Exists(item.FilePath))
                 {
                     IsLoading = true;
-                    System.Diagnostics.Debug.WriteLine("Exists");
+                    Debug.WriteLine("Exists");
                     // If the item is a folder, update the Files collection to show the contents of the folder
                     DirectoryInfo directoryInfo = new DirectoryInfo(item.FilePath);
                     CurrentPath = item.FilePath;
@@ -196,7 +246,7 @@ namespace FileManager.ViewModels
                 {
                     // It's a directory
                     DirectoryInfo dirInfo = new DirectoryInfo(dir.FullName);
-                    System.Diagnostics.Debug.WriteLine(dir.FullName);
+                    Debug.WriteLine(dir.FullName);
 
                     fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), ItemType.Dir));
                 }));
@@ -230,7 +280,7 @@ namespace FileManager.ViewModels
                 FillList(directoryInfo);
 
                 //TODO: Popup here!!
-                System.Diagnostics.Debug.WriteLine("No permission!");
+                Debug.WriteLine("No permission!");
             }
         }
     }

@@ -28,7 +28,7 @@ public partial class FileOverviewPage : ContentPage
             return;
         }
 
-        System.Diagnostics.Debug.WriteLine(item.Side);
+        Debug.WriteLine(item.Side);
 
         if (item.Side == 0)
         {
@@ -55,9 +55,6 @@ public partial class FileOverviewPage : ContentPage
                 RightCollection.SelectedItems.Add(item);
             }
         }
-
-
-    
     }
 
     void onDragStarting(object sender, DragStartingEventArgs e)

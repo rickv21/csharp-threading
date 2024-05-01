@@ -43,6 +43,4 @@ public class FileOverviewViewModel : ViewModelBase
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
     }
-
-
 }
