@@ -87,6 +87,10 @@ public partial class FileOverviewPage : ContentPage
             }
 
             e.Data.Properties.Add("files", LeftCollection.SelectedItems);
+            if (!LeftCollection.SelectedItems.Contains(item))
+            {
+                LeftCollection.SelectedItems.Add(item);
+            }
 
         }
         else if (item.Side == 1)
@@ -98,6 +102,10 @@ public partial class FileOverviewPage : ContentPage
             }
 
             e.Data.Properties.Add("files", RightCollection.SelectedItems);
+            if (!RightCollection.SelectedItems.Contains(item))
+            {
+                RightCollection.SelectedItems.Add(item);
+            }
         }
 
 
@@ -109,26 +117,37 @@ public partial class FileOverviewPage : ContentPage
 
         var droppedItems = e.Data.Properties["files"] as IList<object>;
 
+
         if (droppedItems != null && droppedItems.Count > 0)
         {
-            foreach (var droppedItem in droppedItems)
-            {
-                var item = droppedItem as Item;
-                if (item != null)
-                {
-                    _ = OnItemDropAsync(item);
-                }
-            }
+            var itemList = droppedItems.OfType<Item>().ToList();
+
+
+            _ = OnItemDropAsync(itemList);
         }
 
     }
 
-    async Task OnItemDropAsync(Item item)
+    async Task OnItemDropAsync(IList<Item> items)
     {
+        if(items.Count == 0)
+        {
+            return;
+        }
+        var needsRegex = false;
+        if (items.Count > 1)
+        {
+            needsRegex = true;
+        }
+        else if (items[0].Type == ItemType.Dir)
+        {
+            needsRegex = true;
+        }
+
         string action = await viewModel.SelectActionAsync();
         if (action != null && action != "Cancel")
         {
-            (string, string?) userInput = await viewModel.PromptUserAsync($"Number of threads for {action.ToLower()}:", item.Type == ItemType.Dir);
+            (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
             var numnerOfThreads = userInput.Item1;
             var regex = userInput.Item2;
             if (userInput.Item1 != null)
