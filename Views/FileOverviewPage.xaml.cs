@@ -32,48 +32,48 @@ public partial class FileOverviewPage : ContentPage
 
     private void OnKeyPressed(object? sender, KeyboardHookEventArgs e)
     {
-        string key = e.Data.KeyCode.ToString().Substring(2).ToLower();
+        string key = e.Data.KeyCode.ToString()[2..].ToLower();
         Debug.WriteLine(key);
-        switch(key)
+        //Ignore enter if path field is focused.
+        if ((key == "enter" || key == "numpadenter"))
         {
-            case "f5":
-                //Refresh
-                return;
-            case "f6":
-                //Copy
-                return;
-            case "f7":
-                //Move
-                return;
-            case "f2":
-                //Rename current item.
-                return;
-            case "f8":
-                //Delete current item.
-                return;
-            case "backspace":
-                //Parent folder.
-                return;
-            case "enter":
-                //Open current file/folder.
-                return;
+            if (viewModel.ActiveSide == 0)
+            {
+                if(LeftPathField.IsFocused)
+                {
+                    return;
+                }
+            }
+            else if (viewModel.ActiveSide == 1)
+            {
+                if (RightPathField.IsFocused)
+                {
+                    return;
+                }
+            }
+
+
         }
+        viewModel.PassClickEvent(key);
     }
 
     void OnItemTapped(object sender, EventArgs e)
     {
         var item = ((sender as Grid).BindingContext as Item);
 
+        viewModel.ActiveSide = item.Side;
+
         if(item.Type == ItemType.Drive ||  item.Type == ItemType.TopDir)
         {
             return;
         }
 
-        System.Diagnostics.Debug.WriteLine(item.Side);
+        Debug.WriteLine(item.Side);
 
         if (item.Side == 0)
         {
             //Left side.
+            LeftPathField.Unfocus();
             if (LeftCollection.SelectedItems.Contains(item))
             {
                 LeftCollection.SelectedItems.Remove(item);
@@ -86,6 +86,7 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Side == 1)
         {
+            RightPathField.Unfocus();
             //Right side.
             if (RightCollection.SelectedItems.Contains(item))
             {
@@ -97,7 +98,7 @@ public partial class FileOverviewPage : ContentPage
             }
         }
 
-
+        viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
     
     }
 

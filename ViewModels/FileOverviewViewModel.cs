@@ -38,11 +38,40 @@ public class FileOverviewViewModel : ViewModelBase
 
     private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new ConcurrentDictionary<string, byte[]>();
 
+    private int _activeSide;
+
+    public int ActiveSide
+    {
+        get { return _activeSide; }
+        set
+        {
+            _activeSide = value;
+        }
+    }
+
     public FileOverviewViewModel()
     {
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
+        ActiveSide = 0;
     }
 
+    public void PassClickEvent(string key)
+    {
+        if(ActiveSide == 0)
+        {
+ 
+            LeftSideViewModel.HandleClick(key);
+        } 
+        else
+        {
+            RightSideViewModel.HandleClick(key);
+        }
+    }
 
+    public void UpdateSelected(IList<object> leftSelectedItems, IList<object> rightSelectedItems)
+    {
+        LeftSideViewModel.SelectedItems = leftSelectedItems;
+        RightSideViewModel.SelectedItems= rightSelectedItems;
+    }
 }

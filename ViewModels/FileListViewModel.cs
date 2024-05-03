@@ -19,6 +19,7 @@ namespace FileManager.ViewModels
         private String previousPath;
         private ConcurrentDictionary<string, byte[]> _fileIconCache;
         private readonly short side;
+        private IList<object> _selectedItems;
 
         public ObservableCollection<Item> Files
         {
@@ -28,6 +29,16 @@ namespace FileManager.ViewModels
                 _files = value;
             }
         }
+
+        public IList<object> SelectedItems
+        {
+            get { return _selectedItems; }
+            set
+            {
+                _selectedItems = value;
+            }
+        }
+
         public String CurrentPath
         {
             get { return _currentPath; }
@@ -61,12 +72,42 @@ namespace FileManager.ViewModels
             _fileIconCache = fileIconCache;
             CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             DirectoryInfo d = new DirectoryInfo(_currentPath);
-
-            ItemDoubleTappedCommand = new Command<Item>(OnItemDoubleTapped);
+            SelectedItems = new ObservableCollection<object>();
+            ItemDoubleTappedCommand = new Command<Item>(OpenItem);
             PathChangedCommand = new Command<string>(PathChanged);
 
             Task.Run(() => FillList(d));
-      
+        }
+
+        public void HandleClick(string key)
+        {
+            switch (key)
+            {
+                case "f5":
+                    //Refresh
+                    return;
+                case "f6":
+                    //Copy
+                    return;
+                case "f7":
+                    //Move
+                    return;
+                case "f2":
+                    //Rename current item.
+                    return;
+                case "f8":
+                    //Delete current item.
+                    return;
+                case "backspace":
+                    //Parent folder.
+                    return;
+                case "enter":
+                case "numpadenter":
+                    if (SelectedItems.Count != 1) return;
+                    Debug.WriteLine(SelectedItems[0]);
+                    OpenItem((Item)SelectedItems[0]);
+                    return;
+            }
         }
 
         public async Task<ImageSource> GetFileIcon(string filePath)
@@ -77,7 +118,6 @@ namespace FileManager.ViewModels
             }
             string extension = Path.GetExtension(filePath);
 
-            // If the icon for this extension is already in the cache, return it
             if (_fileIconCache.TryGetValue(extension, out var byteArray))
             {
                 MemoryStream ms2 = new MemoryStream(byteArray);
@@ -124,9 +164,9 @@ namespace FileManager.ViewModels
         }
 
 
-        public void OnItemDoubleTapped(Item item)
+        public void OpenItem(Item item)
         {
-            System.Diagnostics.Debug.WriteLine("Testing - " + item.FilePath);
+            Debug.WriteLine("Testing - " + item.FilePath);
             if (item is DirectoryItem)
             {
                 if (item.FileName == "...")
