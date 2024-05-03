@@ -26,12 +26,17 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Label Text="" Grid.Column="0" />
-                        <Label Text="Filename" Grid.Column="1">
+                        <Label Grid.Column="1">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesCommand}" />
                             </Label.GestureRecognizers>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding LeftSideViewModel.FileNameText}" />
+                                </FormattedString>
+                            </Label.FormattedText>
                         </Label>
-                            <Label Text="Info" Grid.Column="2" />
+                        <Label Text="Info" Grid.Column="2" />
                         <Label Text="Size" Grid.Column="3" />
                     </Grid>
 

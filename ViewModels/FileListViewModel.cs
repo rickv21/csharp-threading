@@ -1,4 +1,5 @@
 ﻿using FileManager.Models;
+using Microsoft.Maui.Storage;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -52,6 +53,14 @@ namespace FileManager.ViewModels
             }
         }
 
+        private string _fileNameText;
+
+        public string FileNameText
+        {
+            get { return _fileNameText; }
+            set { _fileNameText = value; OnPropertyChanged(nameof(FileNameText)); }
+        }
+
         public ICommand ItemDoubleTappedCommand { get; }
         public ICommand PathChangedCommand { get; }
         public ICommand SortFilesCommand { get; }
@@ -65,6 +74,7 @@ namespace FileManager.ViewModels
             _fileIconCache = fileIconCache;
             CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             DirectoryInfo d = new DirectoryInfo(_currentPath);
+            FileNameText = "Filename";
 
             ItemDoubleTappedCommand = new Command<Item>(OnItemDoubleTapped);
             PathChangedCommand = new Command<string>(PathChanged);
@@ -77,8 +87,7 @@ namespace FileManager.ViewModels
             Files = SortFileNames(_files);
         }
 
-        //TODO Minor bug with certain filenames
-        private static ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files)
+        private ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files)
         {
             ObservableCollection<Item> sortedItems = [files.FirstOrDefault(file => file.FileName.Equals("..."))];
             bool isSorted = IsSortedAlphabetically(files);
@@ -89,8 +98,8 @@ namespace FileManager.ViewModels
                          .OrderByDescending(file => file.FileName))
                 {
                     sortedItems.Add(file);
-
                 }
+                FileNameText = "Filename ^";
             }
             else
             {
@@ -99,6 +108,7 @@ namespace FileManager.ViewModels
                 {
                     sortedItems.Add(file);
                 }
+                FileNameText = "Filename v";
             }
 
             return sortedItems;
