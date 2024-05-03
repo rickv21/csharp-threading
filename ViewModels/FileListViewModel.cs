@@ -80,16 +80,16 @@ namespace FileManager.ViewModels
         //TODO Minor bug with certain filenames
         private static ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files)
         {
-            ObservableCollection<Item> sortedItems = new ObservableCollection<Item>();
-            sortedItems.Add(files.FirstOrDefault(file => file.FileName.Equals("...")));
+            ObservableCollection<Item> sortedItems = [files.FirstOrDefault(file => file.FileName.Equals("..."))];
             bool isSorted = IsSortedAlphabetically(files);
 
-            if (isSorted)
+            if (!isSorted)
             {
                 foreach (var file in files.Where(file => file.FileName != "...")
                          .OrderByDescending(file => file.FileName))
                 {
                     sortedItems.Add(file);
+
                 }
             }
             else
@@ -106,17 +106,14 @@ namespace FileManager.ViewModels
 
         private static bool IsSortedAlphabetically(ObservableCollection<Item> files)
         {
-            bool isSorted = true;
             for (int i = 1; i < files.Count; i++)
             {
-                if (String.Compare(files[i].FileName, files[i - 1].FileName, StringComparison.OrdinalIgnoreCase) < 0)
+                if (string.Compare(files[i].FileName, files[i - 1].FileName, StringComparison.CurrentCultureIgnoreCase) < 0)
                 {
-                    isSorted = false;
-                    break;
+                    return true;
                 }
             }
-
-            return isSorted;
+            return false;
         }
 
         public async Task<ImageSource> GetFileIcon(string filePath)
