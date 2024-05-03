@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -85,21 +86,31 @@ namespace FileManager.ViewModels
             {
                 case "f5":
                     //Refresh
+                    Refresh();
                     return;
                 case "f6":
                     //Copy
+                    Debug.WriteLine("Copy item.");
                     return;
                 case "f7":
                     //Move
+                    Debug.WriteLine("Move item.");
                     return;
                 case "f2":
                     //Rename current item.
+                    RenameItem(null, null);
                     return;
                 case "f8":
                     //Delete current item.
+                    Debug.WriteLine("Delete item.");
                     return;
                 case "backspace":
                     //Parent folder.
+                    if(CurrentPath == "")
+                    {
+                        return;
+                    }
+                    OpenItem(new DirectoryItem("...", "", 0, side, false, ItemType.TopDir));
                     return;
                 case "enter":
                 case "numpadenter":
@@ -108,6 +119,24 @@ namespace FileManager.ViewModels
                     OpenItem((Item)SelectedItems[0]);
                     return;
             }
+        }
+
+        public void RenameItem(Item item, string newName)
+        {
+            Debug.WriteLine("Changing name of item.");
+        }
+
+
+        public void Refresh()
+        {
+            Debug.WriteLine("Refresh.");
+            if(CurrentPath == "")
+            {
+                FillDriveList();
+                return;
+            }
+            DirectoryInfo d = new DirectoryInfo(CurrentPath);
+            FillList(d);
         }
 
         public async Task<ImageSource> GetFileIcon(string filePath)
@@ -171,25 +200,26 @@ namespace FileManager.ViewModels
             {
                 if (item.FileName == "...")
                 {
-                    IsLoading = true;
-                    DirectoryInfo directoryInfo = Directory.GetParent(_currentPath);
+                        IsLoading = true;
 
-                    if (directoryInfo == null)
-                    {
-                        FillDriveList();
-                        return;
-                    }
+                        DirectoryInfo directoryInfo = Directory.GetParent(_currentPath);
 
-                    CurrentPath = directoryInfo.FullName;
-                    previousPath = _currentPath;
-                    _files.Clear();
-                    FillList(directoryInfo);
+                        if (directoryInfo == null)
+                        {
+                            FillDriveList();
+                            return;
+                        }
+
+                        CurrentPath = directoryInfo.FullName;
+                        previousPath = _currentPath;
+                        _files.Clear();
+                        FillList(directoryInfo);
                     return;
                 }
                 if (Directory.Exists(item.FilePath))
                 {
                     IsLoading = true;
-                    System.Diagnostics.Debug.WriteLine("Exists");
+                    Debug.WriteLine("Exists");
                     // If the item is a folder, update the Files collection to show the contents of the folder
                     DirectoryInfo directoryInfo = new DirectoryInfo(item.FilePath);
                     CurrentPath = item.FilePath;
@@ -214,7 +244,7 @@ namespace FileManager.ViewModels
             DriveInfo[] allDrives = DriveInfo.GetDrives();
             foreach (DriveInfo drive in allDrives)
             {
-
+                Debug.WriteLine(drive.Name);
                 string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
                 _files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat));
             }
@@ -225,7 +255,7 @@ namespace FileManager.ViewModels
         {
             MainThread.BeginInvokeOnMainThread(() => IsLoading = true);
             await Task.Delay(100); //Is needed for the loading indicator to function.
-
+            _files.Clear();
             _files.Add(new DirectoryItem("...", "", 0, side, false, ItemType.TopDir));
             try
             {
@@ -236,7 +266,7 @@ namespace FileManager.ViewModels
                 {
                     // It's a directory
                     DirectoryInfo dirInfo = new DirectoryInfo(dir.FullName);
-                    System.Diagnostics.Debug.WriteLine(dir.FullName);
+                   // Debug.WriteLine(dir.FullName);
 
                     fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), ItemType.Dir));
                 }));

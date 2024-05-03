@@ -58,9 +58,9 @@ public class FileOverviewViewModel : ViewModelBase
 
     public void PassClickEvent(string key)
     {
+        Debug.WriteLine("Pass click event " + ActiveSide);
         if(ActiveSide == 0)
         {
- 
             LeftSideViewModel.HandleClick(key);
         } 
         else
