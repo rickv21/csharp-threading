@@ -124,7 +124,7 @@ namespace FileManager.ViewModels
         }
 
 
-        void OnItemDoubleTapped(Item item)
+        public void OnItemDoubleTapped(Item item)
         {
             System.Diagnostics.Debug.WriteLine("Testing - " + item.FilePath);
             if (item is DirectoryItem)

@@ -6,18 +6,59 @@ using System.Text;
 using System.Threading.Tasks;
 using FileManager.Models;
 using FileManager.ViewModels;
+using SharpHook;
 
 namespace FileManager.Views;
 
 public partial class FileOverviewPage : ContentPage
 {
-    
+
+    private FileOverviewViewModel viewModel;
+
     public FileOverviewPage()
     {
         InitializeComponent();
-        BindingContext = new FileOverviewViewModel();
+        viewModel = new FileOverviewViewModel();
+        BindingContext = viewModel;
+        RegisterKeybindingsAsync();
     }
 
+    private async Task RegisterKeybindingsAsync()
+    {
+        var hook = new SimpleGlobalHook();
+        hook.KeyPressed += OnKeyPressed;
+        await hook.RunAsync();
+    }
+
+    private void OnKeyPressed(object? sender, KeyboardHookEventArgs e)
+    {
+        string key = e.Data.KeyCode.ToString().Substring(2).ToLower();
+        Debug.WriteLine(key);
+        switch(key)
+        {
+            case "f5":
+                //Refresh
+                return;
+            case "f6":
+                //Copy
+                return;
+            case "f7":
+                //Move
+                return;
+            case "f2":
+                //Rename current item.
+                return;
+            case "f8":
+                //Delete current item.
+                return;
+            case "backspace":
+                //Parent folder.
+                return;
+            case "enter":
+                //Open current file/folder.
+                return;
+        }
+    }
 
     void OnItemTapped(object sender, EventArgs e)
     {
