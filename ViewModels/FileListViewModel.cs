@@ -82,8 +82,6 @@ namespace FileManager.ViewModels
             _fileIconCache = fileIconCache;
             CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             DirectoryInfo d = new DirectoryInfo(_currentPath);
-            FileNameText = "Filename";
-            InfoText = "Info";
 
             ItemDoubleTappedCommand = new Command<Item>(OnItemDoubleTapped);
             PathChangedCommand = new Command<string>(PathChanged);
