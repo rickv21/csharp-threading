@@ -112,8 +112,17 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Label Text="" Grid.Column="0" />
-                    <Label Text="Filename" Grid.Column="1" />
-                    <Label Text="Info" Grid.Column="2" />
+                        <Label Grid.Column="1">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" />
+                            </Label.GestureRecognizers>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding RightSideViewModel.FileNameText}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Text="Info" Grid.Column="2" />
                     <Label Text="Size" Grid.Column="3" />
                 </Grid>
              
