@@ -10,6 +10,8 @@ namespace FileManager.Views;
 
 public partial class FileOverviewPage : ContentPage
 {
+    private List<Item> selectedItems = new List<Item>();
+
     public FileOverviewPage()
     {
         InitializeComponent();
@@ -37,7 +39,22 @@ public partial class FileOverviewPage : ContentPage
             // Right side
             viewModel.ToggleItemSelection(item, RightCollection);
         }
+
+        // Print the name of the selected item to the console
+        System.Diagnostics.Debug.WriteLine("Selected item: " + item.FileName);
+
+        // Update the list of selected items
+        if (selectedItems.Contains(item))
+        {
+            selectedItems.Remove(item);
+        }
+        else
+        {
+            selectedItems.Add(item);
+        }
     }
+
+
 
     void OnDragStarting(object sender, DragStartingEventArgs e)
     {
@@ -69,30 +86,63 @@ public partial class FileOverviewPage : ContentPage
     void FileDrop(object sender, DropEventArgs e)
     {
         var dropGestureRecognizer = (DropGestureRecognizer)sender;
-        var parent = dropGestureRecognizer.Parent;
-        var collectionView = (parent is VisualElement visualElement) ? visualElement.FindParentOfType<CollectionView>() : null;
+        var collectionView = FindParentCollectionView(dropGestureRecognizer);
+
+        System.Diagnostics.Debug.WriteLine("meep");
 
         if (collectionView != null)
         {
-            var item = (Item)collectionView.SelectedItem;
+            System.Diagnostics.Debug.WriteLine("bleep");
+
+            // Use the first selected item from the list of selected items
+            var item = selectedItems.FirstOrDefault();
             var viewModel = BindingContext as FileOverviewViewModel;
             var droppedFiles = viewModel.DroppedFiles;
 
+            System.Diagnostics.Debug.WriteLine("hallo " + item);
+
+            System.Diagnostics.Debug.WriteLine(droppedFiles);
+
             if (droppedFiles != null && item != null)
             {
+
                 var targetPath = GetTargetPath(item, collectionView);
+                
+
+
                 foreach (var file in droppedFiles)
                 {
+                    System.Diagnostics.Debug.WriteLine("bloop" + targetPath);
+                    System.Diagnostics.Debug.WriteLine("HIER" + file);
                     MoveFile(file, targetPath);
                 }
             }
         }
     }
 
+
+    private CollectionView FindParentCollectionView(DropGestureRecognizer dropGestureRecognizer)
+    {
+        var parent = dropGestureRecognizer.Parent;
+        while (parent != null)
+        {
+            if (parent is CollectionView collectionView)
+            {
+                return collectionView;
+            }
+            parent = (parent as Element)?.Parent;
+        }
+        return null;
+    }
+
+
+
     private void MoveFile(Item file, string targetPath)
     {
         // Move the file from its current FilePath to the new targetPath
         var newFilePath = Path.Combine(targetPath, file.FileName);
+        System.Diagnostics.Debug.WriteLine("meep " + file.FileName);
+
         if (File.Exists(file.FilePath))
         {
             File.Move(file.FilePath, newFilePath);
