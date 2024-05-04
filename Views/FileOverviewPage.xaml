@@ -34,7 +34,11 @@
                     <!-- Add label here -->
 
                     <!-- Content for the right ScrollView -->
-                    <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
+                    <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}"  SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
+                        <CollectionView.GestureRecognizers>
+                            <DropGestureRecognizer Drop="FileDrop" />
+                        </CollectionView.GestureRecognizers>
+
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -45,7 +49,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
@@ -111,8 +115,11 @@
                 <!-- Add label here -->
 
                 <!-- Content for the right ScrollView -->
-                <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand">
-                    <CollectionView.ItemTemplate>
+                    <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand">
+                        <CollectionView.GestureRecognizers>
+                            <DropGestureRecognizer Drop="FileDrop" />
+                        </CollectionView.GestureRecognizers>
+                        <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -122,8 +129,8 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.GestureRecognizers>
-                                    <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
-                                    <TapGestureRecognizer Tapped="OnItemTapped" />
+                                    <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
+                                        <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                 <VisualStateManager.VisualStateGroups>

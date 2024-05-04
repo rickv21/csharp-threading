@@ -13,6 +13,38 @@ namespace FileManager.ViewModels;
 
 public class FileOverviewViewModel : ViewModelBase
 {
+    private IEnumerable<Item> _selectedItems;
+    public IEnumerable<Item> SelectedItems
+    {
+        get => _selectedItems;
+        set
+        {
+            _selectedItems = value;
+            OnPropertyChanged(nameof(SelectedItems));
+        }
+    }
+
+    private IEnumerable<Item> _droppedFiles;
+    public IEnumerable<Item> DroppedFiles
+    {
+        get => _droppedFiles;
+        set
+        {
+            _droppedFiles = value;
+            OnPropertyChanged(nameof(DroppedFiles));
+        }
+    }
+
+    private object _dropPointObj;
+    public object DropPointObj
+    {
+        get => _dropPointObj;
+        set
+        {
+            _dropPointObj = value;
+            OnPropertyChanged(nameof(DropPointObj));
+        }
+    }
 
     private FileListViewModel _leftSideViewModel;
     public FileListViewModel LeftSideViewModel
@@ -44,5 +76,15 @@ public class FileOverviewViewModel : ViewModelBase
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
     }
 
-
+    public void ToggleItemSelection(Item item, CollectionView collectionView)
+    {
+        if (collectionView.SelectedItems.Contains(item))
+        {
+            collectionView.SelectedItems.Remove(item);
+        }
+        else
+        {
+            collectionView.SelectedItems.Add(item);
+        }
+    }
 }
