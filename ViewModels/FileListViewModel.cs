@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -347,6 +348,28 @@ namespace FileManager.ViewModels
 
             // Clear the SelectedItems collection
             SelectedItems.Clear();
+        }
+
+        private List<Item> _copiedItems = new List<Item>();
+
+        public void CopyItem()
+        {
+            _copiedItems.Clear();
+
+            if (SelectedItems != null && SelectedItems.Count > 0)
+            {
+                foreach (var item in SelectedItems.Cast<Item>())
+                {
+                    if (item is FileItem fileItem)
+                    {
+                        _copiedItems.Add(new FileItem(fileItem.FileName, fileItem.FilePath, fileItem.Size, Path.GetExtension(fileItem.FilePath), fileItem.Icon, fileItem.Side, fileItem.FileInfo.Contains("(Hidden)")));
+                    }
+                    else if (item is DirectoryItem directoryItem)
+                    {
+                        _copiedItems.Add(new DirectoryItem(directoryItem.FileName, directoryItem.FilePath, 0, directoryItem.Side, directoryItem.FileInfo.Contains("(Hidden)"), directoryItem.Type));
+                    }
+                }
+            }
         }
     }
 }

@@ -149,6 +149,11 @@
                                 </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
+                                            <MenuFlyoutItem Text="Copy" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Delete" Clicked="RightContextClick">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
