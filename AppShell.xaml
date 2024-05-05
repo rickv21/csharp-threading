@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:FileManager"
     xmlns:views="using:FileManager.Views"
     Shell.FlyoutBehavior="Disabled"
+    Shell.TabBarIsVisible="False"
     Title="File Manager">
 
     <ShellContent
