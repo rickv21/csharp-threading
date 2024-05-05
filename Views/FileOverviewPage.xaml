@@ -64,6 +64,11 @@
                                     </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
+                                            <MenuFlyoutItem Text="Delete" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick"
                                Command="{Binding Source={x:Reference RightCollection}}">
                                                 <MenuFlyoutItem.IconImageSource>
@@ -144,6 +149,8 @@
                                 </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
+                                            <MenuFlyoutItem Text="Delete" Clicked="RightContextClick"/>
+                                            
                                             <MenuFlyoutItem Text="Rename" Clicked="RightContextClick"
                                Command="{Binding Source={x:Reference RightCollection}}" >
                                                 <MenuFlyoutItem.IconImageSource>
