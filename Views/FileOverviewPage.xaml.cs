@@ -189,6 +189,10 @@ public partial class FileOverviewPage : ContentPage
             //TODO
             viewModel.RightSideViewModel.RenameItem(null, null);
         }
+        else if (item.Text == "Delete")
+        {
+            viewModel.RightSideViewModel.DeleteItem();
+        }
     }
 
     private void LeftContextClick(object sender, EventArgs e)
@@ -202,6 +206,10 @@ public partial class FileOverviewPage : ContentPage
         {
             //TODO
             viewModel.LeftSideViewModel.RenameItem(null, null);
+        }
+        else if (item.Text == "Delete")
+        {
+            viewModel.RightSideViewModel.DeleteItem();
         }
     }
 
@@ -277,28 +285,6 @@ public partial class FileOverviewPage : ContentPage
 
         // Update the FilePath property of the Item object with the new path
         file.FilePath = newFilePath;
-    }
-
-    private string GetTargetPath(object dropPointObj, CollectionView sourceCollection, CollectionView targetCollection)
-    {
-        if (dropPointObj is Item targetItem)
-        {
-            // If the drop point is an item (file or folder)
-            if (targetItem.Type == ItemType.File)
-            {
-                // If it's a file, use the directory path of the file
-                return Path.GetDirectoryName(targetItem.FilePath);
-            }
-        }
-        else
-        {
-            // If the drop point is not an item, use the current path of the target collection
-            var viewModel = targetCollection.BindingContext as FileOverviewViewModel;
-            return viewModel?.GetCurrentPath(targetCollection);
-        }
-
-        // If all else fails, return a default path (e.g., the user's desktop)
-        return Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
     }
 
     //void OnCollectionViewSizeChanged(object sender, EventArgs e)

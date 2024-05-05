@@ -310,5 +310,43 @@ namespace FileManager.ViewModels
             _files.Clear();
             FillList(directoryInfo);
         }
+
+        public void DeleteItem()
+        {
+            if (SelectedItems == null || SelectedItems.Count == 0)
+            {
+                // No items selected, return early
+                return;
+            }
+
+            var itemsToDelete = SelectedItems.Cast<Item>().ToList();
+
+            foreach (var item in itemsToDelete)
+            {
+                try
+                {
+                    if (item is FileItem fileItem)
+                    {
+                        // Delete the file
+                        File.Delete(fileItem.FilePath);
+                    }
+                    else if (item is DirectoryItem directoryItem)
+                    {
+                        // Delete the directory
+                        Directory.Delete(directoryItem.FilePath, true);
+                    }
+
+                    // Remove the item from the Files collection
+                    Files.Remove(item);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error deleting {item.FilePath}: {ex.Message}");
+                }
+            }
+
+            // Clear the SelectedItems collection
+            SelectedItems.Clear();
+        }
     }
 }

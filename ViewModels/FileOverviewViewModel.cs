@@ -60,20 +60,7 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
-    private CollectionView _leftCollection;
-    
-    private CollectionView _rightCollection;
-
-    public FileOverviewViewModel(CollectionView leftCollection, CollectionView rightCollection)
-    {
-        _leftCollection = leftCollection;
-        _rightCollection = rightCollection;
-
-        LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
-        RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
-    }
-
-    // Constructor without collections
+    // Constructor 
     public FileOverviewViewModel()
     {
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
@@ -98,21 +85,5 @@ public class FileOverviewViewModel : ViewModelBase
     {
         LeftSideViewModel.SelectedItems = leftSelectedItems;
         RightSideViewModel.SelectedItems= rightSelectedItems;
-    }
-
-    public string GetCurrentPath(CollectionView collectionView)
-    {
-        if (collectionView == _leftCollection)
-        {
-            return LeftSideViewModel.CurrentPath;
-        }
-        else if (collectionView == _rightCollection)
-        {
-            return RightSideViewModel.CurrentPath;
-        }
-        else
-        {
-            return null;
-        }
     }
 }
