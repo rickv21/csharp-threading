@@ -46,7 +46,7 @@ public partial class FileOverviewPage : ContentPage
 
         //Remove first two characters from key and make it lower case.
         string key = e.Data.KeyCode.ToString()[2..].ToLower();
-        
+
         //Force unfocus of collectionviews to prevent issues with keyboard selections.
         MainThread.BeginInvokeOnMainThread(() =>
         {
@@ -55,7 +55,7 @@ public partial class FileOverviewPage : ContentPage
         });
 
         //Some more keyboard selection prevention.
-        if(key == "tab")
+        if (key == "tab")
         {
             e.SuppressEvent = true;
         }
@@ -65,7 +65,7 @@ public partial class FileOverviewPage : ContentPage
         {
             if (viewModel.ActiveSide == 0)
             {
-                if(LeftPathField.IsFocused)
+                if (LeftPathField.IsFocused)
                 {
                     return;
                 }
@@ -89,7 +89,7 @@ public partial class FileOverviewPage : ContentPage
 
         viewModel.ActiveSide = item.Side;
 
-        if(item.Type == ItemType.Drive ||  item.Type == ItemType.TopDir)
+        if (item.Type == ItemType.Drive || item.Type == ItemType.TopDir)
         {
             return;
         }
@@ -131,7 +131,6 @@ public partial class FileOverviewPage : ContentPage
 
     void OnDragStarting(object sender, DragStartingEventArgs e)
     {
-        //TODO: Add current dragged item to selected items.
         var dragGestureRecognizer = (DragGestureRecognizer)sender;
         var grid = (Grid)dragGestureRecognizer.Parent;
         var item = (Item)grid.BindingContext;
@@ -146,6 +145,11 @@ public partial class FileOverviewPage : ContentPage
         if (item.Side == 0)
         {
             //Left side.
+            if (!LeftCollection.SelectedItems.Contains(item))
+            {
+                LeftCollection.SelectedItems.Add(item);
+            }
+
             viewModel.DroppedFiles = LeftCollection.SelectedItems.Cast<Item>();
             foreach (var debugItem in viewModel.DroppedFiles)
             {
@@ -158,6 +162,11 @@ public partial class FileOverviewPage : ContentPage
         else if (item.Side == 1)
         {
             //Right side.
+            if (!RightCollection.SelectedItems.Contains(item))
+            {
+                RightCollection.SelectedItems.Add(item);
+            }
+
             viewModel.DroppedFiles = RightCollection.SelectedItems.Cast<Item>();
             foreach (var debugItem in viewModel.DroppedFiles)
             {
@@ -171,10 +180,11 @@ public partial class FileOverviewPage : ContentPage
     private void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
-        if(item.Text == "Refresh")
+        if (item.Text == "Refresh")
         {
             viewModel.RightSideViewModel.Refresh();
-        } else if(item.Text == "Rename")
+        }
+        else if (item.Text == "Rename")
         {
             //TODO
             viewModel.RightSideViewModel.RenameItem(null, null);
