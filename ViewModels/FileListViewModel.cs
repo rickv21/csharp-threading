@@ -303,5 +303,12 @@ namespace FileManager.ViewModels
                 System.Diagnostics.Debug.WriteLine("No permission!");
             }
         }
+
+        public void RefreshFiles()
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPath);
+            _files.Clear();
+            FillList(directoryInfo);
+        }
     }
 }
