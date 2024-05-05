@@ -70,6 +70,21 @@ public class FileOverviewViewModel : ViewModelBase
 
     private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new ConcurrentDictionary<string, byte[]>();
 
+
+    private CollectionView leftCollection;
+    private CollectionView rightCollection;
+
+    // Constructor with collections
+    public FileOverviewViewModel(CollectionView leftCollection, CollectionView rightCollection)
+    {
+        leftCollection = leftCollection;
+        rightCollection = rightCollection;
+
+        LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
+        RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
+    }
+
+    // Constructor without collections
     public FileOverviewViewModel()
     {
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
@@ -85,6 +100,22 @@ public class FileOverviewViewModel : ViewModelBase
         else
         {
             collectionView.SelectedItems.Add(item);
+        }
+    }
+
+    public string GetCurrentPath(CollectionView collectionView)
+    {
+        if (collectionView == leftCollection)
+        {
+            return LeftSideViewModel.CurrentPath;
+        }
+        else if (collectionView == rightCollection)
+        {
+            return RightSideViewModel.CurrentPath;
+        }
+        else
+        {
+            return null;
         }
     }
 }

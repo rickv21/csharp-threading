@@ -15,7 +15,10 @@ public partial class FileOverviewPage : ContentPage
     public FileOverviewPage()
     {
         InitializeComponent();
-        BindingContext = new FileOverviewViewModel();
+        //BindingContext = new FileOverviewViewModel();
+
+        var viewModel = new FileOverviewViewModel(LeftCollection, RightCollection);
+        BindingContext = viewModel;
     }
 
     void OnItemTapped(object sender, EventArgs e)
@@ -54,8 +57,6 @@ public partial class FileOverviewPage : ContentPage
         }
     }
 
-
-
     void OnDragStarting(object sender, DragStartingEventArgs e)
     {
         var dragGestureRecognizer = (DragGestureRecognizer)sender;
@@ -69,6 +70,8 @@ public partial class FileOverviewPage : ContentPage
         }
 
         var viewModel = BindingContext as FileOverviewViewModel;
+
+        // Update the DropPointObj with the current item
         viewModel.DropPointObj = item;
 
         if (item.Side == 0)
@@ -88,38 +91,39 @@ public partial class FileOverviewPage : ContentPage
         var dropGestureRecognizer = (DropGestureRecognizer)sender;
         var collectionView = FindParentCollectionView(dropGestureRecognizer);
 
-        System.Diagnostics.Debug.WriteLine("meep");
-
         if (collectionView != null)
         {
-            System.Diagnostics.Debug.WriteLine("bleep");
-
-            // Use the first selected item from the list of selected items
-            var item = selectedItems.FirstOrDefault();
             var viewModel = BindingContext as FileOverviewViewModel;
-            var droppedFiles = viewModel.DroppedFiles;
 
-            System.Diagnostics.Debug.WriteLine("hallo " + item);
-
-            System.Diagnostics.Debug.WriteLine(droppedFiles);
-
-            if (droppedFiles != null && item != null)
+            // Get target path
+            string targetPath = string.Empty;
+            if (collectionView == RightCollection)
             {
+                targetPath = viewModel.RightSideViewModel.CurrentPath;
+            }
+            else if (collectionView == LeftCollection)
+            {
+                targetPath = viewModel.LeftSideViewModel.CurrentPath;
+            }
 
-                var targetPath = GetTargetPath(item, collectionView);
-                
+            // Check if the target path is obtained correctly
+            System.Diagnostics.Debug.WriteLine("Target path: " + targetPath);
 
-
-                foreach (var file in droppedFiles)
+            // Ensure thread safety with locking
+            lock (viewModel)
+            {
+                // Iterate over dropped files and move them to the target path
+                foreach (var file in viewModel.DroppedFiles)
                 {
-                    System.Diagnostics.Debug.WriteLine("bloop" + targetPath);
-                    System.Diagnostics.Debug.WriteLine("HIER" + file);
-                    MoveFile(file, targetPath);
+                    // Ensure that the file is not null and the target path is valid
+                    if (file != null && !string.IsNullOrEmpty(targetPath))
+                    {
+                        MoveFile(file, targetPath);
+                    }
                 }
             }
         }
     }
-
 
     private CollectionView FindParentCollectionView(DropGestureRecognizer dropGestureRecognizer)
     {
@@ -135,14 +139,13 @@ public partial class FileOverviewPage : ContentPage
         return null;
     }
 
-
-
     private void MoveFile(Item file, string targetPath)
     {
-        // Move the file from its current FilePath to the new targetPath
-        var newFilePath = Path.Combine(targetPath, file.FileName);
-        System.Diagnostics.Debug.WriteLine("meep " + file.FileName);
+        // Get only the file name from the file path
+        string fileName = Path.GetFileName(file.FilePath);
 
+        // Move the file from its current FilePath to the new targetPath
+        var newFilePath = Path.Combine(targetPath, fileName);
         if (File.Exists(file.FilePath))
         {
             File.Move(file.FilePath, newFilePath);
@@ -150,13 +153,14 @@ public partial class FileOverviewPage : ContentPage
         else if (Directory.Exists(file.FilePath))
         {
             // Move the directory to the new location
+            Directory.Move(file.FilePath, newFilePath);
         }
 
         // Update the FilePath property of the Item object with the new path
         file.FilePath = newFilePath;
     }
 
-    private string GetTargetPath(object dropPointObj, CollectionView targetCollection)
+    private string GetTargetPath(object dropPointObj, CollectionView sourceCollection, CollectionView targetCollection)
     {
         if (dropPointObj is Item targetItem)
         {
@@ -174,16 +178,9 @@ public partial class FileOverviewPage : ContentPage
         }
         else
         {
-            // If the drop point is not an item, use the current path of the corresponding side
+            // If the drop point is not an item, use the current path of the target collection
             var viewModel = targetCollection.BindingContext as FileOverviewViewModel;
-            if (targetCollection == LeftCollection)
-            {
-                return viewModel?.LeftSideViewModel.CurrentPath;
-            }
-            else if (targetCollection == RightCollection)
-            {
-                return viewModel?.RightSideViewModel.CurrentPath;
-            }
+            return viewModel?.GetCurrentPath(targetCollection);
         }
 
         // If all else fails, return a default path (e.g., the user's desktop)
