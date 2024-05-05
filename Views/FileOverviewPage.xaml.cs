@@ -106,9 +106,6 @@ public partial class FileOverviewPage : ContentPage
                 targetPath = viewModel.LeftSideViewModel.CurrentPath;
             }
 
-            // Check if the target path is obtained correctly
-            System.Diagnostics.Debug.WriteLine("Target path: " + targetPath);
-
             // Ensure thread safety with locking
             lock (viewModel)
             {
@@ -121,6 +118,9 @@ public partial class FileOverviewPage : ContentPage
                         MoveFile(file, targetPath);
                     }
                 }
+
+                viewModel.RightSideViewModel.RefreshFiles();
+                viewModel.LeftSideViewModel.RefreshFiles();
             }
         }
     }
@@ -169,11 +169,6 @@ public partial class FileOverviewPage : ContentPage
             {
                 // If it's a file, use the directory path of the file
                 return Path.GetDirectoryName(targetItem.FilePath);
-            }
-            else
-            {
-                // If it's a folder, use the folder path
-                return targetItem.FilePath;
             }
         }
         else
