@@ -49,6 +49,30 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
+    private IEnumerable<Item> _droppedFiles;
+    public IEnumerable<Item> DroppedFiles
+    {
+        get => _droppedFiles;
+        set
+        {
+            _droppedFiles = value;
+            OnPropertyChanged(nameof(DroppedFiles));
+        }
+    }
+
+    private CollectionView leftCollection;
+    private CollectionView rightCollection;
+
+    public FileOverviewViewModel(CollectionView leftCollection, CollectionView rightCollection)
+    {
+        leftCollection = leftCollection;
+        rightCollection = rightCollection;
+
+        LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
+        RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
+    }
+
+    // Constructor without collections
     public FileOverviewViewModel()
     {
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
@@ -73,5 +97,21 @@ public class FileOverviewViewModel : ViewModelBase
     {
         LeftSideViewModel.SelectedItems = leftSelectedItems;
         RightSideViewModel.SelectedItems= rightSelectedItems;
+    }
+
+    public string GetCurrentPath(CollectionView collectionView)
+    {
+        if (collectionView == leftCollection)
+        {
+            return LeftSideViewModel.CurrentPath;
+        }
+        else if (collectionView == rightCollection)
+        {
+            return RightSideViewModel.CurrentPath;
+        }
+        else
+        {
+            return null;
+        }
     }
 }
