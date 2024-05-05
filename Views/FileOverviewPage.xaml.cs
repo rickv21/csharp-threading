@@ -129,7 +129,7 @@ public partial class FileOverviewPage : ContentPage
     }
 
 
-    void onDragStarting(object sender, DragStartingEventArgs e)
+    void OnDragStarting(object sender, DragStartingEventArgs e)
     {
         //TODO: Add current dragged item to selected items.
         var dragGestureRecognizer = (DragGestureRecognizer)sender;

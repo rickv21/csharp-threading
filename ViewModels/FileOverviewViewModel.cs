@@ -60,13 +60,14 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
-    private CollectionView leftCollection;
-    private CollectionView rightCollection;
+    private CollectionView _leftCollection;
+    
+    private CollectionView _rightCollection;
 
     public FileOverviewViewModel(CollectionView leftCollection, CollectionView rightCollection)
     {
-        leftCollection = leftCollection;
-        rightCollection = rightCollection;
+        _leftCollection = leftCollection;
+        _rightCollection = rightCollection;
 
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
@@ -101,11 +102,11 @@ public class FileOverviewViewModel : ViewModelBase
 
     public string GetCurrentPath(CollectionView collectionView)
     {
-        if (collectionView == leftCollection)
+        if (collectionView == _leftCollection)
         {
             return LeftSideViewModel.CurrentPath;
         }
-        else if (collectionView == rightCollection)
+        else if (collectionView == _rightCollection)
         {
             return RightSideViewModel.CurrentPath;
         }
