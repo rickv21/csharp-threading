@@ -46,7 +46,16 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
-                        <Label Text="Size" Grid.Column="3" />
+                        <Label Grid.Column="3">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesOnSizeCommand}" CommandParameter="{Binding LeftSideViewModel.SizeText}"/>
+                            </Label.GestureRecognizers>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding LeftSideViewModel.SizeText}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
                     </Grid>
 
                     <!-- Add label here -->
@@ -121,28 +130,37 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Label Text="" Grid.Column="0" />
-                    <Label Grid.Column="1">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" CommandParameter="{Binding RightSideViewModel.FileNameText}" />
-                        </Label.GestureRecognizers>
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="{Binding RightSideViewModel.FileNameText}" />
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
-                    <Label Grid.Column="2">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" CommandParameter="{Binding RightSideViewModel.InfoText}"/>
-                        </Label.GestureRecognizers>
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="{Binding RightSideViewModel.InfoText}" />
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
-                    <Label Text="Size" Grid.Column="3" />
-                </Grid>
+                        <Label Grid.Column="1">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" CommandParameter="{Binding RightSideViewModel.FileNameText}" />
+                            </Label.GestureRecognizers>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding RightSideViewModel.FileNameText}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Grid.Column="2">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" CommandParameter="{Binding RightSideViewModel.InfoText}"/>
+                            </Label.GestureRecognizers>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding RightSideViewModel.InfoText}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Grid.Column="3">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesOnSizeCommand}" CommandParameter="{Binding RightSideViewModel.SizeText}"/>
+                            </Label.GestureRecognizers>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding RightSideViewModel.SizeText}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </Grid>
 
                     <!-- Add label here -->
 

@@ -69,15 +69,25 @@ namespace FileManager.ViewModels
             set { _infoText = value; OnPropertyChanged(nameof(InfoText)); }
         }
 
+        private string _sizeText;
+
+        public string SizeText
+        {
+            get { return _sizeText; }
+            set { _sizeText = value; OnPropertyChanged(nameof(SizeText)); }
+        }
+
         public ICommand ItemDoubleTappedCommand { get; }
         public ICommand PathChangedCommand { get; }
         public ICommand SortFilesCommand { get; }
+        public ICommand SortFilesOnSizeCommand { get; }
 
 
         public FileListViewModel(ConcurrentDictionary<string, byte[]> fileIconCache, short side)
         {
             this.side = side;
             SortFilesCommand = new Command<string>(SortFilesAlphabetically);
+            SortFilesOnSizeCommand = new Command(SortFilesOnSize);
             _files = new ObservableCollection<Item>();
             _fileIconCache = fileIconCache;
             CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -89,7 +99,55 @@ namespace FileManager.ViewModels
             Task.Run(() => FillList(d));
         }
 
-        private static bool IsSortedOnLabel(ObservableCollection<Item> files, string labelText)
+        private static bool IsSortedOnSize(ObservableCollection<Item> files)
+        {
+            for (int i = 1; i < files.Count; i++)
+            {
+                if (files[i].FileInfo.Length < files[i - 1].FileInfo.Length)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private ObservableCollection<Item> SortFileSizes(ObservableCollection<Item> files, bool isAscending)
+        {
+            ObservableCollection<Item> sortedItems = [];
+            Item folder = files.FirstOrDefault(file => file.FileName.Equals("..."));
+
+            if (isAscending)
+            {
+                sortedItems = new ObservableCollection<Item>(files
+                    .Where(file => file.FileName != "...")
+                    .OrderBy(file => file.FileInfo.Length));
+                SizeText = "Size v";
+            }
+            else
+            {
+                sortedItems = new ObservableCollection<Item>(files
+                    .Where(file => file.FileName != "...")
+                    .OrderByDescending(file => file.FileInfo.Length));
+                SizeText = "Size ^";
+            }
+            FileNameText = "Filename";
+            InfoText = "Info";
+
+            if (folder != null)
+            {
+                sortedItems.Insert(0, folder);
+            }
+
+            return sortedItems;
+        }
+
+        private void SortFilesOnSize()
+        {
+            Files = SortFileSizes(_files, IsSortedOnSize(_files));
+        }
+
+        private static bool IsSortedOnAlphabeticalLabel(ObservableCollection<Item> files, string labelText)
         {
             for (int i = 1; i < files.Count; i++)
             {
@@ -112,63 +170,71 @@ namespace FileManager.ViewModels
             return false;
         }
 
-        private ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files, string labelText)
+        private ObservableCollection<Item> GetSortedItems(ObservableCollection<Item> files, string labelText)
         {
-            ObservableCollection<Item> sortedItems = [files.FirstOrDefault(file => file.FileName.Equals("..."))];
-            
-            bool isSorted = IsSortedOnLabel(files, labelText);            
+            bool isSorted = IsSortedOnAlphabeticalLabel(files, labelText);
 
             if (!isSorted)
             {
+                SizeText = "Size";
                 if (labelText.Contains("Filename"))
                 {
-                    foreach (var file in files.Where(file => file.FileName != "...")
-                         .OrderByDescending(file => file.FileName))
-                    {
-                        sortedItems.Add(file);
-                    }
                     FileNameText = "Filename ^";
                     InfoText = "Info";
+                    return new ObservableCollection<Item>(files
+                        .Where(file => file.FileName != "...")
+                        .OrderByDescending(file => file.FileName));
                 }
                 else if (labelText.Contains("Info"))
                 {
-                    foreach (var file in files.Where(file => file.FileName != "...")
-                         .OrderByDescending(file => file.FileInfo))
-                    {
-                        sortedItems.Add(file);
-                    }
                     InfoText = "Info ^";
                     FileNameText = "Filename";
+                    return new ObservableCollection<Item>(files
+                        .Where(file => file.FileName != "...")
+                        .OrderByDescending(file => file.FileInfo));
                 }
             }
             else
             {
+                SizeText = "Size";
                 if (labelText.Contains("Filename"))
                 {
-                    foreach (var file in files.Where(file => file.FileName != "...")
-                         .OrderBy(file => file.FileName))
-                    {
-                        sortedItems.Add(file);
-                    }
                     FileNameText = "Filename v";
                     InfoText = "Info";
+                    return new ObservableCollection<Item>(files
+                        .Where(file => file.FileName != "...")
+                        .OrderBy(file => file.FileName));
                 }
                 else if (labelText.Contains("Info"))
                 {
-                    foreach (var file in files.Where(file => file.FileName != "...")
-                         .OrderBy(file => file.FileInfo))
-                    {
-                        sortedItems.Add(file);
-                    }
                     InfoText = "Info v";
                     FileNameText = "Filename";
+                    return new ObservableCollection<Item>(files
+                        .Where(file => file.FileName != "...")
+                        .OrderBy(file => file.FileInfo));
                 }
             }
 
-            return sortedItems;
+            return new ObservableCollection<Item>(files);
         }
-        private void SortFilesAlphabetically(string labelText)
+
+        private ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files, string labelText)
         {
+            bool isSorted = IsSortedOnAlphabeticalLabel(files, labelText);
+            Item folder = files.FirstOrDefault(file => file.FileName.Equals("..."));
+
+            ObservableCollection<Item> sortedItemsExcludingFolder = GetSortedItems(files, labelText);
+
+            if (folder != null)
+            {
+                sortedItemsExcludingFolder.Insert(0, folder);
+            }
+
+            return sortedItemsExcludingFolder;
+        }
+
+        private void SortFilesAlphabetically(string labelText)
+        { 
             Files = SortFileNames(_files, labelText);
         }
 
@@ -307,6 +373,7 @@ namespace FileManager.ViewModels
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
                 {
                     FileInfo fileInfo = new FileInfo(file.FullName);
+                    //Debug.WriteLine("SIZES: " + fileInfo.Length);
                     string size = FileUtil.ConvertBytesToHumanReadable(fileInfo.Length);
 
 
@@ -325,6 +392,7 @@ namespace FileManager.ViewModels
                 previousPath = CurrentPath;
                 FileNameText = "Filename";
                 InfoText = "Info";
+                SizeText = "Size";
             }
             catch (UnauthorizedAccessException e)
             {
