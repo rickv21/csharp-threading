@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -20,6 +21,7 @@ namespace FileManager.ViewModels
         private String previousPath;
         private ConcurrentDictionary<string, byte[]> _fileIconCache;
         private readonly short side;
+        private IList<object> _selectedItems;
 
         public ObservableCollection<Item> Files
         {
@@ -28,6 +30,15 @@ namespace FileManager.ViewModels
             {
                 _files = value;
                 OnPropertyChanged(nameof(Files));
+            }
+        }
+
+        public IList<object> SelectedItems
+        {
+            get { return _selectedItems; }
+            set
+            {
+                _selectedItems = value;
             }
         }
 
@@ -92,8 +103,8 @@ namespace FileManager.ViewModels
             _fileIconCache = fileIconCache;
             CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             DirectoryInfo d = new DirectoryInfo(_currentPath);
-
-            ItemDoubleTappedCommand = new Command<Item>(OnItemDoubleTapped);
+            SelectedItems = new ObservableCollection<object>();
+            ItemDoubleTappedCommand = new Command<Item>(OpenItem);
             PathChangedCommand = new Command<string>(PathChanged);
 
             Task.Run(() => FillList(d));
@@ -234,8 +245,67 @@ namespace FileManager.ViewModels
         }
 
         private void SortFilesAlphabetically(string labelText)
-        { 
+        {
             Files = SortFileNames(_files, labelText);
+        }
+
+        public void HandleClick(string key)
+        {
+            switch (key)
+            {
+                case "f5":
+                    //Refresh
+                    Refresh();
+                    return;
+                case "f6":
+                    //Copy
+                    Debug.WriteLine("Copy item.");
+                    return;
+                case "f7":
+                    //Move
+                    Debug.WriteLine("Move item.");
+                    return;
+                case "f2":
+                    //Rename current item.
+                    RenameItem(null, null);
+                    return;
+                case "f8":
+                    //Delete current item.
+                    Debug.WriteLine("Delete item.");
+                    return;
+                case "backspace":
+                    //Parent folder.
+                    if(CurrentPath == "")
+                    {
+                        return;
+                    }
+                    OpenItem(new DirectoryItem("...", "", 0, side, false, ItemType.TopDir));
+                    return;
+                case "enter":
+                case "numpadenter":
+                    if (SelectedItems.Count != 1) return;
+                    Debug.WriteLine(SelectedItems[0]);
+                    OpenItem((Item)SelectedItems[0]);
+                    return;
+            }
+        }
+
+        public void RenameItem(Item item, string newName)
+        {
+            Debug.WriteLine("Changing name of item.");
+        }
+
+
+        public void Refresh()
+        {
+            Debug.WriteLine("Refresh.");
+            if(CurrentPath == "")
+            {
+                FillDriveList();
+                return;
+            }
+            DirectoryInfo d = new DirectoryInfo(CurrentPath);
+            FillList(d);
         }
 
         public async Task<ImageSource> GetFileIcon(string filePath)
@@ -246,7 +316,6 @@ namespace FileManager.ViewModels
             }
             string extension = Path.GetExtension(filePath);
 
-            // If the icon for this extension is already in the cache, return it
             if (_fileIconCache.TryGetValue(extension, out var byteArray))
             {
                 MemoryStream ms2 = new MemoryStream(byteArray);
@@ -293,26 +362,27 @@ namespace FileManager.ViewModels
         }
 
 
-        void OnItemDoubleTapped(Item item)
+        public void OpenItem(Item item)
         {
             Debug.WriteLine("Testing - " + item.FilePath);
             if (item is DirectoryItem)
             {
                 if (item.FileName == "...")
                 {
-                    IsLoading = true;
-                    DirectoryInfo directoryInfo = Directory.GetParent(_currentPath);
+                        IsLoading = true;
 
-                    if (directoryInfo == null)
-                    {
-                        FillDriveList();
-                        return;
-                    }
+                        DirectoryInfo directoryInfo = Directory.GetParent(_currentPath);
 
-                    CurrentPath = directoryInfo.FullName;
-                    previousPath = _currentPath;
-                    _files.Clear();
-                    FillList(directoryInfo);
+                        if (directoryInfo == null)
+                        {
+                            FillDriveList();
+                            return;
+                        }
+
+                        CurrentPath = directoryInfo.FullName;
+                        previousPath = _currentPath;
+                        _files.Clear();
+                        FillList(directoryInfo);
                     return;
                 }
                 if (Directory.Exists(item.FilePath))
@@ -355,7 +425,7 @@ namespace FileManager.ViewModels
         {
             MainThread.BeginInvokeOnMainThread(() => IsLoading = true);
             await Task.Delay(100); //Is needed for the loading indicator to function.
-
+            _files.Clear();
             _files.Add(new DirectoryItem("...", "", 0, side, false, ItemType.TopDir));
             try
             {
