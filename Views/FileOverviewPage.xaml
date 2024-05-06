@@ -107,7 +107,7 @@
                                     <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" Grid.Column="0"/>
                                     <Label Margin="0, 15, 20, 0" Text="{Binding FileName}" Grid.Column="1"/>
                                     <Label Margin="0, 15, 0, 0" Text="{Binding FileInfo}" Grid.Column="2" />
-                                    <Label Margin="0, 15, 0, 0" Text="{Binding Size}" Grid.Column="3" />
+                                    <Label Margin="0, 15, 0, 0" Text="{Binding ReadableSize}" Grid.Column="3" />
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -211,7 +211,7 @@
                                     <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" Grid.Column="0"/>
                                 <Label Margin="0, 15, 20, 0" Text="{Binding FileName}" Grid.Column="1"/>
                                 <Label Margin="0, 15, 0, 0" Text="{Binding FileInfo}" Grid.Column="2" />
-                                <Label Margin="0, 15, 0, 0" Text="{Binding Size}" Grid.Column="3" />
+                                <Label Margin="0, 15, 0, 0" Text="{Binding ReadableSize}" Grid.Column="3" />
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

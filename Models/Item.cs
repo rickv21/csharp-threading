@@ -14,7 +14,8 @@ namespace FileManager.Models
         public ImageSource Icon { get; set; }
         public ItemType Type { get; set; } //Make it only settable internally.
         public string FileInfo { get; set; }
-        public string Size { get; set; }
+        public long Size { get; set; }
+        public string ReadableSize { get; set; }
         public short Side {  get; }
 
         public Item(string fileName, string filePath, ImageSource icon, short side, Boolean hidden) 
@@ -23,7 +24,7 @@ namespace FileManager.Models
             FilePath = filePath;
             Side = side;
             Date = ""; //Temp
-            Size = "";
+            Size = 0;
             Icon = icon;
             FileInfo = hidden ? "(Hidden)" : "";
         }

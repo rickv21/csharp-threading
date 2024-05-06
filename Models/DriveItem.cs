@@ -11,7 +11,7 @@ namespace FileManager.Models
         public long FreeSize { get; set; }
         public long TotalSize { get; set; }
 
-        public DriveItem(string fileName, string filePath, short side, string space, string info) : base(fileName, filePath, 0, side, false, ItemType.Drive)
+        public DriveItem(string fileName, string filePath, short side, long space, string info) : base(fileName, filePath, 0, side, false, ItemType.Drive)
         {
             Type = ItemType.Drive;
             FileInfo = info;

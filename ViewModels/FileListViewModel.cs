@@ -103,7 +103,7 @@ namespace FileManager.ViewModels
         {
             for (int i = 1; i < files.Count; i++)
             {
-                if (files[i].FileInfo.Length < files[i - 1].FileInfo.Length)
+                if (files[i].Size < files[i - 1].Size)
                 {
                     return true;
                 }
@@ -120,15 +120,15 @@ namespace FileManager.ViewModels
             if (isAscending)
             {
                 sortedItems = new ObservableCollection<Item>(files
-                    .Where(file => file.FileName != "...")
-                    .OrderBy(file => file.FileInfo.Length));
+                   .Where(file => file.FileName != "...")
+                   .OrderBy(file => file.Size));
                 SizeText = "Size v";
             }
             else
             {
                 sortedItems = new ObservableCollection<Item>(files
-                    .Where(file => file.FileName != "...")
-                    .OrderByDescending(file => file.FileInfo.Length));
+                   .Where(file => file.FileName != "...")
+                   .OrderByDescending(file => file.Size));
                 SizeText = "Size ^";
             }
             FileNameText = "Filename";
@@ -343,8 +343,9 @@ namespace FileManager.ViewModels
             DriveInfo[] allDrives = DriveInfo.GetDrives();
             foreach (DriveInfo drive in allDrives)
             {
-
-                string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
+                // Check if this is needed
+                // string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
+                int size = (int)(drive.TotalFreeSpace / drive.TotalSize);
                 _files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat));
             }
             IsLoading = false;
@@ -373,10 +374,7 @@ namespace FileManager.ViewModels
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
                 {
                     FileInfo fileInfo = new FileInfo(file.FullName);
-                    //Debug.WriteLine("SIZES: " + fileInfo.Length);
-                    string size = FileUtil.ConvertBytesToHumanReadable(fileInfo.Length);
-
-
+                    long size = fileInfo.Length;
                     var icon = await GetFileIcon(fileInfo.FullName);
 
                     fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden)));
