@@ -89,16 +89,34 @@ namespace FileManager.ViewModels
             Task.Run(() => FillList(d));
         }
 
-        private void SortFilesAlphabetically(string labelText)
+        private static bool IsSortedOnLabel(ObservableCollection<Item> files, string labelText)
         {
-            Files = SortFileNames(_files, labelText);
+            for (int i = 1; i < files.Count; i++)
+            {
+                if (labelText.Contains("Filename"))
+                {
+                    if (string.Compare(files[i].FileName, files[i - 1].FileName, StringComparison.CurrentCultureIgnoreCase) < 0)
+                    {
+                        return true;
+                    }
+                }
+                else if (labelText.Contains("Info"))
+                {
+                    if (string.Compare(files[i].FileInfo, files[i - 1].FileInfo, StringComparison.InvariantCultureIgnoreCase) < 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files, string labelText)
         {
             ObservableCollection<Item> sortedItems = [files.FirstOrDefault(file => file.FileName.Equals("..."))];
             
-            bool isSorted = isSortedOnLabel(files, labelText);            
+            bool isSorted = IsSortedOnLabel(files, labelText);            
 
             if (!isSorted)
             {
@@ -149,30 +167,9 @@ namespace FileManager.ViewModels
 
             return sortedItems;
         }
-
-        private static bool isSortedOnLabel(ObservableCollection<Item> files, string labelText)
+        private void SortFilesAlphabetically(string labelText)
         {
-            Debug.WriteLine(labelText);
-            for (int i = 1; i < files.Count; i++)
-            {
-                Debug.WriteLine(files[i].FileInfo);
-                if (labelText.Contains("Filename"))
-                {
-                    if (string.Compare(files[i].FileName, files[i - 1].FileName, StringComparison.CurrentCultureIgnoreCase) < 0)
-                    {
-                        return true;
-                    }
-                }
-                else if (labelText.Contains("Info"))
-                {
-                    if (string.Compare(files[i].FileInfo, files[i - 1].FileInfo, StringComparison.InvariantCultureIgnoreCase) < 0)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            Files = SortFileNames(_files, labelText);
         }
 
         public async Task<ImageSource> GetFileIcon(string filePath)
