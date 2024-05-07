@@ -5,7 +5,6 @@
              xmlns:local="clr-namespace:FileManager.ViewModels">
     <ContentPage.BindingContext>
         <local:FileOverviewViewModel />
-        <!-- Replace YourViewModel with your actual view model class -->
     </ContentPage.BindingContext>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -19,9 +18,12 @@
                 <StackLayout BackgroundColor="#252526">
                     <StackLayout Orientation="Horizontal">
                         <Entry Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
-                        <Button Text="Button" BackgroundColor="Gray" Clicked="OnLeftButtonClicked" />
+                        <Button Text="Add" BackgroundColor="Gray" Clicked="AddLeftTab" />
                     </StackLayout>
                     <Grid>
+                        <Picker Title=""
+                            ItemsSource="{Binding LeftSideViewModels}"
+                            ItemDisplayBinding="{Binding CurrentPath}" />
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="70" />
                             <ColumnDefinition Width="*" />

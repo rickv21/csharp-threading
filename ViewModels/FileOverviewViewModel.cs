@@ -37,12 +37,29 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
+    private Dictionary<int, FileListViewModel> _LeftSideViewModels;
+    public Dictionary<int, FileListViewModel> LeftSideViewModels
+    {
+        get { return _LeftSideViewModels; }
+    }
+    private Dictionary<int, FileListViewModel> _RightSideViewModels;
+    public Dictionary<int, FileListViewModel> RightSideViewModels
+    {
+        get { return RightSideViewModels; }
+    }
+
     private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new ConcurrentDictionary<string, byte[]>();
 
     public FileOverviewViewModel()
     {
+        _LeftSideViewModels = new Dictionary<int, FileListViewModel>();
+        _RightSideViewModels = new Dictionary<int, FileListViewModel>();
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
+        _LeftSideViewModels.Add(0, LeftSideViewModel);
+        _RightSideViewModels.Add(0, RightSideViewModel);
+
+        OnPropertyChanged(nameof(_LeftSideViewModels));
     }
 
     public async Task<string> SelectActionAsync()
@@ -77,21 +94,18 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
-    public async Task<string?> SelectFolderAsync()
+    public void AddTab(int side)
     {
-        try
+        if(side == 0)
         {
-            var folderPicker = new FolderPicker();
-            folderPicker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
-
-            var folder = await folderPicker.PickSingleFolderAsync();
-
-            return folder?.Path;
+            _LeftSideViewModels.Add(_LeftSideViewModels.Count, new FileListViewModel(_fileIconCache, 0));
+            OnPropertyChanged(nameof(_LeftSideViewModels));
         }
-        catch (Exception ex)
+        else
         {
-            Debug.WriteLine($"Error selecting folder: {ex.Message}");
-            return null;
+            _RightSideViewModels.Add(_RightSideViewModels.Count, new FileListViewModel(_fileIconCache, 1));
+            OnPropertyChanged(nameof(_RightSideViewModels));
+
         }
     }
 }

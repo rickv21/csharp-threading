@@ -111,9 +111,9 @@ public partial class FileOverviewPage : ContentPage
 
     }
 
-    void OnLeftButtonClicked(object sender, EventArgs e)
+    void AddLeftTab(object sender, EventArgs e)
     {
-        string? path = viewModel.SelectFolderAsync().Result;
+        viewModel.AddTab(0);
     }
 
     void OnItemDrop(object sender, DropEventArgs e)
