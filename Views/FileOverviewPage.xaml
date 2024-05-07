@@ -24,6 +24,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Label Text="" Grid.Column="0" />
                         <Label Grid.Column="1">
@@ -56,6 +57,16 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
+                        <Label Grid.Column="4">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesOnDateCommand}" CommandParameter="{Binding LeftSideViewModel.DateText}" />
+                            </Label.GestureRecognizers>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding LeftSideViewModel.DateText}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
                     </Grid>
 
                     <!-- Add label here -->
@@ -67,6 +78,7 @@
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="70" />
+                                        <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
@@ -108,6 +120,7 @@
                                     <Label Margin="0, 15, 20, 0" Text="{Binding FileName}" Grid.Column="1"/>
                                     <Label Margin="0, 15, 0, 0" Text="{Binding FileInfo}" Grid.Column="2" />
                                     <Label Margin="0, 15, 0, 0" Text="{Binding ReadableSize}" Grid.Column="3" />
+                                    <Label Margin="0, 15, 0, 0" Text="{Binding LastEdited}" Grid.Column="4" />
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -125,6 +138,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
@@ -160,6 +174,16 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
+                        <Label Grid.Column="4">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesOnDateCommand}" CommandParameter="{Binding RightSideViewModel.DateText}" />
+                            </Label.GestureRecognizers>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding RightSideViewModel.DateText}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
                     </Grid>
 
                     <!-- Add label here -->
@@ -171,6 +195,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="70" />
+                                    <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
@@ -212,6 +237,7 @@
                                 <Label Margin="0, 15, 20, 0" Text="{Binding FileName}" Grid.Column="1"/>
                                 <Label Margin="0, 15, 0, 0" Text="{Binding FileInfo}" Grid.Column="2" />
                                 <Label Margin="0, 15, 0, 0" Text="{Binding ReadableSize}" Grid.Column="3" />
+                                <Label Margin="0, 15, 0, 0" Text="{Binding LastEdited}" Grid.Column="4" />
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

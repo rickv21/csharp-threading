@@ -14,6 +14,7 @@ namespace FileManager.Models
         {
             ItemCount = itemCount;
             Type = type;
+            LastEdited = null;
         }
 
         public override string ToString()

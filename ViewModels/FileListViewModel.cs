@@ -88,10 +88,19 @@ namespace FileManager.ViewModels
             set { _sizeText = value; OnPropertyChanged(nameof(SizeText)); }
         }
 
+        private string _dateText;
+
+        public string DateText
+        {
+            get { return _dateText; }
+            set { _dateText = value; OnPropertyChanged(nameof(DateText)); }
+        }
+
         public ICommand ItemDoubleTappedCommand { get; }
         public ICommand PathChangedCommand { get; }
         public ICommand SortFilesCommand { get; }
         public ICommand SortFilesOnSizeCommand { get; }
+        public ICommand SortFilesOnDateCommand {  get; }
 
 
         public FileListViewModel(ConcurrentDictionary<string, byte[]> fileIconCache, short side)
@@ -99,6 +108,7 @@ namespace FileManager.ViewModels
             this.side = side;
             SortFilesCommand = new Command<string>(SortFilesAlphabetically);
             SortFilesOnSizeCommand = new Command(SortFilesOnSize);
+            SortFilesOnDateCommand = new Command(SortFilesOnDate);
             _files = new ObservableCollection<Item>();
             _fileIconCache = fileIconCache;
             CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -108,6 +118,55 @@ namespace FileManager.ViewModels
             PathChangedCommand = new Command<string>(PathChanged);
 
             Task.Run(() => FillList(d));
+        }
+
+        private static bool IsSortedOnDate(ObservableCollection<Item> files)
+        {
+            for (int i = 1; i < files.Count; i++)
+            {
+                if (files[i].LastEdited < files[i - 1].LastEdited)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private ObservableCollection<Item> SortFileDates(ObservableCollection<Item> files, bool isAscending)
+        {
+            ObservableCollection<Item> sortedItems = [];
+            Item folder = files.FirstOrDefault(file => file.FileName.Equals("..."));
+
+            if (isAscending)
+            {
+                sortedItems = new ObservableCollection<Item>(files
+                  .Where(file => file.FileName != "...")
+                  .OrderBy(file => file.LastEdited));
+                DateText = "Date v";
+            }
+            else
+            {
+                sortedItems = new ObservableCollection<Item>(files
+                 .Where(file => file.FileName != "...")
+                 .OrderByDescending(file => file.LastEdited));
+                DateText = "Date ^";
+            }
+            FileNameText = "Filename";
+            InfoText = "Info";
+            SizeText = "Size";
+
+            if (folder != null)
+            {
+                sortedItems.Insert(0, folder);
+            }
+
+            return sortedItems;
+        }
+
+        private void SortFilesOnDate()
+        {
+            Files = SortFileDates(_files, IsSortedOnDate(_files));
         }
 
         private static bool IsSortedOnSize(ObservableCollection<Item> files)
@@ -144,6 +203,7 @@ namespace FileManager.ViewModels
             }
             FileNameText = "Filename";
             InfoText = "Info";
+            DateText = "Date"; 
 
             if (folder != null)
             {
@@ -187,6 +247,7 @@ namespace FileManager.ViewModels
 
             if (!isSorted)
             {
+                DateText = "Date";
                 SizeText = "Size";
                 if (labelText.Contains("Filename"))
                 {
@@ -207,6 +268,7 @@ namespace FileManager.ViewModels
             }
             else
             {
+                DateText = "Date";
                 SizeText = "Size";
                 if (labelText.Contains("Filename"))
                 {
@@ -445,9 +507,15 @@ namespace FileManager.ViewModels
                 {
                     FileInfo fileInfo = new FileInfo(file.FullName);
                     long size = fileInfo.Length;
+                    DateTime lastEdit = DateTime.MinValue;
+                    if (fileInfo.LastWriteTime != DateTime.MinValue)
+                    {
+                       lastEdit = fileInfo.LastWriteTime;
+                    }
+                   
                     var icon = await GetFileIcon(fileInfo.FullName);
 
-                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden)));
+                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEdit));
                 }));
 
                 foreach (var item in fileSystemInfos
@@ -461,6 +529,7 @@ namespace FileManager.ViewModels
                 FileNameText = "Filename";
                 InfoText = "Info";
                 SizeText = "Size";
+                DateText = "Date";
             }
             catch (UnauthorizedAccessException e)
             {

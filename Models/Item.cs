@@ -10,7 +10,7 @@ namespace FileManager.Models
     {
         public string FileName { get; set; }
         public string FilePath { get; set; }
-        public string Date { get; set; }
+        public DateTime? LastEdited { get; set; }
         public ImageSource Icon { get; set; }
         public ItemType Type { get; set; } //Make it only settable internally.
         public string FileInfo { get; set; }
@@ -23,7 +23,6 @@ namespace FileManager.Models
             FileName = fileName;
             FilePath = filePath;
             Side = side;
-            Date = ""; //Temp
             Size = 0;
             Icon = icon;
             FileInfo = hidden ? "(Hidden)" : "";
@@ -31,7 +30,7 @@ namespace FileManager.Models
 
         public override string ToString()
         {
-            return $"FileName: {FileName}, ItemType: {Type}, FilePath: {FilePath}, Date: {Date}, FileType: {FileInfo}, Size: {Size}";
+            return $"FileName: {FileName}, ItemType: {Type}, FilePath: {FilePath}, LastEdited: {LastEdited}, FileType: {FileInfo}, Size: {Size}";
         }
     }
 }
