@@ -5,7 +5,6 @@
              xmlns:local="clr-namespace:FileManager.ViewModels">
     <ContentPage.BindingContext>
         <local:FileOverviewViewModel />
-        <!-- Replace YourViewModel with your actual view model class -->
     </ContentPage.BindingContext>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -69,9 +68,7 @@
                         </Label>
                     </Grid>
 
-                    <!-- Add label here -->
-
-                    <!-- Content for the right ScrollView -->
+                    <!-- Content for the left ScrollView -->
                     <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
@@ -135,15 +132,15 @@
             <Grid>
             <StackLayout BackgroundColor="#252526">
                     <Entry x:Name="RightPathField" Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Label Text="" Grid.Column="0" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label Text="" Grid.Column="0" />
                         <Label Grid.Column="1">
                             <Label.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" CommandParameter="{Binding RightSideViewModel.FileNameText}" />
@@ -186,9 +183,7 @@
                         </Label>
                     </Grid>
 
-                    <!-- Add label here -->
-
-                <!-- Content for the right ScrollView -->
+                    <!-- Content for the right ScrollView -->
                     <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand" >
                         <CollectionView.ItemTemplate>
                         <DataTemplate>
