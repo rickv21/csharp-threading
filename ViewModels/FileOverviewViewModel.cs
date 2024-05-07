@@ -13,6 +13,7 @@ namespace FileManager.ViewModels;
 
 public class FileOverviewViewModel : ViewModelBase
 {
+    public static int MAX_THREADS = 255;
 
     private FileListViewModel _leftSideViewModel;
     public FileListViewModel LeftSideViewModel

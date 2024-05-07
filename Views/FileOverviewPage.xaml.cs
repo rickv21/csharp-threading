@@ -152,13 +152,13 @@ public partial class FileOverviewPage : ContentPage
             var regex = userInput.Item2;
             if (userInput.Item1 != null)
             {
-                if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= 7)
+                if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
                 {
                     await viewModel.ProcessActionAsync(action, number, regex);
                 }
-                else if (number > 7)
+                else if (number > FileOverviewViewModel.MAX_THREADS)
                 {
-                    await DisplayAlert("Error", "Number of threads cannot exceed 7.", "OK");
+                    await DisplayAlert("Error", $"Number of threads cannot exceed {FileOverviewViewModel.MAX_THREADS}.", "OK");
                 }
                 else
                 {

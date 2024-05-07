@@ -17,7 +17,15 @@
         <Border Grid.Column="0">
             <Grid>
                 <StackLayout BackgroundColor="#252526">
-                    <Entry Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="90" />
+                        </Grid.ColumnDefinitions>
+                        <Entry Grid.Column="0" Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" HorizontalOptions="FillAndExpand" />
+                        <Button Grid.Column="1" Text="New Explorer" Command="{Binding LeftSideViewModel.NewExplorerCommand}" 
+            BackgroundColor="Transparent" FontSize="10" />
+                    </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="70" />
@@ -95,8 +103,16 @@
         <Border Grid.Column="1">
             <Grid>
             <StackLayout BackgroundColor="#252526">
-                    <Entry Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
-                <Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="90" />
+                        </Grid.ColumnDefinitions>
+                        <Entry Grid.Column="0" Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" HorizontalOptions="FillAndExpand" />
+                        <Button Grid.Column="1" Text="New Explorer" Command="{Binding RightSideViewModel.NewExplorerCommand}" 
+BackgroundColor="Transparent" FontSize="10" />
+                    </Grid>
+                    <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
                         <ColumnDefinition Width="*" />
