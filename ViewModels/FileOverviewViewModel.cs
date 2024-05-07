@@ -8,6 +8,7 @@ using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using FileManager.Models;
+using Windows.Storage.Pickers;
 
 namespace FileManager.ViewModels;
 
@@ -73,6 +74,24 @@ public class FileOverviewViewModel : ViewModelBase
             case "Copy":
                 // Perform Copy action based on 'number'
                 break;
+        }
+    }
+
+    public async Task<string?> SelectFolderAsync()
+    {
+        try
+        {
+            var folderPicker = new FolderPicker();
+            folderPicker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
+
+            var folder = await folderPicker.PickSingleFolderAsync();
+
+            return folder?.Path;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error selecting folder: {ex.Message}");
+            return null;
         }
     }
 }

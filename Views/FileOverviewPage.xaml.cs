@@ -111,6 +111,11 @@ public partial class FileOverviewPage : ContentPage
 
     }
 
+    void OnLeftButtonClicked(object sender, EventArgs e)
+    {
+        string? path = viewModel.SelectFolderAsync().Result;
+    }
+
     void OnItemDrop(object sender, DropEventArgs e)
     {
 
