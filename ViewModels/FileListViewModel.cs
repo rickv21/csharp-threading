@@ -323,6 +323,13 @@ namespace FileManager.ViewModels
         {
             if (IsLoading)
             {
+                //Failsafe, allows the user to cancel the loading process in case it gets stuck.
+                if(key == "escape")
+                {
+                    IsLoading = false;
+                    CurrentPath = _previousPath;
+                    Task.Run(RefreshAsync);
+                }
                 return;
             }
             switch (key)
