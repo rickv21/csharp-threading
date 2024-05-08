@@ -28,7 +28,7 @@
                         </Grid.ColumnDefinitions>
                         <Label Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" />
                         <Label Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Center" />
-                        <Border Grid.Column="2" Padding="5" Stroke="Gray" StrokeThickness="1">
+                        <Border Grid.Column="2" Padding="1" Stroke="Gray" StrokeThickness="1">
                             <Label>
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesCommand}" CommandParameter="{Binding LeftSideViewModel.FileNameText}" />
@@ -40,7 +40,7 @@
                                 </Label.FormattedText>
                             </Label>
                         </Border>
-                        <Border Grid.Column="3" Padding="5" Stroke="Gray" StrokeThickness="1">
+                        <Border Grid.Column="3" Padding="1" Stroke="Gray" StrokeThickness="1">
                             <Label>
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesCommand}" CommandParameter="{Binding LeftSideViewModel.InfoText}"/>
@@ -52,7 +52,7 @@
                                 </Label.FormattedText>
                             </Label>
                         </Border>
-                        <Border Grid.Column="4" Padding="5" Stroke="Gray" StrokeThickness="1">
+                        <Border Grid.Column="4" Padding="1" Stroke="Gray" StrokeThickness="1">
                             <Label>
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesOnSizeCommand}" CommandParameter="{Binding LeftSideViewModel.SizeText}"/>
@@ -64,7 +64,7 @@
                                 </Label.FormattedText>
                             </Label>
                         </Border>
-                        <Border Grid.Column="5" Padding="5" Stroke="Gray" StrokeThickness="1">
+                        <Border Grid.Column="5" Padding="1" Stroke="Gray" StrokeThickness="1">
                             <Label>
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesOnDateCommand}" CommandParameter="{Binding LeftSideViewModel.DateText}" />
@@ -155,7 +155,7 @@
                         </Grid.ColumnDefinitions>
                         <Label Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" />
                         <Label Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Center" />
-                        <Border Grid.Column="2" Padding="5" Stroke="Gray" StrokeThickness="1">
+                        <Border Grid.Column="2" Padding="1" Stroke="Gray" StrokeThickness="1">
                             <Label>
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" CommandParameter="{Binding RightSideViewModel.FileNameText}" />
@@ -167,7 +167,7 @@
                                 </Label.FormattedText>
                             </Label>
                         </Border>
-                        <Border Grid.Column="3" Padding="5" Stroke="Gray" StrokeThickness="1">
+                        <Border Grid.Column="3" Padding="1" Stroke="Gray" StrokeThickness="1">
                             <Label>
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" CommandParameter="{Binding RightSideViewModel.InfoText}"/>
@@ -179,7 +179,7 @@
                                 </Label.FormattedText>
                             </Label>
                         </Border>
-                        <Border Grid.Column="4" Padding="5" Stroke="Gray" StrokeThickness="1">
+                        <Border Grid.Column="4" Padding="1" Stroke="Gray" StrokeThickness="1">
                             <Label>
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesOnSizeCommand}" CommandParameter="{Binding RightSideViewModel.SizeText}"/>
@@ -191,7 +191,7 @@
                                 </Label.FormattedText>
                             </Label>
                         </Border>
-                        <Border Grid.Column="5" Padding="5" Stroke="Gray" StrokeThickness="1">
+                        <Border Grid.Column="5" Padding="1" Stroke="Gray" StrokeThickness="1">
                             <Label>
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesOnDateCommand}" CommandParameter="{Binding RightSideViewModel.DateText}" />
