@@ -120,6 +120,22 @@ namespace FileManager.ViewModels
             Task.Run(() => FillList(d));
         }
 
+        public async void RenameItem(Item selectedItem, string newName)
+        {
+            string oldPath = selectedItem.FilePath;
+            string newPath = Path.Combine(Path.GetDirectoryName(oldPath), newName);
+            if (Directory.Exists(oldPath))
+            {
+                Directory.Move(oldPath, newPath);
+            }
+            else if (File.Exists(oldPath))
+            {
+                File.Move(oldPath, newPath);
+            }
+            selectedItem.FileName = newName;
+            Refresh();
+        }
+
         private static bool IsSortedOnDate(ObservableCollection<Item> files)
         {
             for (int i = 1; i < files.Count; i++)
@@ -351,12 +367,6 @@ namespace FileManager.ViewModels
                     return;
             }
         }
-
-        public void RenameItem(Item item, string newName)
-        {
-            Debug.WriteLine("Changing name of item.");
-        }
-
 
         public void Refresh()
         {

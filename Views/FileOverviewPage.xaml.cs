@@ -170,30 +170,44 @@ public partial class FileOverviewPage : ContentPage
 
     }
 
-    private void RightContextClick(object sender, EventArgs e)
+    private async void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
-        if(item.Text == "Refresh")
+        if(item.Text.Equals("Refresh"))
         {
             viewModel.RightSideViewModel.Refresh();
-        } else if(item.Text == "Rename")
+        } 
+        else if(item.Text.Equals("Rename"))
         {
-            //TODO
-            viewModel.RightSideViewModel.RenameItem(null, null);
+            var menuItem = (MenuFlyoutItem)sender;
+            var selectedItem = (Item)menuItem.CommandParameter;
+
+            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "default text");
+            if (!string.IsNullOrEmpty(userInput))
+            {
+                viewModel.RightSideViewModel.RenameItem(selectedItem, userInput);
+            }
         }
     }
 
-    private void LeftContextClick(object sender, EventArgs e)
+    private async void LeftContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
-        if (item.Text == "Refresh")
+        if (item.Text.Equals("Refresh"))
         {
             viewModel.LeftSideViewModel.Refresh();
         }
-        else if (item.Text == "Rename")
+        else if (item.Text.Equals("Rename"))
         {
-            //TODO
-            viewModel.LeftSideViewModel.RenameItem(null, null);
+            var menuItem = (MenuFlyoutItem)sender;
+            var selectedItem = (Item)menuItem.CommandParameter;
+
+            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "default text");
+            if (!string.IsNullOrEmpty(userInput))
+            {
+                viewModel.LeftSideViewModel.RenameItem(selectedItem, userInput);
+            }
+            // TODO catch empty
         }
     }
 

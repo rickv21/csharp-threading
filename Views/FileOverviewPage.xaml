@@ -108,7 +108,7 @@
                                     </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick"
+                                            <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick" CommandParameter="{Binding}"
                                Command="{Binding Source={x:Reference RightCollection}}">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128221;"
