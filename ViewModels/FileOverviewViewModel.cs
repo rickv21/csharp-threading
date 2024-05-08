@@ -53,6 +53,10 @@ public class FileOverviewViewModel : ViewModelBase
     public async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
     {
         string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Keyboard.Numeric);
+        if(int.Parse(number) > MAX_THREADS)
+        {
+            return (number, null);
+        }
 
         if (isDir)
         {
