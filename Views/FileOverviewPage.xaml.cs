@@ -19,7 +19,7 @@ public partial class FileOverviewPage : ContentPage
         InitializeComponent();
         viewModel = new FileOverviewViewModel();
         BindingContext = viewModel;
-        RegisterKeybindingsAsync();
+        Task.Run(() => RegisterKeybindingsAsync());
     }
 
     private async Task RegisterKeybindingsAsync()
