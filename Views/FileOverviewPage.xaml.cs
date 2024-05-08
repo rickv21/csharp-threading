@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using FileManager.Models;
 using FileManager.ViewModels;
 using SharpHook;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace FileManager.Views;
 
@@ -47,7 +42,7 @@ public partial class FileOverviewPage : ContentPage
 
         //Remove first two characters from key and make it lower case.
         string key = e.Data.KeyCode.ToString()[2..].ToLower();
-        
+
         //Force unfocus of collectionviews to prevent issues with keyboard selections.
         MainThread.BeginInvokeOnMainThread(() =>
         {
@@ -56,17 +51,17 @@ public partial class FileOverviewPage : ContentPage
         });
 
         //Some more keyboard selection prevention.
-        if(key == "tab")
+        if (key == "tab")
         {
             e.SuppressEvent = true;
         }
 
         //Ignore enter if path field is focused.
-        if ((key == "enter" || key == "numpadenter"))
+        if ((key == "enter" || key == "numpadenter") || key == "backspace")
         {
             if (viewModel.ActiveSide == 0)
             {
-                if(LeftPathField.IsFocused)
+                if (LeftPathField.IsFocused)
                 {
                     return;
                 }
@@ -90,11 +85,11 @@ public partial class FileOverviewPage : ContentPage
 
         viewModel.ActiveSide = item.Side;
 
-        if(item.Type == ItemType.Drive ||  item.Type == ItemType.TopDir)
+        if (item.Type == ItemType.Drive || item.Type == ItemType.TopDir)
         {
             return;
         }
-        
+
         if (item.Side == 0)
         {
             //Left side.
@@ -127,11 +122,11 @@ public partial class FileOverviewPage : ContentPage
             }
         }
 
-        viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
+        //viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
     }
 
 
-    void onDragStarting(object sender, DragStartingEventArgs e)
+    void OnDragStarting(object sender, DragStartingEventArgs e)
     {
         //TODO: Add current dragged item to selected items.
         var dragGestureRecognizer = (DragGestureRecognizer)sender;
@@ -144,8 +139,8 @@ public partial class FileOverviewPage : ContentPage
             return;
         }
 
-      
-        if(item.Side == 0)
+
+        if (item.Side == 0)
         {
             //Left side.
             foreach (var debugItem in LeftCollection.SelectedItems)
@@ -156,7 +151,7 @@ public partial class FileOverviewPage : ContentPage
             e.Data.Properties.Add("files", LeftCollection.SelectedItems);
 
         }
-        else if(item.Side == 1)
+        else if (item.Side == 1)
         {
             //Right side.
             foreach (var debugItem in RightCollection.SelectedItems)
@@ -173,10 +168,11 @@ public partial class FileOverviewPage : ContentPage
     private void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
-        if(item.Text == "Refresh")
+        if (item.Text == "Refresh")
         {
-            viewModel.RightSideViewModel.Refresh();
-        } else if(item.Text == "Rename")
+            Task.Run(() => viewModel.RightSideViewModel.RefreshAsync());
+        }
+        else if (item.Text == "Rename")
         {
             //TODO
             viewModel.RightSideViewModel.RenameItem(null, null);
@@ -188,7 +184,7 @@ public partial class FileOverviewPage : ContentPage
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
         if (item.Text == "Refresh")
         {
-            viewModel.LeftSideViewModel.Refresh();
+            Task.Run(() => viewModel.LeftSideViewModel.RefreshAsync());
         }
         else if (item.Text == "Rename")
         {

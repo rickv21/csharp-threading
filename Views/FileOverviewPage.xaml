@@ -79,7 +79,7 @@
                     </Grid>
 
                     <!-- Content for the left ScrollView -->
-                    <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
+                    <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectedItems="{Binding LeftSideViewModel.SelectedItems}" SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -92,7 +92,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
@@ -101,7 +101,7 @@
                                             <VisualState x:Name="Normal" />
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor" Value="LightBlue" />
+                                                    <Setter Property="BackgroundColor" Value="Transparent" />
                                                 </VisualState.Setters>
                                             </VisualState>
                                         </VisualStateGroup>
@@ -206,7 +206,7 @@
                     </Grid>
 
                     <!-- Content for the right ScrollView -->
-                    <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand" >
+                    <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectedItems="{Binding RightSideViewModel.SelectedItems}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand" >
                         <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Grid>
@@ -219,7 +219,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.GestureRecognizers>
-                                    <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                    <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                     <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
@@ -228,7 +228,7 @@
                                         <VisualState x:Name="Normal" />
                                         <VisualState x:Name="Selected">
                                             <VisualState.Setters>
-                                                <Setter Property="BackgroundColor" Value="LightBlue" />
+                                                <Setter Property="BackgroundColor" Value="Transparent" />
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>

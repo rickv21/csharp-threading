@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace FileManager.Models
+﻿namespace FileManager.Models
 {
     public class Count
     {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager.Models
+﻿namespace FileManager.Models
 {
     public abstract class Item
     {
@@ -16,9 +10,9 @@ namespace FileManager.Models
         public string FileInfo { get; set; }
         public long Size { get; set; }
         public string ReadableSize { get; set; }
-        public short Side {  get; }
+        public short Side { get; }
 
-        public Item(string fileName, string filePath, ImageSource icon, short side, Boolean hidden) 
+        public Item(string fileName, string filePath, ImageSource icon, short side, Boolean hidden)
         {
             FileName = fileName;
             FilePath = filePath;
