@@ -341,7 +341,7 @@ namespace FileManager.ViewModels
                     {
                         return;
                     }
-                    OpenItem(new DirectoryItem("...", "", 0, side, false, ItemType.TopDir));
+                    OpenItem(new DirectoryItem("...", "", 0, side, false, null, ItemType.TopDir));
                     return;
                 case "enter":
                 case "numpadenter":
@@ -475,10 +475,8 @@ namespace FileManager.ViewModels
             DriveInfo[] allDrives = DriveInfo.GetDrives();
             foreach (DriveInfo drive in allDrives)
             {
-                // Check if this is needed
-                // string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
                 int size = (int)(drive.TotalFreeSpace / drive.TotalSize);
-                _files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat));
+                _files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat, null));
             }
             IsLoading = false;
         }
@@ -488,7 +486,7 @@ namespace FileManager.ViewModels
             MainThread.BeginInvokeOnMainThread(() => IsLoading = true);
             await Task.Delay(100); //Is needed for the loading indicator to function.
             _files.Clear();
-            _files.Add(new DirectoryItem("...", "", 0, side, false, ItemType.TopDir));
+            _files.Add(new DirectoryItem("...", "", 0, side, false, null, ItemType.TopDir));
             try
             {
 
@@ -498,9 +496,14 @@ namespace FileManager.ViewModels
                 {
                     // It's a directory
                     DirectoryInfo dirInfo = new DirectoryInfo(dir.FullName);
+                    DateTime lastEditDirectory = DateTime.MinValue;
+                    if (dirInfo.LastWriteTime != DateTime.MinValue)
+                    {
+                        lastEditDirectory = dirInfo.LastWriteTime;
+                    }
                     Debug.WriteLine(dir.FullName);
 
-                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), ItemType.Dir));
+                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
                 }));
 
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>

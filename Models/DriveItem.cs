@@ -11,11 +11,12 @@ namespace FileManager.Models
         public long FreeSize { get; set; }
         public long TotalSize { get; set; }
 
-        public DriveItem(string fileName, string filePath, short side, long space, string info) : base(fileName, filePath, 0, side, false, ItemType.Drive)
+        public DriveItem(string fileName, string filePath, short side, long space, string info, DateTime? lastEdited) : base(fileName, filePath, 0, side, false, lastEdited, ItemType.Drive)
         {
             Type = ItemType.Drive;
             FileInfo = info;
             Size = space;
+            LastEdited = lastEdited;
         }
 
         public override string ToString()
