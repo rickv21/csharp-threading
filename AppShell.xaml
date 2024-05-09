@@ -6,7 +6,8 @@
     xmlns:local="clr-namespace:FileManager"
     xmlns:views="using:FileManager.Views"
     Shell.FlyoutBehavior="Disabled"
-    Title="FileManager">
+    Shell.TabBarIsVisible="False"
+    Title="File Manager">
 
     <ShellContent
         ContentTemplate="{DataTemplate views:FileOverviewPage}"

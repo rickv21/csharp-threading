@@ -39,10 +39,22 @@ public class FileOverviewViewModel : ViewModelBase
 
     private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new ConcurrentDictionary<string, byte[]>();
 
+    private int _activeSide;
+
+    public int ActiveSide
+    {
+        get { return _activeSide; }
+        set
+        {
+            _activeSide = value;
+        }
+    }
+
     public FileOverviewViewModel()
     {
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
+        ActiveSide = 0;
     }
 
     public async Task<string> SelectActionAsync()
@@ -52,7 +64,7 @@ public class FileOverviewViewModel : ViewModelBase
 
     public async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
     {
-        string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Keyboard.Numeric);
+        string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Microsoft.Maui.Keyboard.Numeric);
         if(int.Parse(number) > MAX_THREADS)
         {
             return (number, null);
@@ -79,5 +91,23 @@ public class FileOverviewViewModel : ViewModelBase
                 // Perform Copy action based on 'number'
                 break;
         }
+    }
+    public void PassClickEvent(string key)
+    {
+        Debug.WriteLine("Pass click event " + ActiveSide);
+        if(ActiveSide == 0)
+        {
+            LeftSideViewModel.HandleClick(key);
+        } 
+        else
+        {
+            RightSideViewModel.HandleClick(key);
+        }
+    }
+
+    public void UpdateSelected(IList<object> leftSelectedItems, IList<object> rightSelectedItems)
+    {
+        LeftSideViewModel.SelectedItems = leftSelectedItems;
+        RightSideViewModel.SelectedItems= rightSelectedItems;
     }
 }
