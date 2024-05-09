@@ -15,7 +15,7 @@ namespace FileManager.ViewModels
     public class FileListViewModel : ViewModelBase
     {
         private ObservableCollection<Item> _files;
-        private String _currentPath;
+        public String _currentPath;
         private String previousPath;
         private ConcurrentDictionary<string, byte[]> _fileIconCache;
         private readonly short side;

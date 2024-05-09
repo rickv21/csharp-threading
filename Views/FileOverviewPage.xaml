@@ -16,14 +16,8 @@
         <Border Grid.Column="0">
             <Grid>
                 <StackLayout BackgroundColor="#252526">
-                    <StackLayout Orientation="Horizontal">
-                        <Entry Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
-                        <Button Text="Add" BackgroundColor="Gray" Clicked="AddLeftTab" />
-                    </StackLayout>
+                    <Entry Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
                     <Grid>
-                        <Picker Title=""
-                            ItemsSource="{Binding LeftSideViewModels}"
-                            ItemDisplayBinding="{Binding CurrentPath}" />
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="70" />
                             <ColumnDefinition Width="*" />
@@ -35,6 +29,11 @@
                         <Label Text="Info" Grid.Column="2" />
                         <Label Text="Size" Grid.Column="3" />
                     </Grid>
+                    <StackLayout Orientation="Horizontal">
+                        <Picker WidthRequest="400" Title="TabPicker" ItemsSource="{Binding LeftSideViewModels}" ItemDisplayBinding="{Binding CurrentPath}" SelectedItem="{Binding LeftSideViewModel}" />
+                        <Button WidthRequest="80" HeightRequest="40" Text="Add" BackgroundColor="Gray" Clicked="AddLeftTab" />
+                        <Button WidthRequest="80" HeightRequest="40" Text="Remove" BackgroundColor="Gray" Clicked="RemoveLeftTab" />
+                    </StackLayout>
 
                     <!-- Add label here -->
 
@@ -53,7 +52,7 @@
                                         <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
-                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
@@ -113,8 +112,13 @@
                     <Label Text="Info" Grid.Column="2" />
                     <Label Text="Size" Grid.Column="3" />
                     </Grid>
-             
-                <!-- Add label here -->
+                    <StackLayout Orientation="Horizontal">
+                        <Picker WidthRequest="400" Title="TabPicker" ItemsSource="{Binding RightSideViewModels}" ItemDisplayBinding="{Binding CurrentPath}" SelectedItem="{Binding RightSideViewModel}" />
+                        <Button WidthRequest="80" HeightRequest="40" Text="Add" BackgroundColor="Gray" Clicked="AddRightTab" />
+                        <Button WidthRequest="80" HeightRequest="40" Text="Remove" BackgroundColor="Gray" Clicked="RemoveRightTab" />
+                    </StackLayout>
+
+                    <!-- Add label here -->
 
                 <!-- Content for the right ScrollView -->
                 <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand">
@@ -131,7 +135,7 @@
                                         <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
-                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">

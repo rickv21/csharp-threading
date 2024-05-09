@@ -14,7 +14,6 @@ namespace FileManager.ViewModels;
 
 public class FileOverviewViewModel : ViewModelBase
 {
-
     private FileListViewModel _leftSideViewModel;
     public FileListViewModel LeftSideViewModel
     {
@@ -37,29 +36,74 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
-    private Dictionary<int, FileListViewModel> _LeftSideViewModels;
-    public Dictionary<int, FileListViewModel> LeftSideViewModels
+
+    private ObservableCollection<FileListViewModel> _leftSideViewModels;
+    public ObservableCollection<FileListViewModel> LeftSideViewModels
     {
-        get { return _LeftSideViewModels; }
+        get { return _leftSideViewModels; }
     }
-    private Dictionary<int, FileListViewModel> _RightSideViewModels;
-    public Dictionary<int, FileListViewModel> RightSideViewModels
+    private ObservableCollection<FileListViewModel> _rightSideViewModels;
+    public ObservableCollection<FileListViewModel> RightSideViewModels
     {
-        get { return RightSideViewModels; }
+        get { return _rightSideViewModels; }
     }
+    public ICommand ItemDoubleTappedCommand { get; }
+
 
     private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new ConcurrentDictionary<string, byte[]>();
 
     public FileOverviewViewModel()
     {
-        _LeftSideViewModels = new Dictionary<int, FileListViewModel>();
-        _RightSideViewModels = new Dictionary<int, FileListViewModel>();
+        ItemDoubleTappedCommand = new Command<Item>(OnItemDoubleTapped);
+        _leftSideViewModels = new ObservableCollection<FileListViewModel>();
+        _rightSideViewModels = new ObservableCollection<FileListViewModel>();
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
-        _LeftSideViewModels.Add(0, LeftSideViewModel);
-        _RightSideViewModels.Add(0, RightSideViewModel);
+        _leftSideViewModels.Add(LeftSideViewModel);
+        _rightSideViewModels.Add(RightSideViewModel);
 
-        OnPropertyChanged(nameof(_LeftSideViewModels));
+        OnPropertyChanged(nameof(LeftSideViewModels));
+    }
+
+    // List needs to be manipulated in order for the Picker values to be updated
+    void OnItemDoubleTapped(Item item)
+    {
+        if (item.Side == 0)
+        {
+            if (item.FileName != "...")
+            {
+                LeftSideViewModel.CurrentPath = item.FilePath;
+            }
+            else
+            {
+                LeftSideViewModel.CurrentPath = Directory.GetParent(LeftSideViewModel.CurrentPath).FullName;
+            }
+            int index = LeftSideViewModels.IndexOf(LeftSideViewModel);
+            FileListViewModel copy = LeftSideViewModel as FileListViewModel;
+            LeftSideViewModels.RemoveAt(index);
+            LeftSideViewModel = copy;
+            LeftSideViewModels.Insert(index, copy);
+            LeftSideViewModel = copy;
+            LeftSideViewModel.ItemDoubleTappedCommand.Execute(item);
+        }
+        else
+        {
+            if (item.FileName != "...")
+            {
+                RightSideViewModel.CurrentPath = item.FilePath;
+            }
+            else
+            {
+                RightSideViewModel.CurrentPath = Directory.GetParent(RightSideViewModel.CurrentPath).FullName;
+            }
+            int index = RightSideViewModels.IndexOf(RightSideViewModel);
+            FileListViewModel copy = RightSideViewModel as FileListViewModel;
+            RightSideViewModels.RemoveAt(index);
+            RightSideViewModel = copy;
+            RightSideViewModels.Insert(index, copy);
+            RightSideViewModel = copy;
+            RightSideViewModel.ItemDoubleTappedCommand.Execute(item);
+        }
     }
 
     public async Task<string> SelectActionAsync()
@@ -98,14 +142,29 @@ public class FileOverviewViewModel : ViewModelBase
     {
         if(side == 0)
         {
-            _LeftSideViewModels.Add(_LeftSideViewModels.Count, new FileListViewModel(_fileIconCache, 0));
-            OnPropertyChanged(nameof(_LeftSideViewModels));
+            _leftSideViewModels.Add(new FileListViewModel(_fileIconCache, 0));
+            LeftSideViewModel = LeftSideViewModels[LeftSideViewModels.Count - 1];
+            OnPropertyChanged(nameof(LeftSideViewModels));
         }
         else
         {
-            _RightSideViewModels.Add(_RightSideViewModels.Count, new FileListViewModel(_fileIconCache, 1));
-            OnPropertyChanged(nameof(_RightSideViewModels));
+            _rightSideViewModels.Add(new FileListViewModel(_fileIconCache, 1));
+            OnPropertyChanged(nameof(RightSideViewModels));
 
+        }
+    }
+
+    public void RemoveTab(int side)
+    {
+        if(side == 0)
+        {
+            LeftSideViewModels.Remove(LeftSideViewModel);
+            LeftSideViewModel = LeftSideViewModels[0];
+        }
+        else
+        {
+            RightSideViewModels.Remove(RightSideViewModel);
+            RightSideViewModel = RightSideViewModels[0];
         }
     }
 }

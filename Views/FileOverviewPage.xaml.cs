@@ -116,6 +116,21 @@ public partial class FileOverviewPage : ContentPage
         viewModel.AddTab(0);
     }
 
+    void RemoveLeftTab(object sender, EventArgs e)
+    {
+        viewModel.RemoveTab(0);
+    }
+
+    void AddRightTab(object sender, EventArgs e)
+    {
+        viewModel.AddTab(1);
+    }
+
+    void RemoveRightTab(object sender, EventArgs e)
+    {
+        viewModel.RemoveTab(1);
+    }
+
     void OnItemDrop(object sender, DropEventArgs e)
     {
 
