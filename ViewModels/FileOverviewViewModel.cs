@@ -94,7 +94,7 @@ public class FileOverviewViewModel : ViewModelBase
         for (var i = 0; i <= fileCount; i++)
         {
             var label = popup.Content.FindByName("Label") as Label;
-            label.Text = $"{i}/{fileCount}";
+            label.Text = $"Files done:{i}/{fileCount}";
             var progressBar = popup.FindByName("ProgressBar") as ProgressBar;
             progressBar.Progress = (double)(((double)i / (double)fileCount) * 1);
             switch (action)
