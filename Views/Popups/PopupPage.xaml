@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
+             x:Class="FileManager.Views.Popups.PopupPage"
+             CanBeDismissedByTappingOutsideOfPopup="false">
+    <VerticalStackLayout>
+        <Grid VerticalOptions="Center" HorizontalOptions="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Label 
+                x:Name="Label"
+                Text="Welcome to .NET MAUI!"
+                VerticalOptions="Center" 
+                HorizontalOptions="Center"
+                Grid.Row="0" />
+
+            <ProgressBar 
+                x:Name="ProgressBar"
+                Progress="0"
+                ProgressColor="Green"
+                Grid.Row="1"
+                IsVisible="True"
+                WidthRequest="300"
+                HeightRequest="20"/>
+        </Grid>
+    </VerticalStackLayout>
+</mct:Popup>

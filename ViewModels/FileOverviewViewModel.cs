@@ -7,7 +7,9 @@ using System.IO;
 using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Views;
 using FileManager.Models;
+using FileManager.Views.Popups;
 
 namespace FileManager.ViewModels;
 
@@ -80,17 +82,33 @@ public class FileOverviewViewModel : ViewModelBase
         return (number, null);
     }
 
-    public async Task ProcessActionAsync(string action, int number, string regex)
+    public async Task ProcessActionAsync(string action, int number, string regex, ContentPage view, IList<Item> items)
     {
-        switch (action)
+        var fileCount = 0;
+        foreach (var item in items)
         {
-            case "Move":
-                // Perform Move action based on 'number'
-                break;
-            case "Copy":
-                // Perform Copy action based on 'number'
-                break;
+            fileCount += CountFiles(item);
         }
+        var popup = new PopupPage();
+        view.ShowPopup(popup);
+        for (var i = 0; i <= fileCount; i++)
+        {
+            var label = popup.Content.FindByName("Label") as Label;
+            label.Text = $"{i}/{fileCount}";
+            var progressBar = popup.FindByName("ProgressBar") as ProgressBar;
+            progressBar.Progress = (double)(((double)i / (double)fileCount) * 1);
+            switch (action)
+            {
+                case "Move":
+                    await Task.Delay(1000);
+                    break;
+                case "Copy":
+                    await Task.Delay(2000);
+                    // Perform Copy action based on 'number'
+                    break;
+            }
+        }
+        popup.Close();
     }
     public void PassClickEvent(string key)
     {
@@ -109,5 +127,15 @@ public class FileOverviewViewModel : ViewModelBase
     {
         LeftSideViewModel.SelectedItems = leftSelectedItems;
         RightSideViewModel.SelectedItems= rightSelectedItems;
+    }
+
+    private int CountFiles(Item item)
+    {
+        if(item.Type != ItemType.Dir)
+        {
+            return 1;
+        }
+        var dir = item as DirectoryItem;
+        return dir.ItemCount;
     }
 }

@@ -10,6 +10,8 @@ using FileManager.ViewModels;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.StartScreen;
 using SharpHook;
+using CommunityToolkit.Maui.Views;
+using FileManager.Views.Popups;
 
 namespace FileManager.Views;
 
@@ -255,7 +257,7 @@ public partial class FileOverviewPage : ContentPage
             {
                 if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
                 {
-                    await viewModel.ProcessActionAsync(action, number, regex);
+                    await viewModel.ProcessActionAsync(action, number, regex, this, items);
                 }
                 else if (number > FileOverviewViewModel.MAX_THREADS)
                 {
