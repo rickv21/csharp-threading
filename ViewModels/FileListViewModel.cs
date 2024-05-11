@@ -10,6 +10,8 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.VisualBasic.FileIO;
+
 
 namespace FileManager.ViewModels
 {
@@ -328,12 +330,14 @@ namespace FileManager.ViewModels
                     if (item is FileItem fileItem)
                     {
                         // Delete the file
-                        File.Delete(fileItem.FilePath);
+                        Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(fileItem.FilePath);
+
+                      // File.Delete(fileItem.FilePath);
                     }
                     else if (item is DirectoryItem directoryItem)
                     {
                         // Delete the directory
-                        Directory.Delete(directoryItem.FilePath, true);
+                        Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(directoryItem.FilePath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
                     }
 
                     // Remove the item from the Files collection
