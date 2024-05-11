@@ -64,7 +64,7 @@
                                     </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem Text="Delete" Clicked="RightContextClick">
+                                            <MenuFlyoutItem Text="Delete" Clicked="LeftContextClick">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
                                                 </MenuFlyoutItem.IconImageSource>

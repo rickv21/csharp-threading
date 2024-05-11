@@ -192,6 +192,8 @@ public partial class FileOverviewPage : ContentPage
         else if (item.Text == "Delete")
         {
             viewModel.RightSideViewModel.DeleteItem();
+            System.Diagnostics.Debug.WriteLine("HALLOOOO? R");
+
         }
     }
 
@@ -209,7 +211,9 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Delete")
         {
-            viewModel.RightSideViewModel.DeleteItem();
+            viewModel.LeftSideViewModel.DeleteItem();
+            System.Diagnostics.Debug.WriteLine("HALLOOOO?");
+
         }
     }
 
