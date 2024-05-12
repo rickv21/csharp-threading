@@ -241,6 +241,7 @@ public class FileOverviewViewModel : ViewModelBase
             throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
         }
 
+
         DirectoryInfo[] dirs = dir.GetDirectories();
         Directory.CreateDirectory(destDirPath);
 

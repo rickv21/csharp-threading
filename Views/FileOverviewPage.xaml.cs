@@ -279,42 +279,63 @@ public partial class FileOverviewPage : ContentPage
         // Get only the file name from the file path
         string fileName = Path.GetFileName(file.FilePath);
 
-        // Move the file from its current FilePath to the new targetPath
+        // Combine the targetPath with the file name to get the new file path
         var newFilePath = Path.Combine(targetPath, fileName);
+
+        // Check if it's a file or directory
         if (File.Exists(file.FilePath))
         {
+            // Move the file to the new location
             File.Move(file.FilePath, newFilePath);
+
+            // Update the FilePath property of the Item object with the new path
+            file.FilePath = newFilePath;
         }
         else if (Directory.Exists(file.FilePath))
         {
-            // Move the directory to the new location
-            Directory.Move(file.FilePath, newFilePath);
-        }
+            // Create the destination directory if it doesn't exist
+            if (!Directory.Exists(newFilePath))
+            {
+                Directory.CreateDirectory(newFilePath);
+            }
 
-        // Update the FilePath property of the Item object with the new path
-        file.FilePath = newFilePath;
+            // Copy the directory and its contents recursively
+            CopyDirectory(file.FilePath, newFilePath);
+
+            // Delete the original directory
+            Directory.Delete(file.FilePath, true);
+
+            // Update the FilePath property of the Item object with the new path
+            file.FilePath = newFilePath;
+        }
     }
 
-    private string GetTargetPath(object dropPointObj, CollectionView sourceCollection, CollectionView targetCollection)
+    // Helper method to copy directory recursively
+    private void CopyDirectory(string sourceDirPath, string destDirPath)
     {
-        if (dropPointObj is Item targetItem)
+        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
+
+        // Create the destination directory if it doesn't exist
+        if (!Directory.Exists(destDirPath))
         {
-            // If the drop point is an item (file or folder)
-            if (targetItem.Type == ItemType.File)
-            {
-                // If it's a file, use the directory path of the file
-                return Path.GetDirectoryName(targetItem.FilePath);
-            }
-        }
-        else
-        {
-            // If the drop point is not an item, use the current path of the target collection
-            var viewModel = targetCollection.BindingContext as FileOverviewViewModel;
-            return viewModel?.GetCurrentPath(targetCollection);
+            Directory.CreateDirectory(destDirPath);
         }
 
-        // If all else fails, return a default path (e.g., the user's desktop)
-        return Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        // Copy files
+        foreach (string filePath in Directory.GetFiles(sourceDirPath))
+        {
+            string fileName = Path.GetFileName(filePath);
+            string destFilePath = Path.Combine(destDirPath, fileName);
+            File.Copy(filePath, destFilePath, true);
+        }
+
+        // Copy subdirectories recursively
+        foreach (string subDirPath in Directory.GetDirectories(sourceDirPath))
+        {
+            string dirName = Path.GetFileName(subDirPath);
+            string destSubDirPath = Path.Combine(destDirPath, dirName);
+            CopyDirectory(subDirPath, destSubDirPath);
+        }
     }
 
     //void OnCollectionViewSizeChanged(object sender, EventArgs e)
