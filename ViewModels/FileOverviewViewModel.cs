@@ -115,4 +115,152 @@ public class FileOverviewViewModel : ViewModelBase
             return null;
         }
     }
+
+    private List<string> _copiedFilesPaths = new List<string>();
+    public List<string> CopiedFilesPaths
+    {
+        get { return _copiedFilesPaths; }
+        set { _copiedFilesPaths = value; }
+    }
+    private string tempCopyDirectory = Path.Combine(Path.GetTempPath(), "FileManagerCopiedItems");
+
+    public void CopyItems(List<object> selectedItems)
+    {
+        System.Diagnostics.Debug.WriteLine("ja????? ");
+
+        // make sure list is empty first
+        _copiedFilesPaths.Clear();
+
+        // if temporary directory doesnt exist, make one
+        if (!Directory.Exists(tempCopyDirectory))
+        {
+            Directory.CreateDirectory(tempCopyDirectory);
+        }
+
+        foreach (var item in selectedItems)
+        {
+            System.Diagnostics.Debug.WriteLine("meep ");
+
+            if (item is FileItem fileItem) // if file
+            {
+                // Copy file to temporary directory
+                string fileName = Path.GetFileName(fileItem.FilePath);
+                string tempFilePath = Path.Combine(tempCopyDirectory, fileName);
+                File.Copy(fileItem.FilePath, tempFilePath, true);
+
+                // Add path of file to list
+                _copiedFilesPaths.Add(tempFilePath);
+                System.Diagnostics.Debug.WriteLine("dut? " + _copiedFilesPaths.Count);
+
+                System.Diagnostics.Debug.WriteLine("Copied " + fileName);
+
+            }
+            else if (item is DirectoryItem directoryItem) // if directory
+            {
+                // Copy folder to temporary directory
+                string dirName = Path.GetFileName(directoryItem.FilePath);
+                string tempDirPath = Path.Combine(tempCopyDirectory, dirName);
+                DirectoryCopy(directoryItem.FilePath, tempDirPath, true);
+
+                // Add path of copied folder to list
+                _copiedFilesPaths.Add(tempDirPath);
+
+                System.Diagnostics.Debug.WriteLine("Copied " + dirName);
+
+            }
+        }
+    }
+
+    private void DirectoryCopy(string sourceDirPath, string destDirPath, bool copySubDirs)
+    {
+        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
+
+        if (!dir.Exists)
+        {
+            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+        }
+
+        DirectoryInfo[] dirs = dir.GetDirectories();
+        Directory.CreateDirectory(destDirPath);
+
+        FileInfo[] files = dir.GetFiles();
+        foreach (FileInfo file in files)
+        {
+            string tempPath = Path.Combine(destDirPath, file.Name);
+            file.CopyTo(tempPath, true);
+        }
+
+        if (copySubDirs)
+        {
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string tempPath = Path.Combine(destDirPath, subdir.Name);
+                DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+            }
+        }
+    }
+
+    public void PasteItems(string targetPath)
+    {
+        System.Diagnostics.Debug.WriteLine("bllopp " + _copiedFilesPaths.Count);
+
+        foreach (var sourcePath in _copiedFilesPaths)
+        {
+            System.Diagnostics.Debug.WriteLine("bleep? ");
+
+            string fileName = Path.GetFileName(sourcePath);
+            string destFilePath = Path.Combine(targetPath, fileName);
+
+            System.Diagnostics.Debug.WriteLine("target " + destFilePath);
+
+            if (File.Exists(sourcePath))
+            {
+                // Kopieer het bestand
+                File.Copy(sourcePath, destFilePath, true);
+                System.Diagnostics.Debug.WriteLine("paste " + destFilePath);
+
+            }
+            else if (Directory.Exists(sourcePath))
+            {
+                // Kopieer de map
+                DirectoryCopy(sourcePath, destFilePath, true);
+            }
+        }
+
+        // Vernieuw de bestanden in de nieuwe locatie
+        RightSideViewModel.RefreshFiles();
+        LeftSideViewModel.RefreshFiles();
+
+        // Leeg de lijst met gekopieerde bestanden
+        _copiedFilesPaths.Clear();
+    }
+
+
+    private void DirectoryMove(string sourceDirPath, string destDirPath)
+    {
+        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
+
+        if (!dir.Exists)
+        {
+            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+        }
+
+        DirectoryInfo[] dirs = dir.GetDirectories();
+        Directory.CreateDirectory(destDirPath);
+
+        FileInfo[] files = dir.GetFiles();
+        foreach (FileInfo file in files)
+        {
+            string tempPath = Path.Combine(destDirPath, file.Name);
+            file.MoveTo(tempPath);
+        }
+
+        foreach (DirectoryInfo subdir in dirs)
+        {
+            string tempPath = Path.Combine(destDirPath, subdir.Name);
+            DirectoryMove(subdir.FullName, tempPath);
+        }
+
+        Directory.Delete(sourceDirPath, false);
+    }
 }

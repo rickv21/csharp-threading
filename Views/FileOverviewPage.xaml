@@ -64,6 +64,16 @@
                                     </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
+                                            <MenuFlyoutItem Text="Copy" Clicked="LeftContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Paste" Clicked="LeftContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick"
                                Command="{Binding Source={x:Reference RightCollection}}">
                                                 <MenuFlyoutItem.IconImageSource>
@@ -138,12 +148,22 @@
                                         <VisualState x:Name="Selected">
                                             <VisualState.Setters>
                                                 <Setter Property="BackgroundColor" Value="LightBlue" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
+                                            <MenuFlyoutItem Text="Copy" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Paste" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="RightContextClick"
                                Command="{Binding Source={x:Reference RightCollection}}" >
                                                 <MenuFlyoutItem.IconImageSource>

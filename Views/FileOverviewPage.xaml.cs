@@ -189,6 +189,16 @@ public partial class FileOverviewPage : ContentPage
             //TODO
             viewModel.RightSideViewModel.RenameItem(null, null);
         }
+        else if (item.Text == "Copy")
+        {
+            System.Diagnostics.Debug.WriteLine("amount selected" + RightCollection.SelectedItems.ToList().Count);
+
+            viewModel.CopyItems(RightCollection.SelectedItems.ToList());
+        }
+        else if (item.Text == "Paste")
+        {
+            viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
+        }
     }
 
     private void LeftContextClick(object sender, EventArgs e)
@@ -202,6 +212,16 @@ public partial class FileOverviewPage : ContentPage
         {
             //TODO
             viewModel.LeftSideViewModel.RenameItem(null, null);
+        }
+        else if (item.Text == "Copy")
+        {
+            System.Diagnostics.Debug.WriteLine("amount selected" + LeftCollection.SelectedItems.ToList().Count);
+
+            viewModel.CopyItems(LeftCollection.SelectedItems.ToList());
+        }
+        else if (item.Text == "Paste")
+        {
+            viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
         }
     }
 
