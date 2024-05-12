@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 using FileManager.Models;
 
@@ -126,8 +127,6 @@ public class FileOverviewViewModel : ViewModelBase
 
     public void CopyItems(List<object> selectedItems)
     {
-        System.Diagnostics.Debug.WriteLine("ja????? ");
-
         // make sure list is empty first
         _copiedFilesPaths.Clear();
 
@@ -139,8 +138,6 @@ public class FileOverviewViewModel : ViewModelBase
 
         foreach (var item in selectedItems)
         {
-            System.Diagnostics.Debug.WriteLine("meep ");
-
             if (item is FileItem fileItem) // if file
             {
                 // Copy file to temporary directory
@@ -150,10 +147,6 @@ public class FileOverviewViewModel : ViewModelBase
 
                 // Add path of file to list
                 _copiedFilesPaths.Add(tempFilePath);
-                System.Diagnostics.Debug.WriteLine("dut? " + _copiedFilesPaths.Count);
-
-                System.Diagnostics.Debug.WriteLine("Copied " + fileName);
-
             }
             else if (item is DirectoryItem directoryItem) // if directory
             {
@@ -164,9 +157,6 @@ public class FileOverviewViewModel : ViewModelBase
 
                 // Add path of copied folder to list
                 _copiedFilesPaths.Add(tempDirPath);
-
-                System.Diagnostics.Debug.WriteLine("Copied " + dirName);
-
             }
         }
     }
@@ -202,36 +192,42 @@ public class FileOverviewViewModel : ViewModelBase
 
     public void PasteItems(string targetPath)
     {
-        System.Diagnostics.Debug.WriteLine("bllopp " + _copiedFilesPaths.Count);
 
         foreach (var sourcePath in _copiedFilesPaths)
         {
-            System.Diagnostics.Debug.WriteLine("bleep? ");
-
             string fileName = Path.GetFileName(sourcePath);
             string destFilePath = Path.Combine(targetPath, fileName);
 
-            System.Diagnostics.Debug.WriteLine("target " + destFilePath);
 
             if (File.Exists(sourcePath))
             {
-                // Kopieer het bestand
-                File.Copy(sourcePath, destFilePath, true);
-                System.Diagnostics.Debug.WriteLine("paste " + destFilePath);
+                if (File.Exists(destFilePath))
+                {
+                    MessageBox.Show("File already exists in target path: " + destFilePath, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
+                // Copy file
+                File.Copy(sourcePath, destFilePath, true);
             }
             else if (Directory.Exists(sourcePath))
             {
-                // Kopieer de map
+                if (Directory.Exists(destFilePath))
+                {
+                    MessageBox.Show("Directory already exists in target path: " + destFilePath, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Copy directory
                 DirectoryCopy(sourcePath, destFilePath, true);
             }
         }
 
-        // Vernieuw de bestanden in de nieuwe locatie
+        // Refresh
         RightSideViewModel.RefreshFiles();
         LeftSideViewModel.RefreshFiles();
 
-        // Leeg de lijst met gekopieerde bestanden
+        // empty copy list
         _copiedFilesPaths.Clear();
     }
 

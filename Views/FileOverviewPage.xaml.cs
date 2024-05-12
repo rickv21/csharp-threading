@@ -191,8 +191,6 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Copy")
         {
-            System.Diagnostics.Debug.WriteLine("amount selected" + RightCollection.SelectedItems.ToList().Count);
-
             viewModel.CopyItems(RightCollection.SelectedItems.ToList());
         }
         else if (item.Text == "Paste")
@@ -215,8 +213,6 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Copy")
         {
-            System.Diagnostics.Debug.WriteLine("amount selected" + LeftCollection.SelectedItems.ToList().Count);
-
             viewModel.CopyItems(LeftCollection.SelectedItems.ToList());
         }
         else if (item.Text == "Paste")
