@@ -7,7 +7,6 @@ using System.Windows.Input;
 using Microsoft.VisualBasic.FileIO;
 using System.Windows;
 using System.Security;
-using Windows.ApplicationModel.VoiceCommands;
 
 namespace FileManager.ViewModels
 {
@@ -18,7 +17,7 @@ namespace FileManager.ViewModels
         private string _previousPath;
         private readonly ConcurrentDictionary<string, byte[]> _fileIconCache;
         private readonly short _side;
-        private ObservableCollection<Item> _selectedItems;
+        private IList<object> _selectedItems;
         private bool _isLoading;
 
         private string _fileNameText;
@@ -36,7 +35,7 @@ namespace FileManager.ViewModels
             }
         }
 
-        public ObservableCollection<Item> SelectedItems
+        public IList<object> SelectedItems
         {
             get { return _selectedItems; }
             set
@@ -386,7 +385,7 @@ namespace FileManager.ViewModels
                     {
                         return;
                     }
-                    Task.Run(async () => await OpenItemAsync(new DirectoryItem("...", "", 0, _side, false, ItemType.TopDir)));
+                    Task.Run(async () => await OpenItemAsync(new DirectoryItem("...", "", 0, _side, false, null, ItemType.TopDir)));
                     return;
                 case "enter":
                 case "numpadenter":
@@ -527,9 +526,9 @@ namespace FileManager.ViewModels
                 foreach (DriveInfo drive in allDrives)
                 {
                     // Check if this is needed
-                    // string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
-                    int size = (int)(drive.TotalFreeSpace / drive.TotalSize);
-                    Files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, _side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat));
+                    string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalSize - drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
+                    //string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
+                    Files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, _side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat, null));
                 }
                 IsLoading = false;
             });
@@ -569,7 +568,7 @@ namespace FileManager.ViewModels
                     }
                     Debug.WriteLine(dir.FullName);
 
-                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
+                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, _side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
                 }));
 
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
@@ -590,7 +589,7 @@ namespace FileManager.ViewModels
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    Files.Add(new DirectoryItem("...", "", 0, _side, false, ItemType.TopDir));
+                    Files.Add(new DirectoryItem("...", "", 0, _side, false, null, ItemType.TopDir));
                     foreach (var item in fileSystemInfos.OrderBy(fsi => fsi is FileItem).ThenBy(fsi => fsi.FileName))
                     {
                         Files.Add(item);
@@ -626,6 +625,7 @@ namespace FileManager.ViewModels
         {
             if (SelectedItems == null || SelectedItems.Count == 0)
             {
+                Debug.WriteLine("No items selected.");
                 // No items selected, return early
                 return;
             }

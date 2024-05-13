@@ -133,11 +133,11 @@ public class FileOverviewViewModel : ViewModelBase
     }
 
 
-  //  public void UpdateSelected(IList<object> leftSelectedItems, IList<object> rightSelectedItems)
-  //  {
-       // LeftSideViewModel.SelectedItems = leftSelectedItems;
-       // RightSideViewModel.SelectedItems = rightSelectedItems;
-   // }
+    public void UpdateSelected(IList<object> leftSelectedItems, IList<object> rightSelectedItems)
+    {
+        LeftSideViewModel.SelectedItems = leftSelectedItems;
+        RightSideViewModel.SelectedItems = rightSelectedItems;
+    }
 
     public string GetCurrentPath(CollectionView collectionView)
     {

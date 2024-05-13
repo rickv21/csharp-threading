@@ -130,7 +130,7 @@ public partial class FileOverviewPage : ContentPage
             }
         }
 
-        //viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
+        viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
     }
 
 
