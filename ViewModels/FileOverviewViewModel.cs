@@ -63,6 +63,7 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
+    // Constructor 
     private CollectionView _leftCollection;
 
     private CollectionView _rightCollection;
@@ -76,7 +77,6 @@ public class FileOverviewViewModel : ViewModelBase
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
     }
 
-    // Constructor without collections
     public FileOverviewViewModel()
     {
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
@@ -168,7 +168,7 @@ public class FileOverviewViewModel : ViewModelBase
     /// <summary>
     /// Threading manier: locks
     /// 
-    /// Voor wanneer meerdere bestanden worden gekopïeerd. Door de lock 
+    /// Voor wanneer meerdere bestanden worden gekopÃ¯eerd. Door de lock 
     /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. 
     /// </summary>
     public void CopyItems(List<object> selectedItems)
@@ -215,7 +215,7 @@ public class FileOverviewViewModel : ViewModelBase
     /// 
     /// Deze methode kopieert een directory recursief naar een nieuwe locatie, waarbij bestanden en submappen parallel worden gekopieerd met behulp van de ThreadPool van .NET.
     /// Door Parallel.ForEach te gebruiken, wordt de onderliggende ThreadPool van .NET gebruikt om de iteraties over bestanden en directories te verdelen over meerdere threads.
-    /// Dit maakt effectief gebruik van beschikbare CPU-cycli en kan leiden tot betere prestaties, vooral bij het kopiëren van grote hoeveelheden data of het gebruik van langzame opslagmedia.
+    /// Dit maakt effectief gebruik van beschikbare CPU-cycli en kan leiden tot betere prestaties, vooral bij het kopiÃ«ren van grote hoeveelheden data of het gebruik van langzame opslagmedia.
     /// </summary>
     /// <param name="sourceDirPath"></param>
     /// <param name="destDirPath"></param>

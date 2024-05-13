@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using FileManager.Models;
 using FileManager.ViewModels;
 using Windows.ApplicationModel.DataTransfer;
@@ -203,7 +204,7 @@ public partial class FileOverviewPage : ContentPage
     }
     
     
-    private void RightContextClick(object sender, EventArgs e)
+    private async void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
         if (item.Text == "Refresh")
@@ -215,6 +216,16 @@ public partial class FileOverviewPage : ContentPage
             //TODO
             viewModel.RightSideViewModel.RenameItem(null, null);
         }
+        else if (item.Text == "Delete")
+        {
+            if (LeftCollection.SelectedItems.Count == 0)
+            {
+                await DisplayAlert("Alert", "You have to select first to delete", "OK");
+                return;
+            }
+
+            viewModel.RightSideViewModel.DeleteItem();
+        }
         else if (item.Text == "Copy")
         {
             viewModel.CopyItems(RightCollection.SelectedItems.ToList());
@@ -225,7 +236,7 @@ public partial class FileOverviewPage : ContentPage
         }
     }
 
-    private void LeftContextClick(object sender, EventArgs e)
+    private async void LeftContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
         if (item.Text == "Refresh")
@@ -236,6 +247,16 @@ public partial class FileOverviewPage : ContentPage
         {
             //TODO
             viewModel.LeftSideViewModel.RenameItem(null, null);
+        }
+        else if (item.Text == "Delete")
+        {
+            if (LeftCollection.SelectedItems.Count == 0)
+            {
+                await DisplayAlert("Alert", "You have to select first to delete", "OK");
+                return;
+            }
+
+            viewModel.LeftSideViewModel.DeleteItem();
         }
         else if (item.Text == "Copy")
         {

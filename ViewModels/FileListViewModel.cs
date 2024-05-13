@@ -11,6 +11,9 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.VisualBasic.FileIO;
+using System.Windows;
+using System.Security;
 using Windows.ApplicationModel.VoiceCommands;
 
 namespace FileManager.ViewModels
@@ -311,6 +314,83 @@ namespace FileManager.ViewModels
             DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPath);
             _files.Clear();
             FillList(directoryInfo);
+        }
+
+        public async void DeleteItem()
+        {
+            if (SelectedItems == null || SelectedItems.Count == 0)
+            {
+                // No items selected, return early
+                return;
+            }
+
+            var itemsToDelete = SelectedItems.Cast<Item>().ToList();
+
+            foreach (var item in itemsToDelete)
+            {
+                try
+                {
+                    // Show a confirmation MessageBox
+                    Task<bool> result = Shell.Current.DisplayAlert("Confirmation", "Are you sure you want to delete " + item.FileName + "? ", "OK", "Cancel");
+
+                    if (await result)
+                    {
+                        if (item is FileItem fileItem)
+                        {
+                            // Delete the file
+                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(fileItem.FilePath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                        }
+                        else if (item is DirectoryItem directoryItem)
+                        {
+                            // Delete the directory
+                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(directoryItem.FilePath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                        }
+
+                        // Remove the item from the Files collection
+                        Files.Remove(item);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage;
+
+                    switch (ex)
+                    {
+                        case ArgumentException:
+                            errorMessage = "The path is a zero-length string, is malformed, contains only white space, or contains invalid characters (including wildcard characters). The path is a device path (starts with \\\\.\\).";
+                            break;
+                        case DirectoryNotFoundException:
+                            errorMessage = "The directory does not exist or is a file.";
+                            break;
+                        case IOException:
+                            errorMessage = "A file in the directory or subdirectory is in use.";
+                            break;
+                        case NotSupportedException:
+                            errorMessage = "The directory name contains a colon (:).";
+                            break;
+                        case SecurityException:
+                            errorMessage = "The user does not have required permissions.";
+                            break;
+                        case OperationCanceledException:
+                            errorMessage = "The user cancels the operation or the directory cannot be deleted.";
+                            break;
+                        default:
+                            errorMessage = "An unexpected error occurred while deleting the item.";
+                            break;
+                    }
+
+                    ShowErrorMessageBox(errorMessage, ex.Message);
+
+                }
+
+                // Clear the SelectedItems collection
+                SelectedItems.Clear();
+            }
+        }
+
+        private void ShowErrorMessageBox(string message, string details)
+        {
+            MessageBox.Show($"{message}\n\nDetails: {details}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }
