@@ -1,4 +1,5 @@
 ﻿using FileManager.Models;
+using Microsoft.Maui.Storage;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ using System.Windows.Input;
 using Microsoft.VisualBasic.FileIO;
 using System.Windows;
 using System.Security;
-
+using Windows.ApplicationModel.VoiceCommands;
 
 namespace FileManager.ViewModels
 {
@@ -110,7 +111,7 @@ namespace FileManager.ViewModels
                     return;
                 case "backspace":
                     //Parent folder.
-                    if(CurrentPath == "")
+                    if (CurrentPath == "")
                     {
                         return;
                     }
@@ -134,7 +135,7 @@ namespace FileManager.ViewModels
         public void Refresh()
         {
             Debug.WriteLine("Refresh.");
-            if(CurrentPath == "")
+            if (CurrentPath == "")
             {
                 FillDriveList();
                 return;
@@ -204,20 +205,20 @@ namespace FileManager.ViewModels
             {
                 if (item.FileName == "...")
                 {
-                        IsLoading = true;
+                    IsLoading = true;
 
-                        DirectoryInfo directoryInfo = Directory.GetParent(_currentPath);
+                    DirectoryInfo directoryInfo = Directory.GetParent(_currentPath);
 
-                        if (directoryInfo == null)
-                        {
-                            FillDriveList();
-                            return;
-                        }
+                    if (directoryInfo == null)
+                    {
+                        FillDriveList();
+                        return;
+                    }
 
-                        CurrentPath = directoryInfo.FullName;
-                        previousPath = _currentPath;
-                        _files.Clear();
-                        FillList(directoryInfo);
+                    CurrentPath = directoryInfo.FullName;
+                    previousPath = _currentPath;
+                    _files.Clear();
+                    FillList(directoryInfo);
                     return;
                 }
                 if (Directory.Exists(item.FilePath))
@@ -270,7 +271,7 @@ namespace FileManager.ViewModels
                 {
                     // It's a directory
                     DirectoryInfo dirInfo = new DirectoryInfo(dir.FullName);
-                   // Debug.WriteLine(dir.FullName);
+                    // Debug.WriteLine(dir.FullName);
 
                     fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), ItemType.Dir));
                 }));

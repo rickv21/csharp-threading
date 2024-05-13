@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using FileManager.Models;
 using FileManager.ViewModels;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.UI.StartScreen;
 using SharpHook;
 
 namespace FileManager.Views;
@@ -62,7 +64,7 @@ public partial class FileOverviewPage : ContentPage
         }
 
         //Ignore enter if path field is focused.
-        if ((key == "enter" || key == "numpadenter"))
+        if ((key == "enter" || key == "numpadenter" || key == "backspace"))
         {
             if (viewModel.ActiveSide == 0)
             {
@@ -87,7 +89,6 @@ public partial class FileOverviewPage : ContentPage
     void OnItemTapped(object sender, EventArgs e)
     {
         var item = ((sender as Grid).BindingContext as Item);
-
         viewModel.ActiveSide = item.Side;
 
         if (item.Type == ItemType.Drive || item.Type == ItemType.TopDir)
@@ -127,6 +128,7 @@ public partial class FileOverviewPage : ContentPage
         }
 
         viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
+ 
     }
 
 
@@ -152,32 +154,56 @@ public partial class FileOverviewPage : ContentPage
             }
 
             viewModel.DroppedFiles = LeftCollection.SelectedItems.Cast<Item>();
-            foreach (var debugItem in viewModel.DroppedFiles)
+          foreach (var debugItem in viewModel.DroppedFiles)
             {
                 System.Diagnostics.Debug.WriteLine(debugItem.ToString());
             }
-
-            e.Data.Properties.Add("files", viewModel.DroppedFiles);
+           
+             // e.Data.Properties.Add("files", viewModel.DroppedFiles);  
+              e.Data.Properties.Add("files", LeftCollection.SelectedItems);
+              if (!LeftCollection.SelectedItems.Contains(item))
+              {
+                  LeftCollection.SelectedItems.Add(item);
+              }
 
         }
-        else if (item.Side == 1)
-        {
-            //Right side.
-            if (!RightCollection.SelectedItems.Contains(item))
-            {
-                RightCollection.SelectedItems.Add(item);
-            }
+                else if (item.Side == 1)
+                {
+                    //Right side.
+                    if (!RightCollection.SelectedItems.Contains(item))
+                    {
+                        RightCollection.SelectedItems.Add(item);
+                    }
 
-            viewModel.DroppedFiles = RightCollection.SelectedItems.Cast<Item>();
-            foreach (var debugItem in viewModel.DroppedFiles)
-            {
-                System.Diagnostics.Debug.WriteLine(debugItem.ToString());
-            }
+                    viewModel.DroppedFiles = RightCollection.SelectedItems.Cast<Item>();
+                    foreach (var debugItem in viewModel.DroppedFiles)
+                    {
+                        System.Diagnostics.Debug.WriteLine(debugItem.ToString());
+                    }
 
-            e.Data.Properties.Add("files", viewModel.DroppedFiles);
-        }
+                    e.Data.Properties.Add("files", RightCollection.SelectedItems);
+                    if (!RightCollection.SelectedItems.Contains(item))
+                    {
+                        RightCollection.SelectedItems.Add(item);
+                    }
+                }
     }
 
+    void OnItemDrop(object sender, DropEventArgs e)
+    {
+        var droppedItems = e.Data.Properties["files"] as IList<object>;
+
+
+        if (droppedItems != null && droppedItems.Count > 0)
+        {
+            var itemList = droppedItems.OfType<Item>().ToList();
+
+            _ = OnItemDropAsync(itemList);
+        }
+
+    }
+    
+    
     private async void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
@@ -199,6 +225,13 @@ public partial class FileOverviewPage : ContentPage
             }
 
             viewModel.RightSideViewModel.DeleteItem();
+        else if (item.Text == "Copy")
+        {
+            viewModel.CopyItems(RightCollection.SelectedItems.ToList());
+        }
+        else if (item.Text == "Paste")
+        {
+            viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
         }
     }
 
@@ -223,6 +256,13 @@ public partial class FileOverviewPage : ContentPage
             }
 
             viewModel.LeftSideViewModel.DeleteItem();
+        else if (item.Text == "Copy")
+        {
+            viewModel.CopyItems(LeftCollection.SelectedItems.ToList());
+        }
+        else if (item.Text == "Paste")
+        {
+            viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
         }
     }
 
@@ -255,7 +295,8 @@ public partial class FileOverviewPage : ContentPage
                     // Ensure that the file is not null and the target path is valid
                     if (file != null && !string.IsNullOrEmpty(targetPath))
                     {
-                        MoveFile(file, targetPath);
+                        //TODO: Needs to be connected to popups (@Monique).
+                        //MoveFile(file, targetPath);
                     }
                 }
 
@@ -284,22 +325,65 @@ public partial class FileOverviewPage : ContentPage
         // Get only the file name from the file path
         string fileName = Path.GetFileName(file.FilePath);
 
-        // Move the file from its current FilePath to the new targetPath
+        // Combine the targetPath with the file name to get the new file path
         var newFilePath = Path.Combine(targetPath, fileName);
+
+        // Check if it's a file or directory
         if (File.Exists(file.FilePath))
         {
+            // Move the file to the new location
             File.Move(file.FilePath, newFilePath);
+
+            // Update the FilePath property of the Item object with the new path
+            file.FilePath = newFilePath;
         }
         else if (Directory.Exists(file.FilePath))
         {
-            // Move the directory to the new location
-            Directory.Move(file.FilePath, newFilePath);
-        }
+            // Create the destination directory if it doesn't exist
+            if (!Directory.Exists(newFilePath))
+            {
+                Directory.CreateDirectory(newFilePath);
+            }
 
-        // Update the FilePath property of the Item object with the new path
-        file.FilePath = newFilePath;
+            // Copy the directory and its contents recursively
+            CopyDirectory(file.FilePath, newFilePath);
+
+            // Delete the original directory
+            Directory.Delete(file.FilePath, true);
+
+            // Update the FilePath property of the Item object with the new path
+            file.FilePath = newFilePath;
+        }
     }
 
+    // Helper method to copy directory recursively
+    private void CopyDirectory(string sourceDirPath, string destDirPath)
+    {
+        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
+
+        // Create the destination directory if it doesn't exist
+        if (!Directory.Exists(destDirPath))
+        {
+            Directory.CreateDirectory(destDirPath);
+        }
+
+        // Copy files
+        foreach (string filePath in Directory.GetFiles(sourceDirPath))
+        {
+            string fileName = Path.GetFileName(filePath);
+            string destFilePath = Path.Combine(destDirPath, fileName);
+            File.Copy(filePath, destFilePath, true);
+        }
+
+        // Copy subdirectories recursively
+        foreach (string subDirPath in Directory.GetDirectories(sourceDirPath))
+        {
+            string dirName = Path.GetFileName(subDirPath);
+            string destSubDirPath = Path.Combine(destDirPath, dirName);
+            CopyDirectory(subDirPath, destSubDirPath);
+        }
+    }
+    
     //void OnCollectionViewSizeChanged(object sender, EventArgs e)
     //{
     //    // Replace YourCollectionViewName with the name of your CollectionView
@@ -307,4 +391,54 @@ public partial class FileOverviewPage : ContentPage
     //    RightCollection.ItemsSource = Files;
     //}
 
+    async Task OnItemDropAsync(IList<Item> items)
+    {
+        if(items.Count == 0)
+        {
+            return;
+        }
+        var needsRegex = false;
+        if (items.Count > 1)
+        {
+            needsRegex = true;
+        }
+        else if (items[0].Type == ItemType.Dir)
+        {
+            needsRegex = true;
+        }
+        
+        string action = await viewModel.SelectActionAsync();
+        if (action != null && action != "Cancel")
+        {
+            try
+            {
+                (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
+                var numnerOfThreads = userInput.Item1;
+                var regex = userInput.Item2;
+                if (userInput.Item1 != null)
+                {
+                    if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
+                    {
+                        await viewModel.ProcessActionAsync(action, number, regex);
+                    }
+                    else if (number < 1)
+                    {
+                        await DisplayAlert("Error", $"Number of threads must be 1 or more.", "OK");
+                    }
+                    else if (number > FileOverviewViewModel.MAX_THREADS)
+                    {
+                        await DisplayAlert("Error", $"Number of threads cannot exceed {FileOverviewViewModel.MAX_THREADS}.", "OK");
+                    }
+                    else
+                    {
+                        await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
+                    }
+                }
+            } catch (Exception e)
+            {
+                await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
+            }
+        }
+    }
 }
+

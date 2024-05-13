@@ -17,7 +17,7 @@
         <Border Stroke="Aqua" StrokeThickness="1" x:Name="LeftBorder" StrokeShape="RoundRectangle 5,10,0,0" Grid.Column="0">
             <Grid>
                 <StackLayout  BackgroundColor="#252526">
-                    <Entry x:Name="LeftPathField" Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
+                    <Entry x:Name="LeftPathField" Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5"  HorizontalOptions="FillAndExpand" />
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="70" />
@@ -36,7 +36,7 @@
                     <!-- Content for the right ScrollView -->
                     <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
                         <CollectionView.GestureRecognizers>
-                            <DropGestureRecognizer Drop="FileDrop" />
+                            <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
                         </CollectionView.GestureRecognizers>
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
@@ -49,6 +49,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Grid.GestureRecognizers>
                                         <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
+                                        <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
@@ -67,6 +68,14 @@
                                             <MenuFlyoutItem Text="Delete" Clicked="LeftContextClick">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
+                                            <MenuFlyoutItem Text="Copy" Clicked="LeftContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Paste" Clicked="LeftContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick"
@@ -102,7 +111,7 @@
         <Border Stroke="Transparent" StrokeThickness="1" x:Name="RightBorder" StrokeShape="RoundRectangle 0,0,0,10" Grid.Column="1">
             <Grid>
             <StackLayout BackgroundColor="#252526">
-                    <Entry x:Name="RightPathField" Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
+                    <Entry x:Name="RightPathField" Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5"  HorizontalOptions="FillAndExpand" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70" />
@@ -114,14 +123,14 @@
                     <Label Text="Filename" Grid.Column="1" />
                     <Label Text="Info" Grid.Column="2" />
                     <Label Text="Size" Grid.Column="3" />
-                </Grid>
+                    </Grid>
              
                 <!-- Add label here -->
 
                 <!-- Content for the right ScrollView -->
                     <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand" >
                         <CollectionView.GestureRecognizers>
-                            <DropGestureRecognizer Drop="FileDrop" />
+                            <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
                         </CollectionView.GestureRecognizers>
                         <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -133,8 +142,9 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.GestureRecognizers>
-                                    <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
-                                    <TapGestureRecognizer Tapped="OnItemTapped" />
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
+                                        <TapGestureRecognizer Tapped="OnItemTapped" />
+                                        <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                 <VisualStateManager.VisualStateGroups>
@@ -143,15 +153,23 @@
                                         <VisualState x:Name="Selected">
                                             <VisualState.Setters>
                                                 <Setter Property="BackgroundColor" Value="LightBlue" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
                                             <MenuFlyoutItem Text="Delete" Clicked="RightContextClick">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
+                                            <MenuFlyoutItem Text="Copy" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Paste" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="RightContextClick"
