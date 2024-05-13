@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using FileManager.Models;
+using Application = Microsoft.Maui.Controls.Application;
 
 namespace FileManager.ViewModels;
 

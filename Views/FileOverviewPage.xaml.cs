@@ -63,7 +63,7 @@ public partial class FileOverviewPage : ContentPage
         }
 
         //Ignore enter if path field is focused.
-        if ((key == "enter" || key == "numpadenter"))
+        if ((key == "enter" || key == "numpadenter" || key == "backspace"))
         {
             if (viewModel.ActiveSide == 0)
             {
@@ -153,40 +153,39 @@ public partial class FileOverviewPage : ContentPage
             }
 
             viewModel.DroppedFiles = LeftCollection.SelectedItems.Cast<Item>();
-            foreach (var debugItem in viewModel.DroppedFiles)
+          foreach (var debugItem in viewModel.DroppedFiles)
             {
                 System.Diagnostics.Debug.WriteLine(debugItem.ToString());
             }
-
-            e.Data.Properties.Add("files", viewModel.DroppedFiles);
-            e.Data.Properties.Add("files", LeftCollection.SelectedItems);
-            if (!LeftCollection.SelectedItems.Contains(item))
-            {
-                LeftCollection.SelectedItems.Add(item);
-            }
+           
+             // e.Data.Properties.Add("files", viewModel.DroppedFiles);  
+              e.Data.Properties.Add("files", LeftCollection.SelectedItems);
+              if (!LeftCollection.SelectedItems.Contains(item))
+              {
+                  LeftCollection.SelectedItems.Add(item);
+              }
 
         }
-        else if (item.Side == 1)
-        {
-            //Right side.
-            if (!RightCollection.SelectedItems.Contains(item))
-            {
-                RightCollection.SelectedItems.Add(item);
-            }
+                else if (item.Side == 1)
+                {
+                    //Right side.
+                    if (!RightCollection.SelectedItems.Contains(item))
+                    {
+                        RightCollection.SelectedItems.Add(item);
+                    }
 
-            viewModel.DroppedFiles = RightCollection.SelectedItems.Cast<Item>();
-            foreach (var debugItem in viewModel.DroppedFiles)
-            {
-                System.Diagnostics.Debug.WriteLine(debugItem.ToString());
-            }
-            
-            e.Data.Properties.Add("files", viewModel.DroppedFiles);
-            e.Data.Properties.Add("files", RightCollection.SelectedItems);
-            if (!RightCollection.SelectedItems.Contains(item))
-            {
-                RightCollection.SelectedItems.Add(item);
-            }
-        }
+                    viewModel.DroppedFiles = RightCollection.SelectedItems.Cast<Item>();
+                    foreach (var debugItem in viewModel.DroppedFiles)
+                    {
+                        System.Diagnostics.Debug.WriteLine(debugItem.ToString());
+                    }
+
+                    e.Data.Properties.Add("files", RightCollection.SelectedItems);
+                    if (!RightCollection.SelectedItems.Contains(item))
+                    {
+                        RightCollection.SelectedItems.Add(item);
+                    }
+                }
     }
 
     void OnItemDrop(object sender, DropEventArgs e)
@@ -277,7 +276,8 @@ public partial class FileOverviewPage : ContentPage
                     // Ensure that the file is not null and the target path is valid
                     if (file != null && !string.IsNullOrEmpty(targetPath))
                     {
-                        MoveFile(file, targetPath);
+                        //TODO: Needs to be connected to popups (@Monique).
+                        //MoveFile(file, targetPath);
                     }
                 }
 

@@ -36,7 +36,7 @@
                     <!-- Content for the right ScrollView -->
                     <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
                         <CollectionView.GestureRecognizers>
-                            <DropGestureRecognizer Drop="FileDrop" />
+                            <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
                         </CollectionView.GestureRecognizers>
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
@@ -48,7 +48,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
@@ -127,7 +127,7 @@
                 <!-- Content for the right ScrollView -->
                     <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand" >
                         <CollectionView.GestureRecognizers>
-                            <DropGestureRecognizer Drop="FileDrop" />
+                            <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
                         </CollectionView.GestureRecognizers>
                         <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -139,7 +139,7 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <Grid.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
