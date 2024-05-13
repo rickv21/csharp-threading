@@ -4,6 +4,10 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Input;
+using Microsoft.VisualBasic.FileIO;
+using System.Windows;
+using System.Security;
+using Windows.ApplicationModel.VoiceCommands;
 
 namespace FileManager.ViewModels
 {
@@ -133,24 +137,31 @@ namespace FileManager.ViewModels
         {
             ObservableCollection<Item> sortedItems = [];
             Item folder = files.FirstOrDefault(file => file.FileName.Equals("..."));
-
-            if (isAscending)
+            if (files.Count > 1)
             {
-                sortedItems = new ObservableCollection<Item>(files
-                  .Where(file => file.FileName != "...")
-                  .OrderBy(file => file.LastEdited));
-                DateText = "Date v";
+                if (isAscending)
+                {
+                    sortedItems = new ObservableCollection<Item>(files
+                      .Where(file => file.FileName != "...")
+                      .OrderBy(file => file.LastEdited));
+                    DateText = "Date v";
+                }
+                else
+                {
+                    sortedItems = new ObservableCollection<Item>(files
+                     .Where(file => file.FileName != "...")
+                     .OrderByDescending(file => file.LastEdited));
+                    DateText = "Date ^";
+                }
+                FileNameText = "Filename";
+                InfoText = "Info";
+                SizeText = "Size";
             }
             else
             {
                 sortedItems = new ObservableCollection<Item>(files
-                 .Where(file => file.FileName != "...")
-                 .OrderByDescending(file => file.LastEdited));
-                DateText = "Date ^";
+                    .Where(file => file.FileName != "..."));
             }
-            FileNameText = "Filename";
-            InfoText = "Info";
-            SizeText = "Size";
 
             if (folder != null)
             {
@@ -186,25 +197,35 @@ namespace FileManager.ViewModels
         {
             ObservableCollection<Item> sortedItems = [];
             Item folder = files.FirstOrDefault(file => file.FileName.Equals("..."));
-
-            if (isAscending)
+            if (files.Count > 1)
             {
-                sortedItems = new ObservableCollection<Item>(files
-                   .Where(file => file.FileName != "...")
-                   .OrderBy(file => file.Size));
-                SizeText = "Size v";
+                if (isAscending)
+                {
+                    sortedItems = new ObservableCollection<Item>(files
+                       .Where(file => file.FileName != "...")
+                       .OrderBy(file => file.Size));
+                    SizeText = "Size v";
+                }
+                else
+                {
+                    sortedItems = new ObservableCollection<Item>(files
+                       .Where(file => file.FileName != "...")
+                       .OrderByDescending(file => file.Size));
+                    SizeText = "Size ^";
+                }
+                FileNameText = "Filename";
+                InfoText = "Info";
+                DateText = "Date";
             }
             else
             {
                 sortedItems = new ObservableCollection<Item>(files
-                   .Where(file => file.FileName != "...")
-                   .OrderByDescending(file => file.Size));
-                SizeText = "Size ^";
+                    .Where(file => file.FileName != "..."));
             }
             FileNameText = "Filename";
             InfoText = "Info";
             DateText = "Date";
-
+            
             if (folder != null)
             {
                 sortedItems.Insert(0, folder);
@@ -248,6 +269,11 @@ namespace FileManager.ViewModels
         private ObservableCollection<Item> GetSortedItems(ObservableCollection<Item> files, string labelText)
         {
             bool isSorted = IsSortedOnAlphabeticalLabel(files, labelText);
+            if (files.Count <= 1)
+            {
+                return new ObservableCollection<Item>(files
+                      .Where(file => file.FileName != "..."));
+            }
 
             if (!isSorted)
             {
@@ -291,8 +317,8 @@ namespace FileManager.ViewModels
                         .OrderBy(file => file.FileInfo));
                 }
             }
-
-            return new ObservableCollection<Item>(files);
+            // Should be unreachable
+            throw new Exception("Something went wrong");
         }
 
         private ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files, string labelText)
@@ -507,7 +533,6 @@ namespace FileManager.ViewModels
                 }
                 IsLoading = false;
             });
-
         }
 
         private async Task FillList(DirectoryInfo d)
@@ -537,9 +562,14 @@ namespace FileManager.ViewModels
                 {
                     // It's a directory
                     DirectoryInfo dirInfo = new DirectoryInfo(dir.FullName);
+                    DateTime lastEditDirectory = DateTime.MinValue;
+                    if (dirInfo.LastWriteTime != DateTime.MinValue)
+                    {
+                        lastEditDirectory = dirInfo.LastWriteTime;
+                    }
                     Debug.WriteLine(dir.FullName);
 
-                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, _side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), ItemType.Dir));
+                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
                 }));
 
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
@@ -583,6 +613,90 @@ namespace FileManager.ViewModels
                 CurrentPath = _previousPath;
                 await FillList(directoryInfo);
             }
+        }
+
+        public void RefreshFiles()
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPath);
+            _files.Clear();
+            FillList(directoryInfo);
+        }
+
+        public async void DeleteItem()
+        {
+            if (SelectedItems == null || SelectedItems.Count == 0)
+            {
+                // No items selected, return early
+                return;
+            }
+
+            var itemsToDelete = SelectedItems.Cast<Item>().ToList();
+
+            foreach (var item in itemsToDelete)
+            {
+                try
+                {
+                    // Show a confirmation MessageBox
+                    Task<bool> result = Shell.Current.DisplayAlert("Confirmation", "Are you sure you want to delete " + item.FileName + "? ", "OK", "Cancel");
+
+                    if (await result)
+                    {
+                        if (item is FileItem fileItem)
+                        {
+                            // Delete the file
+                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(fileItem.FilePath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                        }
+                        else if (item is DirectoryItem directoryItem)
+                        {
+                            // Delete the directory
+                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(directoryItem.FilePath, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                        }
+
+                        // Remove the item from the Files collection
+                        Files.Remove(item);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage;
+
+                    switch (ex)
+                    {
+                        case ArgumentException:
+                            errorMessage = "The path is a zero-length string, is malformed, contains only white space, or contains invalid characters (including wildcard characters). The path is a device path (starts with \\\\.\\).";
+                            break;
+                        case DirectoryNotFoundException:
+                            errorMessage = "The directory does not exist or is a file.";
+                            break;
+                        case IOException:
+                            errorMessage = "A file in the directory or subdirectory is in use.";
+                            break;
+                        case NotSupportedException:
+                            errorMessage = "The directory name contains a colon (:).";
+                            break;
+                        case SecurityException:
+                            errorMessage = "The user does not have required permissions.";
+                            break;
+                        case OperationCanceledException:
+                            errorMessage = "The user cancels the operation or the directory cannot be deleted.";
+                            break;
+                        default:
+                            errorMessage = "An unexpected error occurred while deleting the item.";
+                            break;
+                    }
+
+                    ShowErrorMessageBox(errorMessage, ex.Message);
+
+                }
+
+                // Clear the SelectedItems collection
+                SelectedItems.Clear();
+            }
+        }
+
+        private void ShowErrorMessageBox(string message, string details)
+        {
+            MessageBox.Show($"{message}\n\nDetails: {details}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 }
