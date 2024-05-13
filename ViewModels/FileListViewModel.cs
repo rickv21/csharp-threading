@@ -1,31 +1,29 @@
 ﻿using FileManager.Models;
-using Microsoft.Maui.Storage;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.VisualBasic.FileIO;
 using System.Windows;
 using System.Security;
-using Windows.ApplicationModel.VoiceCommands;
 
 namespace FileManager.ViewModels
 {
     public class FileListViewModel : ViewModelBase
     {
         private ObservableCollection<Item> _files;
-        private String _currentPath;
-        private String previousPath;
-        private ConcurrentDictionary<string, byte[]> _fileIconCache;
-        private readonly short side;
+        private string _currentPath;
+        private string _previousPath;
+        private readonly ConcurrentDictionary<string, byte[]> _fileIconCache;
+        private readonly short _side;
         private IList<object> _selectedItems;
+        private bool _isLoading;
+
+        private string _fileNameText;
+        private string _infoText;
+        private string _sizeText;
+        private string _dateText;
 
         public ObservableCollection<Item> Files
         {
@@ -53,11 +51,9 @@ namespace FileManager.ViewModels
             {
                 _currentPath = value;
                 OnPropertyChanged(nameof(CurrentPath));
-                // PathChanged(value);
             }
         }
 
-        private bool _isLoading;
         public bool IsLoading
         {
             get { return _isLoading; }
@@ -68,15 +64,11 @@ namespace FileManager.ViewModels
             }
         }
 
-        private string _fileNameText;
-
         public string FileNameText
         {
             get { return _fileNameText; }
             set { _fileNameText = value; OnPropertyChanged(nameof(FileNameText)); }
         }
-
-        private string _infoText;
 
         public string InfoText
         {
@@ -84,15 +76,11 @@ namespace FileManager.ViewModels
             set { _infoText = value; OnPropertyChanged(nameof(InfoText)); }
         }
 
-        private string _sizeText;
-
         public string SizeText
         {
             get { return _sizeText; }
             set { _sizeText = value; OnPropertyChanged(nameof(SizeText)); }
         }
-
-        private string _dateText;
 
         public string DateText
         {
@@ -104,24 +92,31 @@ namespace FileManager.ViewModels
         public ICommand PathChangedCommand { get; }
         public ICommand SortFilesCommand { get; }
         public ICommand SortFilesOnSizeCommand { get; }
-        public ICommand SortFilesOnDateCommand {  get; }
-
+        public ICommand SortFilesOnDateCommand { get; }
 
         public FileListViewModel(ConcurrentDictionary<string, byte[]> fileIconCache, short side)
         {
-            this.side = side;
+            _side = side;
             SortFilesCommand = new Command<string>(SortFilesAlphabetically);
             SortFilesOnSizeCommand = new Command(SortFilesOnSize);
             SortFilesOnDateCommand = new Command(SortFilesOnDate);
-            _files = new ObservableCollection<Item>();
+            Files = [];
             _fileIconCache = fileIconCache;
-            CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            DirectoryInfo d = new DirectoryInfo(_currentPath);
-            SelectedItems = new ObservableCollection<object>();
-            ItemDoubleTappedCommand = new Command<Item>(OpenItem);
+            _previousPath = "";
+            FileNameText = "Filename";
+            InfoText = "Info";
+            SizeText = "Size";
+            SelectedItems = [];
+            ItemDoubleTappedCommand = new Command<Item>(async (item) => await OpenItemAsync(item));
+            //Run when path textfield is changed in the UI.
             PathChangedCommand = new Command<string>(PathChanged);
 
-            Task.Run(() => FillList(d));
+            //Set the current path to the user's documents folder.
+            CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            ; DirectoryInfo d = new(_currentPath);
+
+
+            Task.Run(async () => await FillList(d));
         }
 
         private static bool IsSortedOnDate(ObservableCollection<Item> files)
@@ -177,6 +172,10 @@ namespace FileManager.ViewModels
 
         private void SortFilesOnDate()
         {
+            if (IsLoading)
+            {
+                return;
+            }
             Files = SortFileDates(_files, IsSortedOnDate(_files));
         }
 
@@ -222,7 +221,10 @@ namespace FileManager.ViewModels
                 sortedItems = new ObservableCollection<Item>(files
                     .Where(file => file.FileName != "..."));
             }
-
+            FileNameText = "Filename";
+            InfoText = "Info";
+            DateText = "Date";
+            
             if (folder != null)
             {
                 sortedItems.Insert(0, folder);
@@ -233,6 +235,10 @@ namespace FileManager.ViewModels
 
         private void SortFilesOnSize()
         {
+            if (IsLoading)
+            {
+                return;
+            }
             Files = SortFileSizes(_files, IsSortedOnSize(_files));
         }
 
@@ -331,16 +337,31 @@ namespace FileManager.ViewModels
 
         private void SortFilesAlphabetically(string labelText)
         {
+            if (IsLoading)
+            {
+                return;
+            }
             Files = SortFileNames(_files, labelText);
         }
 
         public void HandleClick(string key)
         {
+            if (IsLoading)
+            {
+                //Failsafe, allows the user to cancel the loading process in case it gets stuck.
+                if(key == "escape")
+                {
+                    IsLoading = false;
+                    CurrentPath = _previousPath;
+                    Task.Run(RefreshAsync);
+                }
+                return;
+            }
             switch (key)
             {
                 case "f5":
                     //Refresh
-                    Refresh();
+                    Task.Run(RefreshAsync);
                     return;
                 case "f6":
                     //Copy
@@ -364,13 +385,13 @@ namespace FileManager.ViewModels
                     {
                         return;
                     }
-                    OpenItem(new DirectoryItem("...", "", 0, side, false, null, ItemType.TopDir));
+                    Task.Run(async () => await OpenItemAsync(new DirectoryItem("...", "", 0, _side, false, null, ItemType.TopDir)));
                     return;
                 case "enter":
                 case "numpadenter":
                     if (SelectedItems.Count != 1) return;
                     Debug.WriteLine(SelectedItems[0]);
-                    OpenItem((Item)SelectedItems[0]);
+                    Task.Run(async () => await OpenItemAsync((Item)SelectedItems[0]));
                     return;
             }
         }
@@ -381,7 +402,7 @@ namespace FileManager.ViewModels
         }
 
 
-        public void Refresh()
+        public async Task RefreshAsync()
         {
             Debug.WriteLine("Refresh.");
             if (CurrentPath == "")
@@ -390,7 +411,7 @@ namespace FileManager.ViewModels
                 return;
             }
             DirectoryInfo d = new DirectoryInfo(CurrentPath);
-            FillList(d);
+            await FillList(d);
         }
 
         public async Task<ImageSource> GetFileIcon(string filePath)
@@ -433,30 +454,28 @@ namespace FileManager.ViewModels
             DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPath);
             if (_files == null)
             {
-
-                // previousPath = _currentPath;
+                //Debug to check if this is ever hit.
+                Debug.Assert(false, "Files is null in PathChanged.");
                 return;
             }
             if (!Directory.Exists(directoryInfo.FullName))
             {
-                CurrentPath = previousPath;
+                AppShell.Current.DisplayAlert("Invalid location", "This path does not exist!", "OK");
+                CurrentPath = _previousPath;
                 return;
             }
-            _files.Clear();
-            FillList(directoryInfo);
+            Task.Run(async () => await FillList(directoryInfo));
         }
 
 
-        public void OpenItem(Item item)
+        public async Task OpenItemAsync(Item item)
         {
             Debug.WriteLine("Testing - " + item.FilePath);
             if (item is DirectoryItem)
             {
                 if (item.FileName == "...")
                 {
-                    IsLoading = true;
-
-                    DirectoryInfo directoryInfo = Directory.GetParent(_currentPath);
+                    DirectoryInfo directoryInfo = Directory.GetParent(CurrentPath);
 
                     if (directoryInfo == null)
                     {
@@ -465,21 +484,22 @@ namespace FileManager.ViewModels
                     }
 
                     CurrentPath = directoryInfo.FullName;
-                    previousPath = _currentPath;
-                    _files.Clear();
-                    FillList(directoryInfo);
+                    _previousPath = CurrentPath;
+                    await FillList(directoryInfo);
                     return;
                 }
                 if (Directory.Exists(item.FilePath))
                 {
-                    IsLoading = true;
                     Debug.WriteLine("Exists");
                     // If the item is a folder, update the Files collection to show the contents of the folder
                     DirectoryInfo directoryInfo = new DirectoryInfo(item.FilePath);
                     CurrentPath = item.FilePath;
-                    //previousPath = _currentPath;
-                    _files.Clear();
-                    FillList(directoryInfo);
+                    await FillList(directoryInfo);
+                    return;
+                } else
+                {
+                    await AppShell.Current.DisplayAlert("Invalid location", "This folder does not exist anymore!", "OK");
+                    await RefreshAsync();
                     return;
                 }
             }
@@ -492,25 +512,46 @@ namespace FileManager.ViewModels
 
         private void FillDriveList()
         {
-            _files.Clear();
-            CurrentPath = "";
-            previousPath = _currentPath;
-            DriveInfo[] allDrives = DriveInfo.GetDrives();
-            foreach (DriveInfo drive in allDrives)
+            if (IsLoading)
             {
-                string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalSize - drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
-                //string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
-                _files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat, null));
+                return;
             }
-            IsLoading = false;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                IsLoading = true;
+                Files.Clear();
+                CurrentPath = "";
+                _previousPath = CurrentPath;
+                DriveInfo[] allDrives = DriveInfo.GetDrives();
+                foreach (DriveInfo drive in allDrives)
+                {
+                    // Check if this is needed
+                    string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalSize - drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
+                    //string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
+                    Files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, _side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat, null));
+                }
+                IsLoading = false;
+            });
         }
 
         private async Task FillList(DirectoryInfo d)
         {
-            MainThread.BeginInvokeOnMainThread(() => IsLoading = true);
+            if (IsLoading)
+            {
+                return;
+            }
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                IsLoading = true;
+                Files.Clear();
+                SelectedItems.Clear();
+                FileNameText = "Filename";
+                InfoText = "Info";
+                SizeText = "Size";
+                DateText = "Date";
+            });
             await Task.Delay(100); //Is needed for the loading indicator to function.
-            _files.Clear();
-            _files.Add(new DirectoryItem("...", "", 0, side, false, null, ItemType.TopDir));
             try
             {
 
@@ -527,7 +568,7 @@ namespace FileManager.ViewModels
                     }
                     Debug.WriteLine(dir.FullName);
 
-                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
+                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, _side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
                 }));
 
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
@@ -537,37 +578,39 @@ namespace FileManager.ViewModels
                     DateTime lastEdit = DateTime.MinValue;
                     if (fileInfo.LastWriteTime != DateTime.MinValue)
                     {
-                       lastEdit = fileInfo.LastWriteTime;
+                        lastEdit = fileInfo.LastWriteTime;
                     }
-                   
+
                     var icon = await GetFileIcon(fileInfo.FullName);
 
-                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEdit));
+                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, _side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEdit));
                 }));
 
-                foreach (var item in fileSystemInfos
-                    .OrderBy(fsi => fsi is FileItem)
-                    .ThenBy(fsi => fsi.FileName))
+
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    _files.Add(item);
-                }
-                MainThread.BeginInvokeOnMainThread(() => IsLoading = false);
-                previousPath = CurrentPath;
-                FileNameText = "Filename";
-                InfoText = "Info";
-                SizeText = "Size";
-                DateText = "Date";
+                    Files.Add(new DirectoryItem("...", "", 0, _side, false, null, ItemType.TopDir));
+                    foreach (var item in fileSystemInfos.OrderBy(fsi => fsi is FileItem).ThenBy(fsi => fsi.FileName))
+                    {
+                        Files.Add(item);
+                    }
+
+                    IsLoading = false;
+                    _previousPath = CurrentPath;
+                });
+
+
             }
             catch (UnauthorizedAccessException e)
             {
-                //Check for no permission.
-                DirectoryInfo directoryInfo = new DirectoryInfo(previousPath);
-                CurrentPath = previousPath;
-                _files.Clear();
-                FillList(directoryInfo);
-
-                //TODO: Popup here!!
-                Debug.WriteLine("No permission!");
+                await AppShell.Current.DisplayAlert("No permission", "You do not have permission to access this folder.", "OK");
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    IsLoading = false;
+                });
+                DirectoryInfo directoryInfo = new DirectoryInfo(_previousPath);
+                CurrentPath = _previousPath;
+                await FillList(directoryInfo);
             }
         }
 
@@ -582,6 +625,7 @@ namespace FileManager.ViewModels
         {
             if (SelectedItems == null || SelectedItems.Count == 0)
             {
+                Debug.WriteLine("No items selected.");
                 // No items selected, return early
                 return;
             }

@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -39,7 +37,7 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
-    private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new ConcurrentDictionary<string, byte[]>();
+    private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new();
 
     private int _activeSide;
 
@@ -133,6 +131,7 @@ public class FileOverviewViewModel : ViewModelBase
             RightSideViewModel.HandleClick(key);
         }
     }
+
 
     public void UpdateSelected(IList<object> leftSelectedItems, IList<object> rightSelectedItems)
     {

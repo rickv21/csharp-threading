@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
     public static class FileUtil
     {
@@ -18,7 +12,7 @@ namespace FileManager
             {
                 if (bytes > max)
                 {
-                    return string.Format("{0:##.##} {1}", decimal.Divide(bytes, (decimal)max), order);
+                    return string.Format("{0:##.##} {1}", decimal.Divide(bytes, max), order);
                 }
 
                 if (max == 1)

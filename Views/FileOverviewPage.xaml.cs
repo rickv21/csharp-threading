@@ -11,6 +11,8 @@ using FileManager.ViewModels;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.StartScreen;
 using SharpHook;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace FileManager.Views;
 
@@ -26,7 +28,7 @@ public partial class FileOverviewPage : ContentPage
         InitializeComponent();
         viewModel = new FileOverviewViewModel();
         BindingContext = viewModel;
-        RegisterKeybindingsAsync();
+        Task.Run(() => RegisterKeybindingsAsync());
     }
 
     private async Task RegisterKeybindingsAsync()
@@ -63,8 +65,8 @@ public partial class FileOverviewPage : ContentPage
             e.SuppressEvent = true;
         }
 
-        //Ignore enter if path field is focused.
-        if ((key == "enter" || key == "numpadenter" || key == "backspace"))
+        //Ignore enter and backspace if path entry field is focused.
+        if ((key == "enter" || key == "numpadenter") || key == "backspace")
         {
             if (viewModel.ActiveSide == 0)
             {
@@ -95,7 +97,7 @@ public partial class FileOverviewPage : ContentPage
         {
             return;
         }
-        
+
         if (item.Side == 0)
         {
             //Left side.
@@ -152,19 +154,15 @@ public partial class FileOverviewPage : ContentPage
             {
                 LeftCollection.SelectedItems.Add(item);
             }
-
+            
             viewModel.DroppedFiles = LeftCollection.SelectedItems.Cast<Item>();
-          foreach (var debugItem in viewModel.DroppedFiles)
-            {
+           foreach (var debugItem in viewModel.DroppedFiles)
+              {
                 System.Diagnostics.Debug.WriteLine(debugItem.ToString());
             }
-           
+
              // e.Data.Properties.Add("files", viewModel.DroppedFiles);  
               e.Data.Properties.Add("files", LeftCollection.SelectedItems);
-              if (!LeftCollection.SelectedItems.Contains(item))
-              {
-                  LeftCollection.SelectedItems.Add(item);
-              }
 
         }
                 else if (item.Side == 1)
@@ -182,10 +180,6 @@ public partial class FileOverviewPage : ContentPage
                     }
 
                     e.Data.Properties.Add("files", RightCollection.SelectedItems);
-                    if (!RightCollection.SelectedItems.Contains(item))
-                    {
-                        RightCollection.SelectedItems.Add(item);
-                    }
                 }
     }
 
@@ -209,7 +203,7 @@ public partial class FileOverviewPage : ContentPage
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
         if (item.Text == "Refresh")
         {
-            viewModel.RightSideViewModel.Refresh();
+            Task.Run(() => viewModel.RightSideViewModel.RefreshAsync());
         }
         else if (item.Text == "Rename")
         {
@@ -241,7 +235,7 @@ public partial class FileOverviewPage : ContentPage
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
         if (item.Text == "Refresh")
         {
-            viewModel.LeftSideViewModel.Refresh();
+            Task.Run(() => viewModel.LeftSideViewModel.RefreshAsync());
         }
         else if (item.Text == "Rename")
         {
