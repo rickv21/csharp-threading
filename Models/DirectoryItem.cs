@@ -10,10 +10,11 @@ namespace FileManager.Models
     {
         public int ItemCount { get; set; }
 
-        public DirectoryItem(string fileName, string filePath, int itemCount, short side, Boolean hidden, ItemType type = ItemType.Dir) : base(fileName, filePath, type == ItemType.Drive ? "drive_icon.png" : "folder_icon.png", side, hidden)
+        public DirectoryItem(string fileName, string filePath, int itemCount, short side, bool hidden, DateTime? lastEdited, ItemType type = ItemType.Dir) : base(fileName, filePath, type == ItemType.Drive ? "drive_icon.png" : "folder_icon.png", side, hidden)
         {
             ItemCount = itemCount;
             Type = type;
+            LastEdited = lastEdited;
         }
 
         public override string ToString()

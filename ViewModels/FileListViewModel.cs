@@ -33,6 +33,7 @@ namespace FileManager.ViewModels
             set
             {
                 _files = value;
+                OnPropertyChanged(nameof(Files));
             }
         }
 
@@ -67,13 +68,51 @@ namespace FileManager.ViewModels
             }
         }
 
+        private string _fileNameText;
+
+        public string FileNameText
+        {
+            get { return _fileNameText; }
+            set { _fileNameText = value; OnPropertyChanged(nameof(FileNameText)); }
+        }
+
+        private string _infoText;
+
+        public string InfoText
+        {
+            get { return _infoText; }
+            set { _infoText = value; OnPropertyChanged(nameof(InfoText)); }
+        }
+
+        private string _sizeText;
+
+        public string SizeText
+        {
+            get { return _sizeText; }
+            set { _sizeText = value; OnPropertyChanged(nameof(SizeText)); }
+        }
+
+        private string _dateText;
+
+        public string DateText
+        {
+            get { return _dateText; }
+            set { _dateText = value; OnPropertyChanged(nameof(DateText)); }
+        }
+
         public ICommand ItemDoubleTappedCommand { get; }
         public ICommand PathChangedCommand { get; }
+        public ICommand SortFilesCommand { get; }
+        public ICommand SortFilesOnSizeCommand { get; }
+        public ICommand SortFilesOnDateCommand {  get; }
 
 
         public FileListViewModel(ConcurrentDictionary<string, byte[]> fileIconCache, short side)
         {
             this.side = side;
+            SortFilesCommand = new Command<string>(SortFilesAlphabetically);
+            SortFilesOnSizeCommand = new Command(SortFilesOnSize);
+            SortFilesOnDateCommand = new Command(SortFilesOnDate);
             _files = new ObservableCollection<Item>();
             _fileIconCache = fileIconCache;
             CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -83,6 +122,216 @@ namespace FileManager.ViewModels
             PathChangedCommand = new Command<string>(PathChanged);
 
             Task.Run(() => FillList(d));
+        }
+
+        private static bool IsSortedOnDate(ObservableCollection<Item> files)
+        {
+            for (int i = 1; i < files.Count; i++)
+            {
+                if (files[i].LastEdited < files[i - 1].LastEdited)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private ObservableCollection<Item> SortFileDates(ObservableCollection<Item> files, bool isAscending)
+        {
+            ObservableCollection<Item> sortedItems = [];
+            Item folder = files.FirstOrDefault(file => file.FileName.Equals("..."));
+            if (files.Count > 1)
+            {
+                if (isAscending)
+                {
+                    sortedItems = new ObservableCollection<Item>(files
+                      .Where(file => file.FileName != "...")
+                      .OrderBy(file => file.LastEdited));
+                    DateText = "Date v";
+                }
+                else
+                {
+                    sortedItems = new ObservableCollection<Item>(files
+                     .Where(file => file.FileName != "...")
+                     .OrderByDescending(file => file.LastEdited));
+                    DateText = "Date ^";
+                }
+                FileNameText = "Filename";
+                InfoText = "Info";
+                SizeText = "Size";
+            }
+            else
+            {
+                sortedItems = new ObservableCollection<Item>(files
+                    .Where(file => file.FileName != "..."));
+            }
+
+            if (folder != null)
+            {
+                sortedItems.Insert(0, folder);
+            }
+
+            return sortedItems;
+        }
+
+        private void SortFilesOnDate()
+        {
+            Files = SortFileDates(_files, IsSortedOnDate(_files));
+        }
+
+        private static bool IsSortedOnSize(ObservableCollection<Item> files)
+        {
+            for (int i = 1; i < files.Count; i++)
+            {
+                if (files[i].Size < files[i - 1].Size)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private ObservableCollection<Item> SortFileSizes(ObservableCollection<Item> files, bool isAscending)
+        {
+            ObservableCollection<Item> sortedItems = [];
+            Item folder = files.FirstOrDefault(file => file.FileName.Equals("..."));
+            if (files.Count > 1)
+            {
+                if (isAscending)
+                {
+                    sortedItems = new ObservableCollection<Item>(files
+                       .Where(file => file.FileName != "...")
+                       .OrderBy(file => file.Size));
+                    SizeText = "Size v";
+                }
+                else
+                {
+                    sortedItems = new ObservableCollection<Item>(files
+                       .Where(file => file.FileName != "...")
+                       .OrderByDescending(file => file.Size));
+                    SizeText = "Size ^";
+                }
+                FileNameText = "Filename";
+                InfoText = "Info";
+                DateText = "Date";
+            }
+            else
+            {
+                sortedItems = new ObservableCollection<Item>(files
+                    .Where(file => file.FileName != "..."));
+            }
+
+            if (folder != null)
+            {
+                sortedItems.Insert(0, folder);
+            }
+
+            return sortedItems;
+        }
+
+        private void SortFilesOnSize()
+        {
+            Files = SortFileSizes(_files, IsSortedOnSize(_files));
+        }
+
+        private static bool IsSortedOnAlphabeticalLabel(ObservableCollection<Item> files, string labelText)
+        {
+            for (int i = 1; i < files.Count; i++)
+            {
+                if (labelText.Contains("Filename"))
+                {
+                    if (string.Compare(files[i].FileName, files[i - 1].FileName, StringComparison.CurrentCultureIgnoreCase) < 0)
+                    {
+                        return true;
+                    }
+                }
+                else if (labelText.Contains("Info"))
+                {
+                    if (string.Compare(files[i].FileInfo, files[i - 1].FileInfo, StringComparison.InvariantCultureIgnoreCase) < 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private ObservableCollection<Item> GetSortedItems(ObservableCollection<Item> files, string labelText)
+        {
+            bool isSorted = IsSortedOnAlphabeticalLabel(files, labelText);
+            if (files.Count <= 1)
+            {
+                return new ObservableCollection<Item>(files
+                      .Where(file => file.FileName != "..."));
+            }
+
+            if (!isSorted)
+            {
+                DateText = "Date";
+                SizeText = "Size";
+                if (labelText.Contains("Filename"))
+                {
+                    FileNameText = "Filename ^";
+                    InfoText = "Info";
+                    return new ObservableCollection<Item>(files
+                        .Where(file => file.FileName != "...")
+                        .OrderByDescending(file => file.FileName));
+                }
+                else if (labelText.Contains("Info"))
+                {
+                    InfoText = "Info ^";
+                    FileNameText = "Filename";
+                    return new ObservableCollection<Item>(files
+                        .Where(file => file.FileName != "...")
+                        .OrderByDescending(file => file.FileInfo));
+                }
+            }
+            else
+            {
+                DateText = "Date";
+                SizeText = "Size";
+                if (labelText.Contains("Filename"))
+                {
+                    FileNameText = "Filename v";
+                    InfoText = "Info";
+                    return new ObservableCollection<Item>(files
+                        .Where(file => file.FileName != "...")
+                        .OrderBy(file => file.FileName));
+                }
+                else if (labelText.Contains("Info"))
+                {
+                    InfoText = "Info v";
+                    FileNameText = "Filename";
+                    return new ObservableCollection<Item>(files
+                        .Where(file => file.FileName != "...")
+                        .OrderBy(file => file.FileInfo));
+                }
+            }
+            // Should be unreachable
+            throw new Exception("Something went wrong");
+        }
+
+        private ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files, string labelText)
+        {
+            bool isSorted = IsSortedOnAlphabeticalLabel(files, labelText);
+            Item folder = files.FirstOrDefault(file => file.FileName.Equals("..."));
+
+            ObservableCollection<Item> sortedItemsExcludingFolder = GetSortedItems(files, labelText);
+
+            if (folder != null)
+            {
+                sortedItemsExcludingFolder.Insert(0, folder);
+            }
+
+            return sortedItemsExcludingFolder;
+        }
+
+        private void SortFilesAlphabetically(string labelText)
+        {
+            Files = SortFileNames(_files, labelText);
         }
 
         public void HandleClick(string key)
@@ -115,7 +364,7 @@ namespace FileManager.ViewModels
                     {
                         return;
                     }
-                    OpenItem(new DirectoryItem("...", "", 0, side, false, ItemType.TopDir));
+                    OpenItem(new DirectoryItem("...", "", 0, side, false, null, ItemType.TopDir));
                     return;
                 case "enter":
                 case "numpadenter":
@@ -249,9 +498,9 @@ namespace FileManager.ViewModels
             DriveInfo[] allDrives = DriveInfo.GetDrives();
             foreach (DriveInfo drive in allDrives)
             {
-                Debug.WriteLine(drive.Name);
-                string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
-                _files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat));
+                string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalSize - drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
+                //string size = FileUtil.ConvertBytesToHumanReadable(drive.TotalFreeSpace) + " / " + FileUtil.ConvertBytesToHumanReadable(drive.TotalSize);
+                _files.Add(new DriveItem(drive.Name + " - " + drive.VolumeLabel, drive.Name, side, size, (drive.DriveType == DriveType.Fixed ? "Drive" : drive.DriveType) + " --- " + drive.DriveFormat, null));
             }
             IsLoading = false;
         }
@@ -261,7 +510,7 @@ namespace FileManager.ViewModels
             MainThread.BeginInvokeOnMainThread(() => IsLoading = true);
             await Task.Delay(100); //Is needed for the loading indicator to function.
             _files.Clear();
-            _files.Add(new DirectoryItem("...", "", 0, side, false, ItemType.TopDir));
+            _files.Add(new DirectoryItem("...", "", 0, side, false, null, ItemType.TopDir));
             try
             {
 
@@ -271,20 +520,29 @@ namespace FileManager.ViewModels
                 {
                     // It's a directory
                     DirectoryInfo dirInfo = new DirectoryInfo(dir.FullName);
-                    // Debug.WriteLine(dir.FullName);
+                    DateTime lastEditDirectory = DateTime.MinValue;
+                    if (dirInfo.LastWriteTime != DateTime.MinValue)
+                    {
+                        lastEditDirectory = dirInfo.LastWriteTime;
+                    }
+                    Debug.WriteLine(dir.FullName);
 
-                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), ItemType.Dir));
+                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
                 }));
 
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
                 {
                     FileInfo fileInfo = new FileInfo(file.FullName);
-                    string size = FileUtil.ConvertBytesToHumanReadable(fileInfo.Length);
-
-
+                    long size = fileInfo.Length;
+                    DateTime lastEdit = DateTime.MinValue;
+                    if (fileInfo.LastWriteTime != DateTime.MinValue)
+                    {
+                       lastEdit = fileInfo.LastWriteTime;
+                    }
+                   
                     var icon = await GetFileIcon(fileInfo.FullName);
 
-                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden)));
+                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEdit));
                 }));
 
                 foreach (var item in fileSystemInfos
@@ -295,6 +553,10 @@ namespace FileManager.ViewModels
                 }
                 MainThread.BeginInvokeOnMainThread(() => IsLoading = false);
                 previousPath = CurrentPath;
+                FileNameText = "Filename";
+                InfoText = "Info";
+                SizeText = "Size";
+                DateText = "Date";
             }
             catch (UnauthorizedAccessException e)
             {
@@ -305,7 +567,7 @@ namespace FileManager.ViewModels
                 FillList(directoryInfo);
 
                 //TODO: Popup here!!
-                System.Diagnostics.Debug.WriteLine("No permission!");
+                Debug.WriteLine("No permission!");
             }
         }
 

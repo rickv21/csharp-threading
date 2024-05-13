@@ -95,6 +95,7 @@ public partial class FileOverviewPage : ContentPage
         {
             return;
         }
+        
         if (item.Side == 0)
         {
             //Left side.
@@ -128,7 +129,6 @@ public partial class FileOverviewPage : ContentPage
         }
 
         viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
- 
     }
 
 
