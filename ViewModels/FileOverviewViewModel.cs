@@ -14,6 +14,7 @@ namespace FileManager.ViewModels;
 
 public class FileOverviewViewModel : ViewModelBase
 {
+    public static int MAX_THREADS = 255;
 
     private FileListViewModel _leftSideViewModel;
     public FileListViewModel LeftSideViewModel
@@ -80,6 +81,43 @@ public class FileOverviewViewModel : ViewModelBase
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
         ActiveSide = 0;
+    }
+
+    public async Task<string> SelectActionAsync()
+    {
+        return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Move");
+    }
+
+    public async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
+    {
+        string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Microsoft.Maui.Keyboard.Numeric);
+        if(int.Parse(number) > MAX_THREADS || int.Parse(number) < 1)
+        {
+            return (number, null);
+        }
+
+        if (isDir)
+        {
+            string directoryName = await Application.Current.MainPage.DisplayPromptAsync("Enter regex", $"Please enter a regex to select files to {action}:", "OK", "Cancel", null, maxLength: 100);
+
+            return (number, directoryName);
+        }
+
+        return (number, null);
+    }
+
+    public async Task ProcessActionAsync(string action, int number, string regex)
+    {
+        switch (action)
+        {
+            case "Move":
+                // Perform Move action based on 'number'
+                break;
+            case "Copy":
+                // Perform Copy action based on 'number'
+                break;
+        }
+
     }
 
     public void PassClickEvent(string key)
