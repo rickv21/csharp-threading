@@ -316,7 +316,7 @@ namespace FileManager.ViewModels
             FillList(directoryInfo);
         }
 
-        public void DeleteItem()
+        public async void DeleteItem()
         {
             if (SelectedItems == null || SelectedItems.Count == 0)
             {
@@ -331,9 +331,9 @@ namespace FileManager.ViewModels
                 try
                 {
                     // Show a confirmation MessageBox
-                    var result = MessageBox.Show($"Are you sure you want to delete '{item.FileName}'?", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                    Task<bool> result = Shell.Current.DisplayAlert("Confirmation", "Are you sure you want to delete " + item.FileName + "? ", "OK", "Cancel");
 
-                    if (result == MessageBoxResult.OK)
+                    if (await result)
                     {
                         if (item is FileItem fileItem)
                         {

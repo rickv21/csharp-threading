@@ -225,6 +225,7 @@ public partial class FileOverviewPage : ContentPage
             }
 
             viewModel.RightSideViewModel.DeleteItem();
+        }
         else if (item.Text == "Copy")
         {
             viewModel.CopyItems(RightCollection.SelectedItems.ToList());
@@ -249,13 +250,14 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Delete")
         {
-            if(LeftCollection.SelectedItems.Count == 0)
+            if (LeftCollection.SelectedItems.Count == 0)
             {
                 await DisplayAlert("Alert", "You have to select first to delete", "OK");
-                return; 
+                return;
             }
 
             viewModel.LeftSideViewModel.DeleteItem();
+        }
         else if (item.Text == "Copy")
         {
             viewModel.CopyItems(LeftCollection.SelectedItems.ToList());
