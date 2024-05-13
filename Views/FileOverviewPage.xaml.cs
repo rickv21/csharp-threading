@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using FileManager.Models;
 using FileManager.ViewModels;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.UI.StartScreen;
 using SharpHook;
 
 namespace FileManager.Views;
@@ -87,10 +89,10 @@ public partial class FileOverviewPage : ContentPage
     void OnItemTapped(object sender, EventArgs e)
     {
         var item = ((sender as Grid).BindingContext as Item);
-
         viewModel.ActiveSide = item.Side;
 
         if(item.Type == ItemType.Drive ||  item.Type == ItemType.TopDir)
+
         {
             return;
         }
@@ -128,7 +130,6 @@ public partial class FileOverviewPage : ContentPage
 
         viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
  
-
     }
 
 
@@ -145,8 +146,8 @@ public partial class FileOverviewPage : ContentPage
             return;
         }
 
-      
-        if(item.Side == 0)
+
+        if (item.Side == 0)
         {
             //Left side.
             foreach (var debugItem in LeftCollection.SelectedItems)
@@ -155,9 +156,13 @@ public partial class FileOverviewPage : ContentPage
             }
 
             e.Data.Properties.Add("files", LeftCollection.SelectedItems);
+            if (!LeftCollection.SelectedItems.Contains(item))
+            {
+                LeftCollection.SelectedItems.Add(item);
+            }
 
         }
-        else if(item.Side == 1)
+        else if (item.Side == 1)
         {
             //Right side.
             foreach (var debugItem in RightCollection.SelectedItems)
@@ -166,11 +171,30 @@ public partial class FileOverviewPage : ContentPage
             }
 
             e.Data.Properties.Add("files", RightCollection.SelectedItems);
+            if (!RightCollection.SelectedItems.Contains(item))
+            {
+                RightCollection.SelectedItems.Add(item);
+            }
         }
 
 
     }
 
+    void OnItemDrop(object sender, DropEventArgs e)
+    {
+        var droppedItems = e.Data.Properties["files"] as IList<object>;
+
+
+        if (droppedItems != null && droppedItems.Count > 0)
+        {
+            var itemList = droppedItems.OfType<Item>().ToList();
+
+            _ = OnItemDropAsync(itemList);
+        }
+
+    }
+    
+    
     private void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
@@ -197,7 +221,7 @@ public partial class FileOverviewPage : ContentPage
             viewModel.LeftSideViewModel.RenameItem(null, null);
         }
     }
-
+    
     //void OnCollectionViewSizeChanged(object sender, EventArgs e)
     //{
     //    // Replace YourCollectionViewName with the name of your CollectionView
@@ -205,4 +229,54 @@ public partial class FileOverviewPage : ContentPage
     //    RightCollection.ItemsSource = Files;
     //}
 
+    async Task OnItemDropAsync(IList<Item> items)
+    {
+        if(items.Count == 0)
+        {
+            return;
+        }
+        var needsRegex = false;
+        if (items.Count > 1)
+        {
+            needsRegex = true;
+        }
+        else if (items[0].Type == ItemType.Dir)
+        {
+            needsRegex = true;
+        }
+        
+        string action = await viewModel.SelectActionAsync();
+        if (action != null && action != "Cancel")
+        {
+            try
+            {
+                (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
+                var numnerOfThreads = userInput.Item1;
+                var regex = userInput.Item2;
+                if (userInput.Item1 != null)
+                {
+                    if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
+                    {
+                        await viewModel.ProcessActionAsync(action, number, regex);
+                    }
+                    else if (number < 1)
+                    {
+                        await DisplayAlert("Error", $"Number of threads must be 1 or more.", "OK");
+                    }
+                    else if (number > FileOverviewViewModel.MAX_THREADS)
+                    {
+                        await DisplayAlert("Error", $"Number of threads cannot exceed {FileOverviewViewModel.MAX_THREADS}.", "OK");
+                    }
+                    else
+                    {
+                        await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
+                    }
+                }
+            } catch (Exception e)
+            {
+                await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
+            }
+        }
+    }
 }
+
