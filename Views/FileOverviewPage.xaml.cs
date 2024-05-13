@@ -248,23 +248,33 @@ public partial class FileOverviewPage : ContentPage
         string action = await viewModel.SelectActionAsync();
         if (action != null && action != "Cancel")
         {
-            (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
-            var numnerOfThreads = userInput.Item1;
-            var regex = userInput.Item2;
-            if (userInput.Item1 != null)
+            try
             {
-                if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
+                (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
+                var numnerOfThreads = userInput.Item1;
+                var regex = userInput.Item2;
+                if (userInput.Item1 != null)
                 {
-                    await viewModel.ProcessActionAsync(action, number, regex);
+                    if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
+                    {
+                        await viewModel.ProcessActionAsync(action, number, regex);
+                    }
+                    else if (number < 1)
+                    {
+                        await DisplayAlert("Error", $"Number of threads must be 1 or more.", "OK");
+                    }
+                    else if (number > FileOverviewViewModel.MAX_THREADS)
+                    {
+                        await DisplayAlert("Error", $"Number of threads cannot exceed {FileOverviewViewModel.MAX_THREADS}.", "OK");
+                    }
+                    else
+                    {
+                        await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
+                    }
                 }
-                else if (number > FileOverviewViewModel.MAX_THREADS)
-                {
-                    await DisplayAlert("Error", $"Number of threads cannot exceed {FileOverviewViewModel.MAX_THREADS}.", "OK");
-                }
-                else
-                {
-                    await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
-                }
+            } catch (Exception e)
+            {
+                await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
             }
         }
     }
