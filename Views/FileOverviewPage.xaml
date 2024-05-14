@@ -2,10 +2,16 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FileManager.Views.FileOverviewPage"
-             xmlns:local="clr-namespace:FileManager.ViewModels">
+             xmlns:local="clr-namespace:FileManager.ViewModels"
+             xmlns:resources="clr-namespace:FileManager.Resources.Converters">
     <ContentPage.BindingContext>
         <local:FileOverviewViewModel />
     </ContentPage.BindingContext>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <resources:PickerConverter x:Key="PickerConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="50*" />
@@ -16,6 +22,11 @@
         <Border Grid.Column="0">
             <Grid>
                 <StackLayout BackgroundColor="#252526">
+                        <StackLayout Orientation="Horizontal">
+                        <Picker WidthRequest="550" ItemsSource="{Binding LeftSideViewModels}" ItemDisplayBinding="{Binding CurrentPath, Converter={StaticResource PickerConverter}}" SelectedItem="{Binding LeftSideViewModel}"/>
+                            <Button WidthRequest="80" HeightRequest="20" Text="Add" BackgroundColor="#4b4b4d" Clicked="AddLeftTab" TextColor="White"/>
+                            <Button WidthRequest="80" HeightRequest="20" Text="Remove" BackgroundColor="#4b4b4d" Clicked="RemoveLeftTab" TextColor="White"/>
+                        </StackLayout>
                     <Entry Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -29,12 +40,6 @@
                         <Label Text="Info" Grid.Column="2" />
                         <Label Text="Size" Grid.Column="3" />
                     </Grid>
-                    <StackLayout Orientation="Horizontal">
-                        <Picker WidthRequest="400" Title="TabPicker" ItemsSource="{Binding LeftSideViewModels}" ItemDisplayBinding="{Binding CurrentPath}" SelectedItem="{Binding LeftSideViewModel}" />
-                        <Button WidthRequest="80" HeightRequest="40" Text="Add" BackgroundColor="Gray" Clicked="AddLeftTab" />
-                        <Button WidthRequest="80" HeightRequest="40" Text="Remove" BackgroundColor="Gray" Clicked="RemoveLeftTab" />
-                    </StackLayout>
-
                     <!-- Add label here -->
 
                     <!-- Content for the right ScrollView -->
@@ -99,24 +104,24 @@
         <Border Grid.Column="1">
             <Grid>
             <StackLayout BackgroundColor="#252526">
-                    <Entry Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Label Text="" Grid.Column="0" />
-                    <Label Text="Filename" Grid.Column="1" />
-                    <Label Text="Info" Grid.Column="2" />
-                    <Label Text="Size" Grid.Column="3" />
-                    </Grid>
                     <StackLayout Orientation="Horizontal">
-                        <Picker WidthRequest="400" Title="TabPicker" ItemsSource="{Binding RightSideViewModels}" ItemDisplayBinding="{Binding CurrentPath}" SelectedItem="{Binding RightSideViewModel}" />
-                        <Button WidthRequest="80" HeightRequest="40" Text="Add" BackgroundColor="Gray" Clicked="AddRightTab" />
-                        <Button WidthRequest="80" HeightRequest="40" Text="Remove" BackgroundColor="Gray" Clicked="RemoveRightTab" />
+                        <Picker WidthRequest="550" ItemsSource="{Binding RightSideViewModels}" ItemDisplayBinding="{Binding CurrentPath, Converter={StaticResource PickerConverter}}" SelectedItem="{Binding RightSideViewModel}"/>
+                        <Button WidthRequest="80" HeightRequest="20" Text="Add" BackgroundColor="#4b4b4d" Clicked="AddRightTab" TextColor="White"/>
+                        <Button WidthRequest="80" HeightRequest="20" Text="Remove" BackgroundColor="#4b4b4d" Clicked="RemoveRightTab" TextColor="White"/>
                     </StackLayout>
+                    <Entry Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label Text="" Grid.Column="0" />
+                        <Label Text="Filename" Grid.Column="1" />
+                        <Label Text="Info" Grid.Column="2" />
+                        <Label Text="Size" Grid.Column="3" />
+                    </Grid>
 
                     <!-- Add label here -->
 

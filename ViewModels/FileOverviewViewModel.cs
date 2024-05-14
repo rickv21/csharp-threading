@@ -158,11 +158,19 @@ public class FileOverviewViewModel : ViewModelBase
     {
         if(side == 0)
         {
+            if(_leftSideViewModels.Count  <= 1)
+            {
+                return;
+            }
             LeftSideViewModels.Remove(LeftSideViewModel);
             LeftSideViewModel = LeftSideViewModels[0];
         }
         else
         {
+            if (_rightSideViewModels.Count <= 1)
+            {
+                return;
+            }
             RightSideViewModels.Remove(RightSideViewModel);
             RightSideViewModel = RightSideViewModels[0];
         }
