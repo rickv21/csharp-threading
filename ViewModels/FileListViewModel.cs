@@ -17,8 +17,8 @@ namespace FileManager.ViewModels
     public class FileListViewModel : ViewModelBase
     {
         private ObservableCollection<Item> _files;
-        private String _currentPath;
-        private String previousPath;
+        private string _currentPath;
+        private string previousPath;
         private ConcurrentDictionary<string, byte[]> _fileIconCache;
         private readonly short side;
         private IList<object> _selectedItems;
@@ -42,14 +42,13 @@ namespace FileManager.ViewModels
             }
         }
 
-        public String CurrentPath
+        public string CurrentPath
         {
             get { return _currentPath; }
             set
             {
                 _currentPath = value;
                 OnPropertyChanged(nameof(CurrentPath));
-                // PathChanged(value);
             }
         }
 
@@ -120,7 +119,12 @@ namespace FileManager.ViewModels
             Task.Run(() => FillList(d));
         }
 
-        public async void RenameItem(Item selectedItem, string newName)
+        public string getCurrentPath()
+        {
+            return CurrentPath;
+        }
+
+        public void RenameItem(Item selectedItem, string newName)
         {
             string oldPath = selectedItem.FilePath;
             string newPath = Path.Combine(Path.GetDirectoryName(oldPath), newName);
@@ -133,7 +137,6 @@ namespace FileManager.ViewModels
                 File.Move(oldPath, newPath);
             }
             selectedItem.FileName = newName;
-            Refresh();
         }
 
         private static bool IsSortedOnDate(ObservableCollection<Item> files)
@@ -362,22 +365,20 @@ namespace FileManager.ViewModels
                 case "enter":
                 case "numpadenter":
                     if (SelectedItems.Count != 1) return;
-                    Debug.WriteLine(SelectedItems[0]);
                     OpenItem((Item)SelectedItems[0]);
                     return;
             }
         }
 
-        public void Refresh()
+        public async void Refresh()
         {
-            Debug.WriteLine("Refresh.");
             if(CurrentPath == "")
             {
                 FillDriveList();
                 return;
             }
-            DirectoryInfo d = new DirectoryInfo(CurrentPath);
-            FillList(d);
+            DirectoryInfo d = new(CurrentPath);
+            await FillList(d);
         }
 
         public async Task<ImageSource> GetFileIcon(string filePath)
@@ -410,14 +411,14 @@ namespace FileManager.ViewModels
             return new StreamImageSource { Stream = token => Task.FromResult<Stream>(new MemoryStream(ms.ToArray())) };
         }
 
-        void PathChanged(string value)
+        public async void PathChanged(string value)
         {
             if (CurrentPath.Length == 0)
             {
                 FillDriveList();
                 return;
             }
-            DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPath);
+            DirectoryInfo directoryInfo = new(CurrentPath);
             if (_files == null)
             {
 
@@ -430,7 +431,7 @@ namespace FileManager.ViewModels
                 return;
             }
             _files.Clear();
-            FillList(directoryInfo);
+            await FillList(directoryInfo);
         }
 
 
@@ -462,7 +463,7 @@ namespace FileManager.ViewModels
                     IsLoading = true;
                     Debug.WriteLine("Exists");
                     // If the item is a folder, update the Files collection to show the contents of the folder
-                    DirectoryInfo directoryInfo = new DirectoryInfo(item.FilePath);
+                    DirectoryInfo directoryInfo = new(item.FilePath);
                     CurrentPath = item.FilePath;
                     //previousPath = _currentPath;
                     _files.Clear();
@@ -472,7 +473,7 @@ namespace FileManager.ViewModels
             }
             else if (item is FileItem)
             {
-                FileInfo fileInfo = new FileInfo(item.FilePath);
+                FileInfo fileInfo = new(item.FilePath);
                 Process.Start(new ProcessStartInfo(fileInfo.FullName) { UseShellExecute = true });
             }
         }
@@ -500,25 +501,24 @@ namespace FileManager.ViewModels
             try
             {
 
-                ConcurrentBag<Item> fileSystemInfos = new ConcurrentBag<Item>();
+                ConcurrentBag<Item> fileSystemInfos = new();
 
                 await Task.WhenAll(d.EnumerateDirectories().Select(async dir =>
                 {
                     // It's a directory
-                    DirectoryInfo dirInfo = new DirectoryInfo(dir.FullName);
+                    DirectoryInfo dirInfo = new(dir.FullName);
                     DateTime lastEditDirectory = DateTime.MinValue;
                     if (dirInfo.LastWriteTime != DateTime.MinValue)
                     {
                         lastEditDirectory = dirInfo.LastWriteTime;
                     }
-                    Debug.WriteLine(dir.FullName);
 
                     fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
                 }));
 
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
                 {
-                    FileInfo fileInfo = new FileInfo(file.FullName);
+                    FileInfo fileInfo = new(file.FullName);
                     long size = fileInfo.Length;
                     DateTime lastEdit = DateTime.MinValue;
                     if (fileInfo.LastWriteTime != DateTime.MinValue)
@@ -550,7 +550,7 @@ namespace FileManager.ViewModels
                 DirectoryInfo directoryInfo = new DirectoryInfo(previousPath);
                 CurrentPath = previousPath;
                 _files.Clear();
-                FillList(directoryInfo);
+                await FillList(directoryInfo);
 
                 //TODO: Popup here!!
                 Debug.WriteLine("No permission!");

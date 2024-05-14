@@ -14,7 +14,7 @@ namespace FileManager.Views;
 public partial class FileOverviewPage : ContentPage
 {
 
-    private FileOverviewViewModel viewModel;
+    private readonly FileOverviewViewModel viewModel;
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
@@ -78,8 +78,6 @@ public partial class FileOverviewPage : ContentPage
                     return;
                 }
             }
-
-
         }
         viewModel.PassClickEvent(key);
     }
@@ -131,7 +129,7 @@ public partial class FileOverviewPage : ContentPage
     }
 
 
-    void onDragStarting(object sender, DragStartingEventArgs e)
+    void OnDragStarting(object sender, DragStartingEventArgs e)
     {
         //TODO: Add current dragged item to selected items.
         var dragGestureRecognizer = (DragGestureRecognizer)sender;
@@ -150,7 +148,7 @@ public partial class FileOverviewPage : ContentPage
             //Left side.
             foreach (var debugItem in LeftCollection.SelectedItems)
             {
-                System.Diagnostics.Debug.WriteLine(debugItem.ToString());
+                Debug.WriteLine(debugItem.ToString());
             }
 
             e.Data.Properties.Add("files", LeftCollection.SelectedItems);
@@ -161,13 +159,31 @@ public partial class FileOverviewPage : ContentPage
             //Right side.
             foreach (var debugItem in RightCollection.SelectedItems)
             {
-                System.Diagnostics.Debug.WriteLine(debugItem.ToString());
+                Debug.WriteLine(debugItem.ToString());
             }
 
             e.Data.Properties.Add("files", RightCollection.SelectedItems);
         }
+    }
 
-
+    private void RefreshAllPages(string side)
+    {
+        if (viewModel.LeftSideViewModel.getCurrentPath().Equals(viewModel.RightSideViewModel.getCurrentPath()))
+        {
+            viewModel.RightSideViewModel.Refresh();
+            viewModel.LeftSideViewModel.Refresh();
+        }
+        else
+        {
+            if (side.Equals("left"))
+            {
+                viewModel.LeftSideViewModel.Refresh();
+            }
+            else if (side.Equals ("right"))
+            {
+                viewModel.RightSideViewModel.Refresh();
+            }
+        }
     }
 
     private async void RightContextClick(object sender, EventArgs e)
@@ -182,10 +198,15 @@ public partial class FileOverviewPage : ContentPage
             var menuItem = (MenuFlyoutItem)sender;
             var selectedItem = (Item)menuItem.CommandParameter;
 
-            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "default text");
+            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
             if (!string.IsNullOrEmpty(userInput))
             {
                 viewModel.RightSideViewModel.RenameItem(selectedItem, userInput);
+                RefreshAllPages("right");
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please enter a new name", "OK");
             }
         }
     }
@@ -202,12 +223,16 @@ public partial class FileOverviewPage : ContentPage
             var menuItem = (MenuFlyoutItem)sender;
             var selectedItem = (Item)menuItem.CommandParameter;
 
-            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "default text");
+            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
             if (!string.IsNullOrEmpty(userInput))
             {
                 viewModel.LeftSideViewModel.RenameItem(selectedItem, userInput);
+                RefreshAllPages("left");
             }
-            // TODO catch empty
+            else
+            {
+                await DisplayAlert("Error", "Please enter a new name", "OK");
+            }
         }
     }
 

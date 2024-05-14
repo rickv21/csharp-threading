@@ -92,7 +92,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
@@ -219,7 +219,7 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.GestureRecognizers>
-                                    <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                    <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                     <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
@@ -235,7 +235,7 @@
                                 </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem Text="Rename" Clicked="RightContextClick"
+                                            <MenuFlyoutItem Text="Rename" Clicked="RightContextClick" CommandParameter="{Binding}"
                                Command="{Binding Source={x:Reference RightCollection}}" >
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128221;"
