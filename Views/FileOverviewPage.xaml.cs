@@ -3,6 +3,10 @@ using System.Runtime.InteropServices;
 using FileManager.Models;
 using FileManager.ViewModels;
 using SharpHook;
+using CommunityToolkit.Maui.Views;
+using FileManager.Views.Popups;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace FileManager.Views;
 
@@ -79,6 +83,7 @@ public partial class FileOverviewPage : ContentPage
     public void OnItemTapped(object sender, EventArgs e)
     {
         var item = ((sender as Grid).BindingContext as Item);
+
         viewModel.ActiveSide = item.Side;
 
         if (item.Type == ItemType.Drive || item.Type == ItemType.TopDir)
@@ -451,7 +456,7 @@ public partial class FileOverviewPage : ContentPage
                 {
                     if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
                     {
-                        await viewModel.ProcessActionAsync(action, number, regex);
+                        await viewModel.ProcessActionAsync(action, number, regex, this, items);
                     }
                     else if (number < 1)
                     {
