@@ -249,7 +249,7 @@ public class FileOverviewViewModel : ViewModelBase
     /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. Hierbij kunnen niet meerdere bronnen
     /// de lijst bewerken.
     /// </summary>
-    public void PasteItems(string targetPath)
+    public async Task PasteItems(string targetPath)
     {
         lock (_copiedFilesPaths)
         {

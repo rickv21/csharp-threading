@@ -634,7 +634,7 @@ namespace FileManager.ViewModels
             await FillList(directoryInfo);
         }
 
-        public async void DeleteItem()
+        public async Task DeleteItem()
         {
             if (SelectedItems == null || SelectedItems.Count == 0)
             {
@@ -671,33 +671,16 @@ namespace FileManager.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    string errorMessage;
-
-                    switch (ex)
+                    string errorMessage = ex switch
                     {
-                        case ArgumentException:
-                            errorMessage = "The path is a zero-length string, is malformed, contains only white space, or contains invalid characters (including wildcard characters). The path is a device path (starts with \\\\.\\).";
-                            break;
-                        case DirectoryNotFoundException:
-                            errorMessage = "The directory does not exist or is a file.";
-                            break;
-                        case IOException:
-                            errorMessage = "A file in the directory or subdirectory is in use.";
-                            break;
-                        case NotSupportedException:
-                            errorMessage = "The directory name contains a colon (:).";
-                            break;
-                        case SecurityException:
-                            errorMessage = "The user does not have required permissions.";
-                            break;
-                        case OperationCanceledException:
-                            errorMessage = "The user cancels the operation or the directory cannot be deleted.";
-                            break;
-                        default:
-                            errorMessage = "An unexpected error occurred while deleting the item.";
-                            break;
-                    }
-
+                        ArgumentException => "The path is a zero-length string, is malformed, contains only white space, or contains invalid characters (including wildcard characters). The path is a device path (starts with \\\\.\\).",
+                        DirectoryNotFoundException => "The directory does not exist or is a file.",
+                        IOException => "A file in the directory or subdirectory is in use.",
+                        NotSupportedException => "The directory name contains a colon (:).",
+                        SecurityException => "The user does not have required permissions.",
+                        OperationCanceledException => "The user cancels the operation or the directory cannot be deleted.",
+                        _ => "An unexpected error occurred while deleting the item.",
+                    };
                     ShowErrorMessageBox(errorMessage, ex.Message);
 
                 }

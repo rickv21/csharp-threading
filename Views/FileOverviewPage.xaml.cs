@@ -274,11 +274,12 @@ public partial class FileOverviewPage : ContentPage
         {
             if (LeftCollection.SelectedItems.Count == 0)
             {
-                await DisplayAlert("Alert", "You have to select first to delete", "OK");
+                await DisplayAlert("Alert", "Please select a file to delete first", "OK");
                 return;
             }
 
-            viewModel.LeftSideViewModel.DeleteItem();
+            await viewModel.LeftSideViewModel.DeleteItem();
+            RefreshAllPages("");
         }
         else if (item.Text == "Copy")
         {
@@ -286,7 +287,7 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Paste")
         {
-            viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
+            await viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
             RefreshAllPages("left");
         }
     }
