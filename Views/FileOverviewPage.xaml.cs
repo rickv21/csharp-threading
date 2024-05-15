@@ -418,7 +418,7 @@ public partial class FileOverviewPage : ContentPage
                 {
                     if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
                     {
-                        await viewModel.ProcessActionAsync(action, number, regex);
+                        await viewModel.ProcessActionAsync(action, number, regex, this, items);
                     }
                     else if (number < 1)
                     {
