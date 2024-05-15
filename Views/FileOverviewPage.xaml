@@ -23,10 +23,11 @@
             <Grid>
                 <StackLayout BackgroundColor="#252526">
                         <StackLayout Orientation="Horizontal">
-                        <Picker WidthRequest="550" ItemsSource="{Binding LeftSideViewModels}" ItemDisplayBinding="{Binding CurrentPath, Converter={StaticResource PickerConverter}}" SelectedItem="{Binding LeftSideViewModel}"/>
-                            <Button WidthRequest="80" HeightRequest="20" Text="Add" BackgroundColor="#4b4b4d" Clicked="AddLeftTab" TextColor="White"/>
-                            <Button WidthRequest="80" HeightRequest="20" Text="Remove" BackgroundColor="#4b4b4d" Clicked="RemoveLeftTab" TextColor="White"/>
-                        </StackLayout>
+                        <Picker HorizontalOptions="FillAndExpand" ItemsSource="{Binding LeftSideViewModels}" ItemDisplayBinding="{Binding CurrentPath, Converter={StaticResource PickerConverter}}" SelectedItem="{Binding LeftSideViewModel}"/>
+                        <Button HeightRequest="20" CornerRadius="0" Text="Add" BackgroundColor="DeepSkyBlue" Clicked="AddLeftTab" TextColor="White"/>
+                        <Button HeightRequest="20" CornerRadius="0" Text="Remove" BackgroundColor="IndianRed" Clicked="RemoveLeftTab" TextColor="White"/>
+
+                    </StackLayout>
                     <Entry Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -103,12 +104,13 @@
         <!-- Right side -->
         <Border Grid.Column="1">
             <Grid>
-            <StackLayout BackgroundColor="#252526">
+                <StackLayout BackgroundColor="#252526">
                     <StackLayout Orientation="Horizontal">
-                        <Picker WidthRequest="550" ItemsSource="{Binding RightSideViewModels}" ItemDisplayBinding="{Binding CurrentPath, Converter={StaticResource PickerConverter}}" SelectedItem="{Binding RightSideViewModel}"/>
-                        <Button WidthRequest="80" HeightRequest="20" Text="Add" BackgroundColor="#4b4b4d" Clicked="AddRightTab" TextColor="White"/>
-                        <Button WidthRequest="80" HeightRequest="20" Text="Remove" BackgroundColor="#4b4b4d" Clicked="RemoveRightTab" TextColor="White"/>
+                        <Picker HorizontalOptions="FillAndExpand" ItemsSource="{Binding RightSideViewModels}" ItemDisplayBinding="{Binding CurrentPath, Converter={StaticResource PickerConverter}}" SelectedItem="{Binding RightSideViewModel}"/>
+                        <Button HeightRequest="20" CornerRadius="0" Text="Add" BackgroundColor="DeepSkyBlue" Clicked="AddRightTab" TextColor="White"/>
+                        <Button HeightRequest="20" CornerRadius="0" Text="Remove" BackgroundColor="IndianRed" Clicked="RemoveRightTab" TextColor="White"/>
                     </StackLayout>
+  
                     <Entry Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
                     <Grid>
                         <Grid.ColumnDefinitions>
