@@ -11,6 +11,8 @@ using FileManager.ViewModels;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.StartScreen;
 using SharpHook;
+using CommunityToolkit.Maui.Views;
+using FileManager.Views.Popups;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -91,6 +93,7 @@ public partial class FileOverviewPage : ContentPage
     void OnItemTapped(object sender, EventArgs e)
     {
         var item = ((sender as Grid).BindingContext as Item);
+
         viewModel.ActiveSide = item.Side;
 
         if (item.Type == ItemType.Drive || item.Type == ItemType.TopDir)
