@@ -218,7 +218,10 @@ public partial class FileOverviewPage : ContentPage
             string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
             if (!string.IsNullOrEmpty(userInput))
             {
-                FileListViewModel.RenameItem(selectedItem, userInput);
+                FileInfo fileInfo = new(selectedItem.FilePath);
+                string extension = fileInfo.Extension;
+
+                FileListViewModel.RenameItem(selectedItem, userInput, extension);
                 RefreshAllPages("right");
             }
             else
@@ -234,7 +237,7 @@ public partial class FileOverviewPage : ContentPage
                 return;
             }
 
-            viewModel.RightSideViewModel.DeleteItem();
+            await viewModel.RightSideViewModel.DeleteItem();
         }
         else if (item.Text == "Copy")
         {
@@ -242,7 +245,7 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Paste")
         {
-            viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
+            await viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
             RefreshAllPages("right");
         }
     }
@@ -257,12 +260,15 @@ public partial class FileOverviewPage : ContentPage
         else if (item.Text == "Rename")
         {
             var menuItem = (MenuFlyoutItem)sender;
-            var selectedItem = (Item)menuItem.CommandParameter;
+            Item selectedItem = (Item)menuItem.CommandParameter;
 
             string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
             if (!string.IsNullOrEmpty(userInput))
             {
-                FileListViewModel.RenameItem(selectedItem, userInput);
+                FileInfo fileInfo = new(selectedItem.FilePath);
+                string extension = fileInfo.Extension;
+
+                FileListViewModel.RenameItem(selectedItem, userInput, extension);
                 RefreshAllPages("left");
             }
             else

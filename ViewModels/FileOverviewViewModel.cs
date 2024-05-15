@@ -77,12 +77,12 @@ public class FileOverviewViewModel : ViewModelBase
         ActiveSide = 0;
     }
 
-    public async Task<string> SelectActionAsync()
+    public static async Task<string> SelectActionAsync()
     {
         return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Move");
     }
 
-    public async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
+    public static async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
     {
         string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Microsoft.Maui.Keyboard.Numeric);
         if(int.Parse(number) > MAX_THREADS || int.Parse(number) < 1)

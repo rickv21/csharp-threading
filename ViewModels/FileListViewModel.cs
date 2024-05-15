@@ -124,19 +124,26 @@ namespace FileManager.ViewModels
             return CurrentPath;
         }
 
-        public static void RenameItem(Item selectedItem, string newName)
+        public static void RenameItem(Item selectedItem, string newName, string extension)
         {
-            string oldPath = selectedItem.FilePath;
-            string newPath = Path.Combine(Path.GetDirectoryName(oldPath), newName);
-            if (Directory.Exists(oldPath))
+            if (selectedItem != null)
             {
-                Directory.Move(oldPath, newPath);
+                string oldPath = selectedItem.FilePath;
+                string newPath = Path.Combine(Path.GetDirectoryName(oldPath), newName + extension);
+                if (Directory.Exists(oldPath))
+                {
+                    Directory.Move(oldPath, newPath);
+                }
+                else if (File.Exists(oldPath))
+                {
+                    File.Move(oldPath, newPath);
+                }
+                selectedItem.FileName = newName + extension;
             }
-            else if (File.Exists(oldPath))
+            else
             {
-                File.Move(oldPath, newPath);
+                ShowErrorMessageBox("Please select a file to rename", "");
             }
-            selectedItem.FileName = newName;
         }
 
         private static bool IsSortedOnDate(ObservableCollection<Item> files)
@@ -393,7 +400,7 @@ namespace FileManager.ViewModels
                     return;
                 case "f2":
                     //Rename current item.
-                    RenameItem(null, null);
+                    RenameItem(null, null, null);
                     return;
                 case "f8":
                     //Delete current item.
@@ -438,7 +445,7 @@ namespace FileManager.ViewModels
 
             if (_fileIconCache.TryGetValue(extension, out var byteArray))
             {
-                MemoryStream ms2 = new MemoryStream(byteArray);
+                MemoryStream ms2 = new(byteArray);
                 return new StreamImageSource { Stream = token => Task.FromResult<Stream>(new MemoryStream(byteArray)) };
             }
 
@@ -474,11 +481,11 @@ namespace FileManager.ViewModels
             }
             if (!Directory.Exists(directoryInfo.FullName))
             {
-                AppShell.Current.DisplayAlert("Invalid location", "This path does not exist!", "OK");
+                await AppShell.Current.DisplayAlert("Invalid location", "This path does not exist, please try again", "OK");
                 CurrentPath = _previousPath;
                 return;
             }
-            Task.Run(async () => await FillList(directoryInfo));
+            await Task.Run(async () => await FillList(directoryInfo));
         }
 
 
