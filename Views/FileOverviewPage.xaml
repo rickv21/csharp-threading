@@ -244,18 +244,18 @@
                                         <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
-                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
-                                    </Grid.GestureRecognizers>
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup x:Name="CommonStates">
-                                        <VisualState x:Name="Normal" />
-                                        <VisualState x:Name="Selected">
-                                            <VisualState.Setters>
-                                                <Setter Property="BackgroundColor" Value="Transparent" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
+                                            <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                        </Grid.GestureRecognizers>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="Transparent" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
                                             <MenuFlyoutItem Text="Delete" Clicked="RightContextClick">
@@ -289,7 +289,7 @@
                                             </MenuFlyoutItem>
                                         </MenuFlyout>
                                     </FlyoutBase.ContextFlyout>
-                                    <Label Text="" VerticalOptions="Center" HorizontalOptions="Center" />
+                                    <Label Grid.Column="0" Text="" VerticalOptions="Center" HorizontalOptions="Center" />
                                     <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="1" />
                                     <Label Text="{Binding FileName}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="2" />
                                     <Label Text="{Binding FileInfo}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="3" />

@@ -119,12 +119,12 @@ namespace FileManager.ViewModels
             Task.Run(async () => await FillList(d));
         }
 
-        public string getCurrentPath()
+        public string GetCurrentPath()
         {
             return CurrentPath;
         }
 
-        public void RenameItem(Item selectedItem, string newName)
+        public static void RenameItem(Item selectedItem, string newName)
         {
             string oldPath = selectedItem.FilePath;
             string newPath = Path.Combine(Path.GetDirectoryName(oldPath), newName);
@@ -369,7 +369,7 @@ namespace FileManager.ViewModels
             if (IsLoading)
             {
                 //Failsafe, allows the user to cancel the loading process in case it gets stuck.
-                if(key == "escape")
+                if (key == "escape")
                 {
                     IsLoading = false;
                     CurrentPath = _previousPath;
@@ -416,12 +416,6 @@ namespace FileManager.ViewModels
             }
         }
 
-        public async void Refresh()
-        {
-            Debug.WriteLine("Changing name of item.");
-        }
-
-
         public async Task RefreshAsync()
         {
             Debug.WriteLine("Refresh.");
@@ -453,7 +447,7 @@ namespace FileManager.ViewModels
             Bitmap bitmap = rawIcon.ToBitmap();
 
             // Save the Bitmap to a MemoryStream
-            MemoryStream ms = new MemoryStream();
+            MemoryStream ms = new();
             bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
 
             // Convert the MemoryStream to a byte array and add it to the cache
@@ -575,7 +569,7 @@ namespace FileManager.ViewModels
             try
             {
 
-                ConcurrentBag<Item> fileSystemInfos = new();
+                ConcurrentBag<Item> fileSystemInfos = [];
 
                 await Task.WhenAll(d.EnumerateDirectories().Select(async dir =>
                 {
@@ -622,22 +616,22 @@ namespace FileManager.ViewModels
             }
             catch (UnauthorizedAccessException e)
             {
-                await AppShell.Current.DisplayAlert("No permission", "You do not have permission to access this folder.", "OK");
+                await Shell.Current.DisplayAlert("No permission", "You do not have permission to access this folder.", "OK");
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     IsLoading = false;
                 });
-                DirectoryInfo directoryInfo = new DirectoryInfo(_previousPath);
+                DirectoryInfo directoryInfo = new(_previousPath);
                 CurrentPath = _previousPath;
                 await FillList(directoryInfo);
             }
         }
 
-        public void RefreshFiles()
+        public async void RefreshFiles()
         {
-            DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPath);
+            DirectoryInfo directoryInfo = new(CurrentPath);
             _files.Clear();
-            FillList(directoryInfo);
+            await FillList(directoryInfo);
         }
 
         public async void DeleteItem()
@@ -713,7 +707,7 @@ namespace FileManager.ViewModels
             }
         }
 
-        private void ShowErrorMessageBox(string message, string details)
+        private static void ShowErrorMessageBox(string message, string details)
         {
             MessageBox.Show($"{message}\n\nDetails: {details}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }

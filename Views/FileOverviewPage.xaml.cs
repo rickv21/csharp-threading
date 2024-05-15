@@ -1,18 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using FileManager.Models;
 using FileManager.ViewModels;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.UI.StartScreen;
 using SharpHook;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace FileManager.Views;
 
@@ -173,7 +163,7 @@ public partial class FileOverviewPage : ContentPage
             viewModel.DroppedFiles = RightCollection.SelectedItems.Cast<Item>();
             foreach (var debugItem in viewModel.DroppedFiles)
             {
-                System.Diagnostics.Debug.WriteLine(debugItem.ToString());
+                Debug.WriteLine(debugItem.ToString());
             }
 
             e.Data.Properties.Add("files", RightCollection.SelectedItems);
@@ -192,9 +182,9 @@ public partial class FileOverviewPage : ContentPage
         }
     }
 
-    private void RefreshAllPages(string side)
+    private void RefreshAllPages(string? side)
     {
-        if (viewModel.LeftSideViewModel.getCurrentPath().Equals(viewModel.RightSideViewModel.getCurrentPath()))
+        if (viewModel.LeftSideViewModel.GetCurrentPath().Equals(viewModel.RightSideViewModel.GetCurrentPath()))
         {
             viewModel.RightSideViewModel.RefreshAsync();
             viewModel.LeftSideViewModel.RefreshAsync();
@@ -216,11 +206,11 @@ public partial class FileOverviewPage : ContentPage
     private async void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
-        if(item.Text.Equals("Refresh"))
+        if (item.Text.Equals("Refresh"))
         {
             viewModel.RightSideViewModel.RefreshAsync();
         } 
-        else if(item.Text.Equals("Rename"))
+        else if (item.Text.Equals("Rename"))
         {
             var menuItem = (MenuFlyoutItem)sender;
             var selectedItem = (Item)menuItem.CommandParameter;
@@ -228,13 +218,32 @@ public partial class FileOverviewPage : ContentPage
             string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
             if (!string.IsNullOrEmpty(userInput))
             {
-                viewModel.RightSideViewModel.RenameItem(selectedItem, userInput);
+                FileListViewModel.RenameItem(selectedItem, userInput);
                 RefreshAllPages("right");
             }
             else
             {
                 await DisplayAlert("Error", "Please enter a new name", "OK");
             }
+        }
+        else if (item.Text == "Delete")
+        {
+            if (RightCollection.SelectedItems.Count == 0)
+            {
+                await DisplayAlert("Alert", "You have to select first to delete", "OK");
+                return;
+            }
+
+            viewModel.RightSideViewModel.DeleteItem();
+        }
+        else if (item.Text == "Copy")
+        {
+            viewModel.CopyItems([.. RightCollection.SelectedItems]);
+        }
+        else if (item.Text == "Paste")
+        {
+            viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
+            RefreshAllPages("right");
         }
     }
 
@@ -243,7 +252,7 @@ public partial class FileOverviewPage : ContentPage
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
         if (item.Text.Equals("Refresh"))
         {
-            await Task.Run(() => viewModel.RightSideViewModel.RefreshAsync());
+            await Task.Run(() => viewModel.LeftSideViewModel.RefreshAsync());
         }
         else if (item.Text == "Rename")
         {
@@ -253,7 +262,7 @@ public partial class FileOverviewPage : ContentPage
             string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
             if (!string.IsNullOrEmpty(userInput))
             {
-                viewModel.LeftSideViewModel.RenameItem(selectedItem, userInput);
+                FileListViewModel.RenameItem(selectedItem, userInput);
                 RefreshAllPages("left");
             }
             else
@@ -269,15 +278,16 @@ public partial class FileOverviewPage : ContentPage
                 return;
             }
 
-            viewModel.RightSideViewModel.DeleteItem();
+            viewModel.LeftSideViewModel.DeleteItem();
         }
         else if (item.Text == "Copy")
         {
-            viewModel.CopyItems(RightCollection.SelectedItems.ToList());
+            viewModel.CopyItems(LeftCollection.SelectedItems.ToList());
         }
         else if (item.Text == "Paste")
         {
-            viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
+            viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
+            RefreshAllPages("left");
         }
     }
 
@@ -314,6 +324,8 @@ public partial class FileOverviewPage : ContentPage
                         //MoveFile(file, targetPath);
                     }
                 }
+
+                RefreshAllPages("");
 
                 viewModel.RightSideViewModel.RefreshFiles();
                 viewModel.LeftSideViewModel.RefreshFiles();
@@ -374,8 +386,6 @@ public partial class FileOverviewPage : ContentPage
     // Helper method to copy directory recursively
     private void CopyDirectory(string sourceDirPath, string destDirPath)
     {
-        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
-
         // Create the destination directory if it doesn't exist
         if (!Directory.Exists(destDirPath))
         {
