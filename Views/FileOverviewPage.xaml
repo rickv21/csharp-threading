@@ -5,7 +5,6 @@
              xmlns:local="clr-namespace:FileManager.ViewModels">
     <ContentPage.BindingContext>
         <local:FileOverviewViewModel />
-        <!-- Replace YourViewModel with your actual view model class -->
     </ContentPage.BindingContext>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -17,35 +16,86 @@
         <Border Stroke="Aqua" StrokeThickness="1" x:Name="LeftBorder" StrokeShape="RoundRectangle 5,10,0,0" Grid.Column="0">
             <Grid>
                 <StackLayout  BackgroundColor="#252526">
-                    <Entry x:Name="LeftPathField" Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
+                    <Entry x:Name="LeftPathField" Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5"  HorizontalOptions="FillAndExpand" />
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50" />
                             <ColumnDefinition Width="70" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Label Text="" Grid.Column="0" />
-                        <Label Text="Filename" Grid.Column="1" />
-                        <Label Text="Info" Grid.Column="2" />
-                        <Label Text="Size" Grid.Column="3" />
+                        <Label Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Label Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Border Grid.Column="2" Padding="1" Stroke="Gray" StrokeThickness="1">
+                            <Label>
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesCommand}" CommandParameter="{Binding LeftSideViewModel.FileNameText}" />
+                                </Label.GestureRecognizers>
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding LeftSideViewModel.FileNameText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Border>
+                        <Border Grid.Column="3" Padding="1" Stroke="Gray" StrokeThickness="1">
+                            <Label>
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesCommand}" CommandParameter="{Binding LeftSideViewModel.InfoText}"/>
+                                </Label.GestureRecognizers>
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding LeftSideViewModel.InfoText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Border>
+                        <Border Grid.Column="4" Padding="1" Stroke="Gray" StrokeThickness="1">
+                            <Label>
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesOnSizeCommand}" CommandParameter="{Binding LeftSideViewModel.SizeText}"/>
+                                </Label.GestureRecognizers>
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding LeftSideViewModel.SizeText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Border>
+                        <Border Grid.Column="5" Padding="1" Stroke="Gray" StrokeThickness="1">
+                            <Label>
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding LeftSideViewModel.SortFilesOnDateCommand}" CommandParameter="{Binding LeftSideViewModel.DateText}" />
+                                </Label.GestureRecognizers>
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding LeftSideViewModel.DateText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                                </Label>
+                        </Border>
                     </Grid>
 
-                    <!-- Add label here -->
-
-                    <!-- Content for the right ScrollView -->
+                    <!-- Content for the left ScrollView -->
                     <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
+                        <CollectionView.GestureRecognizers>
+                            <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
+                        </CollectionView.GestureRecognizers>
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
                                         <ColumnDefinition Width="70" />
+                                        <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
@@ -55,13 +105,28 @@
                                             <VisualState x:Name="Normal" />
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor" Value="LightBlue" />
+                                                    <Setter Property="BackgroundColor" Value="Transparent" />
                                                 </VisualState.Setters>
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
+                                            <MenuFlyoutItem Text="Delete" Clicked="LeftContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Copy" Clicked="LeftContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Paste" Clicked="LeftContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick"
                                Command="{Binding Source={x:Reference RightCollection}}">
                                                 <MenuFlyoutItem.IconImageSource>
@@ -78,10 +143,12 @@
                                             </MenuFlyoutItem>
                                         </MenuFlyout>
                                     </FlyoutBase.ContextFlyout>
-                                    <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" Grid.Column="0"/>
-                                    <Label Margin="0, 15, 20, 0" Text="{Binding FileName}" Grid.Column="1"/>
-                                    <Label Margin="0, 15, 0, 0" Text="{Binding FileInfo}" Grid.Column="2" />
-                                    <Label Margin="0, 15, 0, 0" Text="{Binding Size}" Grid.Column="3" />
+                                    <Label Text="" VerticalOptions="Center" HorizontalOptions="Center" />
+                                    <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="1" />
+                                    <Label Text="{Binding FileName}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="2" />
+                                    <Label Text="{Binding FileInfo}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="3" />
+                                    <Label Text="{Binding ReadableSize}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="4" />
+                                    <Label Text="{Binding LastEdited}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="5" />
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -94,36 +161,87 @@
         <!-- Right side -->
         <Border Stroke="Transparent" StrokeThickness="1" x:Name="RightBorder" StrokeShape="RoundRectangle 0,0,0,10" Grid.Column="1">
             <Grid>
-                <StackLayout BackgroundColor="#252526">
-                    <Entry x:Name="RightPathField" Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" />
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Label Text="" Grid.Column="0" />
-                    <Label Text="Filename" Grid.Column="1" />
-                    <Label Text="Info" Grid.Column="2" />
-                    <Label Text="Size" Grid.Column="3" />
+            <StackLayout BackgroundColor="#252526">
+                    <Entry x:Name="RightPathField" Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" HorizontalOptions="FillAndExpand" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50" />
+                            <ColumnDefinition Width="70" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Label Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Border Grid.Column="2" Padding="1" Stroke="Gray" StrokeThickness="1">
+                            <Label>
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" CommandParameter="{Binding RightSideViewModel.FileNameText}" />
+                                </Label.GestureRecognizers>
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding RightSideViewModel.FileNameText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Border>
+                        <Border Grid.Column="3" Padding="1" Stroke="Gray" StrokeThickness="1">
+                            <Label>
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesCommand}" CommandParameter="{Binding RightSideViewModel.InfoText}"/>
+                                </Label.GestureRecognizers>
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding RightSideViewModel.InfoText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Border>
+                        <Border Grid.Column="4" Padding="1" Stroke="Gray" StrokeThickness="1">
+                            <Label>
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesOnSizeCommand}" CommandParameter="{Binding RightSideViewModel.SizeText}"/>
+                                </Label.GestureRecognizers>
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding RightSideViewModel.SizeText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Border>
+                        <Border Grid.Column="5" Padding="1" Stroke="Gray" StrokeThickness="1">
+                            <Label>
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding RightSideViewModel.SortFilesOnDateCommand}" CommandParameter="{Binding RightSideViewModel.DateText}" />
+                                </Label.GestureRecognizers>
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding RightSideViewModel.DateText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Border>
                     </Grid>
-             
-                <!-- Add label here -->
 
-                <!-- Content for the right ScrollView -->
+                    <!-- Content for the right ScrollView -->
                     <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand" >
+                        <CollectionView.GestureRecognizers>
+                            <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
+                        </CollectionView.GestureRecognizers>
                         <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="70" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.GestureRecognizers>
-                                        <DragGestureRecognizer CanDrag="True" DragStarting="onDragStarting"/>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="70" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.GestureRecognizers>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
@@ -133,13 +251,28 @@
                                         <VisualState x:Name="Normal" />
                                         <VisualState x:Name="Selected">
                                             <VisualState.Setters>
-                                                <Setter Property="BackgroundColor" Value="LightBlue" />
+                                                <Setter Property="BackgroundColor" Value="Transparent" />
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
+                                            <MenuFlyoutItem Text="Delete" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Copy" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Paste" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="RightContextClick"
                                Command="{Binding Source={x:Reference RightCollection}}" >
                                                 <MenuFlyoutItem.IconImageSource>
@@ -156,11 +289,13 @@
                                             </MenuFlyoutItem>
                                         </MenuFlyout>
                                     </FlyoutBase.ContextFlyout>
-                                    <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" Grid.Column="0"/>
-                                <Label Margin="0, 15, 20, 0" Text="{Binding FileName}" Grid.Column="1"/>
-                                <Label Margin="0, 15, 0, 0" Text="{Binding FileInfo}" Grid.Column="2" />
-                                <Label Margin="0, 15, 0, 0" Text="{Binding Size}" Grid.Column="3" />
-                            </Grid>
+                                    <Label Text="" VerticalOptions="Center" HorizontalOptions="Center" />
+                                    <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="1" />
+                                    <Label Text="{Binding FileName}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="2" />
+                                    <Label Text="{Binding FileInfo}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="3" />
+                                    <Label Text="{Binding ReadableSize}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="4" />
+                                    <Label Text="{Binding LastEdited}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="5" />
+                                </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
