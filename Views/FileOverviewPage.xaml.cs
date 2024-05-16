@@ -13,8 +13,6 @@ using Windows.UI.StartScreen;
 using SharpHook;
 using CommunityToolkit.Maui.Views;
 using FileManager.Views.Popups;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace FileManager.Views;
 
