@@ -11,14 +11,14 @@ using FileManager.ViewModels;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.StartScreen;
 using SharpHook;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using Microsoft.Maui.Controls;
 
 namespace FileManager.Views;
 
 public partial class FileOverviewPage : ContentPage
 {
     private FileOverviewViewModel viewModel;
+    private bool isRosterView = false;
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
@@ -28,6 +28,9 @@ public partial class FileOverviewPage : ContentPage
         InitializeComponent();
         viewModel = new FileOverviewViewModel();
         BindingContext = viewModel;
+       
+        
+        
         Task.Run(() => RegisterKeybindingsAsync());
     }
 
@@ -55,8 +58,8 @@ public partial class FileOverviewPage : ContentPage
         //Force unfocus of collectionviews to prevent issues with keyboard selections.
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            LeftCollection.Unfocus();
-            RightCollection.Unfocus();
+            getCurrentView(0).Unfocus();
+            getCurrentView(1).Unfocus();
         });
 
         //Some more keyboard selection prevention.
@@ -104,13 +107,13 @@ public partial class FileOverviewPage : ContentPage
             LeftPathField.Unfocus();
             LeftBorder.Stroke = Colors.Aqua;
             RightBorder.Stroke = Colors.Transparent;
-            if (LeftCollection.SelectedItems.Contains(item))
+            if (getCurrentView(0).SelectedItems.Contains(item))
             {
-                LeftCollection.SelectedItems.Remove(item);
+                getCurrentView(0).SelectedItems.Remove(item);
             }
             else
             {
-                LeftCollection.SelectedItems.Add(item);
+                getCurrentView(0).SelectedItems.Add(item);
             }
 
         }
@@ -120,17 +123,17 @@ public partial class FileOverviewPage : ContentPage
             RightPathField.Unfocus();
             RightBorder.Stroke = Colors.Aqua;
             LeftBorder.Stroke = Colors.Transparent;
-            if (RightCollection.SelectedItems.Contains(item))
+            if (getCurrentView(1).SelectedItems.Contains(item))
             {
-                RightCollection.SelectedItems.Remove(item);
+                getCurrentView(1).SelectedItems.Remove(item);
             }
             else
             {
-                RightCollection.SelectedItems.Add(item);
+                getCurrentView(1).SelectedItems.Add(item);
             }
         }
 
-        viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
+        viewModel.UpdateSelected(getCurrentView(0).SelectedItems, getCurrentView(1).SelectedItems);
     }
 
 
@@ -150,36 +153,36 @@ public partial class FileOverviewPage : ContentPage
         if (item.Side == 0)
         {
             //Left side.
-            if (!LeftCollection.SelectedItems.Contains(item))
+            if (!getCurrentView(0).SelectedItems.Contains(item))
             {
-                LeftCollection.SelectedItems.Add(item);
+                getCurrentView(0).SelectedItems.Add(item);
             }
             
-            viewModel.DroppedFiles = LeftCollection.SelectedItems.Cast<Item>();
+            viewModel.DroppedFiles = getCurrentView(0).SelectedItems.Cast<Item>();
            foreach (var debugItem in viewModel.DroppedFiles)
               {
                 System.Diagnostics.Debug.WriteLine(debugItem.ToString());
             }
 
              // e.Data.Properties.Add("files", viewModel.DroppedFiles);  
-              e.Data.Properties.Add("files", LeftCollection.SelectedItems);
+              e.Data.Properties.Add("files", getCurrentView(0).SelectedItems);
 
         }
                 else if (item.Side == 1)
                 {
                     //Right side.
-                    if (!RightCollection.SelectedItems.Contains(item))
+                    if (!getCurrentView(1).SelectedItems.Contains(item))
                     {
-                        RightCollection.SelectedItems.Add(item);
+                        getCurrentView(1).SelectedItems.Add(item);
                     }
 
-                    viewModel.DroppedFiles = RightCollection.SelectedItems.Cast<Item>();
+                    viewModel.DroppedFiles = getCurrentView(1).SelectedItems.Cast<Item>();
                     foreach (var debugItem in viewModel.DroppedFiles)
                     {
                         System.Diagnostics.Debug.WriteLine(debugItem.ToString());
                     }
 
-                    e.Data.Properties.Add("files", RightCollection.SelectedItems);
+                    e.Data.Properties.Add("files", getCurrentView(1).SelectedItems);
                 }
     }
 
@@ -212,7 +215,7 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Delete")
         {
-            if (LeftCollection.SelectedItems.Count == 0)
+            if (getCurrentView(0).SelectedItems.Count == 0)
             {
                 await DisplayAlert("Alert", "You have to select first to delete", "OK");
                 return;
@@ -222,7 +225,7 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Copy")
         {
-            viewModel.CopyItems(RightCollection.SelectedItems.ToList());
+            viewModel.CopyItems(getCurrentView(1).SelectedItems.ToList());
         }
         else if (item.Text == "Paste")
         {
@@ -244,7 +247,7 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Delete")
         {
-            if (LeftCollection.SelectedItems.Count == 0)
+            if (getCurrentView(0).SelectedItems.Count == 0)
             {
                 await DisplayAlert("Alert", "You have to select first to delete", "OK");
                 return;
@@ -254,7 +257,7 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Copy")
         {
-            viewModel.CopyItems(LeftCollection.SelectedItems.ToList());
+            viewModel.CopyItems(getCurrentView(0).SelectedItems.ToList());
         }
         else if (item.Text == "Paste")
         {
@@ -273,11 +276,11 @@ public partial class FileOverviewPage : ContentPage
 
             // Get target path
             string targetPath = string.Empty;
-            if (collectionView == RightCollection)
+            if (collectionView == getCurrentView(1))
             {
                 targetPath = viewModel.RightSideViewModel.CurrentPath;
             }
-            else if (collectionView == LeftCollection)
+            else if (collectionView == getCurrentView(0))
             {
                 targetPath = viewModel.LeftSideViewModel.CurrentPath;
             }
@@ -434,6 +437,62 @@ public partial class FileOverviewPage : ContentPage
             {
                 await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
             }
+        }
+
+    }
+    private void ToggleRosterView_Clicked(object sender, EventArgs e)
+    {
+        isRosterView = !isRosterView;
+        if(isRosterView)
+        {
+            LeftListCollection.IsEnabled = false;
+            LeftListCollection.IsVisible = false;
+
+            LeftRosterCollection.IsEnabled = true;
+            LeftRosterCollection.IsVisible = true;
+
+            RightListCollection.IsEnabled = false;
+            RightListCollection.IsVisible = false;
+
+            RightRosterCollection.IsEnabled = true;
+            RightRosterCollection.IsVisible = true;
+        }
+        else
+        {
+            LeftListCollection.IsEnabled = true;
+            LeftListCollection.IsVisible = true;
+
+            LeftRosterCollection.IsEnabled = false;
+            LeftRosterCollection.IsVisible = false;
+
+            RightListCollection.IsEnabled = true;
+            RightListCollection.IsVisible = true;
+
+            RightRosterCollection.IsEnabled = false;
+            RightRosterCollection.IsVisible = false;
+        }
+    }
+
+    private CollectionView getCurrentView(int side)
+    {
+        if (isRosterView)
+        {
+            if(side == 0)
+            {
+                return LeftRosterCollection;
+            }
+            else
+            {
+                return RightRosterCollection;
+            }
+        }
+        if (side == 0)
+        {
+            return LeftListCollection;
+        }
+        else
+        {
+            return RightListCollection;
         }
     }
 }
