@@ -1,20 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using FileManager.Models;
 using FileManager.ViewModels;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.UI.StartScreen;
 using SharpHook;
-using CommunityToolkit.Maui.Views;
-using FileManager.Views.Popups;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace FileManager.Views;
 
@@ -63,10 +51,10 @@ public partial class FileOverviewPage : ContentPage
         });
 
         //Some more keyboard selection prevention.
-        if (key == "tab")
+    /*    if (key == "tab")
         {
             e.SuppressEvent = true;
-        }
+        }*/
 
         //Ignore enter and backspace if path entry field is focused.
         if ((key == "enter" || key == "numpadenter") || key == "backspace")
@@ -185,20 +173,6 @@ public partial class FileOverviewPage : ContentPage
 
                     e.Data.Properties.Add("files", RightCollection.SelectedItems);
                 }
-    }
-
-    void OnItemDrop(object sender, DropEventArgs e)
-    {
-        var droppedItems = e.Data.Properties["files"] as IList<object>;
-
-
-        if (droppedItems != null && droppedItems.Count > 0)
-        {
-            var itemList = droppedItems.OfType<Item>().ToList();
-
-            _ = OnItemDropAsync(itemList);
-        }
-
     }
     
     
@@ -357,36 +331,30 @@ public partial class FileOverviewPage : ContentPage
 
     void AddLeftTab(object sender, EventArgs e)
     {
-        viewModel.AddTab(0);
+        Task.Run(async () => await viewModel.AddTabAsync(0));
     }
 
     void RemoveLeftTab(object sender, EventArgs e)
     {
-        viewModel.RemoveTab(0);
+        Task.Run(async () => await viewModel.RemoveTabAsync(0));
     }
 
     void AddRightTab(object sender, EventArgs e)
     {
-        viewModel.AddTab(1);
+        Task.Run(async () => await viewModel.AddTabAsync(1));
     }
 
     void RemoveRightTab(object sender, EventArgs e)
     {
-        viewModel.RemoveTab(1);
+        Task.Run(async () => await viewModel.RemoveTabAsync(1));
     }
 
     void OnItemDrop(object sender, DropEventArgs e)
     {
-
-
         var droppedItems = e.Data.Properties["files"] as IList<object>;
-
-
         if (droppedItems != null && droppedItems.Count > 0)
         {
             var itemList = droppedItems.OfType<Item>().ToList();
-
-
             _ = OnItemDropAsync(itemList);
         }
 

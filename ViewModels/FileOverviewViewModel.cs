@@ -1,22 +1,17 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Runtime;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Views;
 using FileManager.Models;
-using Windows.Storage.Pickers;
 using FileManager.Views.Popups;
 using Application = Microsoft.Maui.Controls.Application;
+using System.Collections.ObjectModel;
 
 namespace FileManager.ViewModels;
 
 public class FileOverviewViewModel : ViewModelBase
 {
-
     public static int MAX_THREADS = 255;
 
     private FileListViewModel _leftSideViewModel;
@@ -52,6 +47,8 @@ public class FileOverviewViewModel : ViewModelBase
     {
         get { return _rightSideViewModels; }
     }
+
+    public ICommand ItemDoubleTappedCommand { get; }
 
     private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new();
 
@@ -119,7 +116,7 @@ public class FileOverviewViewModel : ViewModelBase
     }
 
     // List needs to be manipulated in order for the Picker values to be updated
-    void OnItemDoubleTapped(Item item)
+    async void OnItemDoubleTapped(Item item)
     {
         if (item.Side == 0)
         {
@@ -131,13 +128,7 @@ public class FileOverviewViewModel : ViewModelBase
             {
                 LeftSideViewModel.CurrentPath = Directory.GetParent(LeftSideViewModel.CurrentPath).FullName;
             }
-            int index = LeftSideViewModels.IndexOf(LeftSideViewModel);
-            FileListViewModel copy = LeftSideViewModel as FileListViewModel;
-            LeftSideViewModels.RemoveAt(index);
-            LeftSideViewModel = copy;
-            LeftSideViewModels.Insert(index, copy);
-            LeftSideViewModel = copy;
-            LeftSideViewModel.ItemDoubleTappedCommand.Execute(item);
+            await UpdateTabAsync(LeftSideViewModels, LeftSideViewModel);
         }
         else
         {
@@ -149,16 +140,20 @@ public class FileOverviewViewModel : ViewModelBase
             {
                 RightSideViewModel.CurrentPath = Directory.GetParent(RightSideViewModel.CurrentPath).FullName;
             }
-            int index = RightSideViewModels.IndexOf(RightSideViewModel);
-            FileListViewModel copy = RightSideViewModel as FileListViewModel;
-            RightSideViewModels.RemoveAt(index);
-            RightSideViewModel = copy;
-            RightSideViewModels.Insert(index, copy);
-            RightSideViewModel = copy;
-            RightSideViewModel.ItemDoubleTappedCommand.Execute(item);
+            await UpdateTabAsync(RightSideViewModels, RightSideViewModel);
         }
     }
 
+    private async Task UpdateTabAsync(ObservableCollection<FileListViewModel> viewModels, FileListViewModel viewModel)
+    {
+        int index = viewModels.IndexOf(viewModel);
+        FileListViewModel copy = viewModel as FileListViewModel;
+        viewModels.RemoveAt(index);
+        viewModels.Insert(index, copy);
+
+        // Wait for the UI to update before proceeding
+        await Task.Delay(100);
+    }
 
     public async Task<string> SelectActionAsync()
     {
@@ -214,32 +209,40 @@ public class FileOverviewViewModel : ViewModelBase
     }
 
 
-    public void AddTab(int side)
+    public async Task AddTabAsync(int side)
     {
-        if(side == 0)
+        if (side == 0)
         {
-            _leftSideViewModels.Add(new FileListViewModel(_fileIconCache, 0));
-            LeftSideViewModel = LeftSideViewModels[LeftSideViewModels.Count - 1];
-            OnPropertyChanged(nameof(LeftSideViewModels));
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                _leftSideViewModels.Add(new FileListViewModel(_fileIconCache, 0));
+                LeftSideViewModel = LeftSideViewModels[LeftSideViewModels.Count - 1];
+                OnPropertyChanged(nameof(LeftSideViewModels));
+            });
         }
         else
         {
-            _rightSideViewModels.Add(new FileListViewModel(_fileIconCache, 1));
-            OnPropertyChanged(nameof(RightSideViewModels));
-
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                _rightSideViewModels.Add(new FileListViewModel(_fileIconCache, 1));
+                OnPropertyChanged(nameof(RightSideViewModels));
+            });
         }
     }
 
-    public void RemoveTab(int side)
+    public async Task RemoveTabAsync(int side)
     {
-        if(side == 0)
+        if (side == 0)
         {
-            if(_leftSideViewModels.Count  <= 1)
+            if (_leftSideViewModels.Count <= 1)
             {
                 return;
             }
-            LeftSideViewModels.Remove(LeftSideViewModel);
-            LeftSideViewModel = LeftSideViewModels[0];
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                LeftSideViewModels.Remove(LeftSideViewModel);
+                LeftSideViewModel = LeftSideViewModels[0];
+            });
         }
         else
         {
@@ -247,10 +250,13 @@ public class FileOverviewViewModel : ViewModelBase
             {
                 return;
             }
-            RightSideViewModels.Remove(RightSideViewModel);
-            RightSideViewModel = RightSideViewModels[0];
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                RightSideViewModels.Remove(RightSideViewModel);
+                RightSideViewModel = RightSideViewModels[0];
+            });
         }
-     }
+    }
 
     public void PassClickEvent(string key)
     {
