@@ -195,7 +195,7 @@ public partial class FileOverviewPage : ContentPage
         {
             var itemList = droppedItems.OfType<Item>().ToList();
 
-            _ = OnItemDropAsync(itemList);
+            _ = OnItemDropAsync(sender, itemList);
         }
 
     }
@@ -295,7 +295,7 @@ public partial class FileOverviewPage : ContentPage
                     if (file != null && !string.IsNullOrEmpty(targetPath))
                     {
                         //TODO: Needs to be connected to popups (@Monique).
-                        //MoveFile(file, targetPath);
+                        MoveFile(file, targetPath);
                     }
                 }
 
@@ -319,7 +319,7 @@ public partial class FileOverviewPage : ContentPage
         return null;
     }
 
-    private void MoveFile(Item file, string targetPath)
+    private async Task MoveFile(Item file, string targetPath)
     {
         // Get only the file name from the file path
         string fileName = Path.GetFileName(file.FilePath);
@@ -353,7 +353,14 @@ public partial class FileOverviewPage : ContentPage
             // Update the FilePath property of the Item object with the new path
             file.FilePath = newFilePath;
         }
+
+
+        viewModel.RightSideViewModel.RefreshFiles();
+        viewModel.LeftSideViewModel.RefreshFiles();
+
+        await Task.CompletedTask;
     }
+
 
     // Helper method to copy directory recursively
     private void CopyDirectory(string sourceDirPath, string destDirPath)
@@ -414,7 +421,7 @@ public partial class FileOverviewPage : ContentPage
     //    RightCollection.ItemsSource = Files;
     //}
 
-    async Task OnItemDropAsync(IList<Item> items)
+    async Task OnItemDropAsync(object sender, IList<Item> items)
     {
         if (items.Count == 0)
         {
@@ -431,7 +438,8 @@ public partial class FileOverviewPage : ContentPage
         }
 
         string action = await viewModel.SelectActionAsync();
-        if (action != null && action != "Cancel")
+
+        if (action != null && action != "Cancel" && action != "Move")
         {
             try
             {
@@ -471,6 +479,33 @@ public partial class FileOverviewPage : ContentPage
             catch (Exception e)
             {
                 await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
+            }
+        }
+        else if (action != null && action == "Move")
+        {
+            var dropGestureRecognizer = (DropGestureRecognizer)sender;
+            var collectionView = FindParentCollectionView(dropGestureRecognizer);
+
+            string targetPath = string.Empty;
+            if (collectionView == RightCollection)
+            {
+                targetPath = viewModel.RightSideViewModel.CurrentPath;
+            }
+            else if (collectionView == LeftCollection)
+            {
+                targetPath = viewModel.LeftSideViewModel.CurrentPath;
+            }
+
+
+            // Iterate over dropped files and move them to the target path
+            foreach (var file in viewModel.DroppedFiles)
+            {
+                // Ensure that the file is not null and the target path is valid
+                if (file != null && !string.IsNullOrEmpty(targetPath))
+                {
+                    //TODO: Needs to be connected to popups (@Monique).
+                    await MoveFile(file, targetPath);
+                }
             }
         }
     }
