@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Views;
@@ -16,6 +19,17 @@ namespace FileManager.ViewModels;
 public class FileOverviewViewModel : ViewModelBase
 {
     public static int MAX_THREADS = 255;
+
+    private Boolean _popupOpen = false;
+
+    public Boolean PopupOpen
+    {
+        get { return _popupOpen; }
+        set
+        {
+            _popupOpen = value;
+        }
+    }
 
     private FileListViewModel _leftSideViewModel;
     public FileListViewModel LeftSideViewModel
@@ -140,6 +154,10 @@ public class FileOverviewViewModel : ViewModelBase
     public void PassClickEvent(string key)
     {
         Debug.WriteLine("Pass click event " + ActiveSide);
+        if(PopupOpen)
+        {
+            return;
+        }
         if (ActiveSide == 0)
         {
             LeftSideViewModel.HandleClick(key);
@@ -353,5 +371,66 @@ public class FileOverviewViewModel : ViewModelBase
         }
         var dir = item as DirectoryItem;
         return dir.ItemCount;
+    }
+
+    /// <summary>
+    /// This asynchronous function creates a symbolic link (symlink) for a file or folder based on user input.
+    /// </summary>
+    /// <param name="side">Specifies the side of the file explorer where the link will be created. 
+    ///     * 0: Left side
+    ///     * 1: Right side
+    /// </param>
+    /// <returns>Task: An asynchronous task representing the operation.</returns>
+    public async void CreateSymbolicLink(int side)
+    {
+        PopupOpen = true;
+        string currentPath = (side == 0 ? LeftSideViewModel.CurrentPath : RightSideViewModel.CurrentPath).Replace("/", "\\");
+        string path = await Application.Current.MainPage.DisplayPromptAsync("Enter source path", $"Please enter the path of the file to create a symbolic link of. The symbolic link will be created in the current folder.", "OK", "Cancel", null, maxLength: 100);
+
+        path = path.Replace("/", "\\");
+
+        try
+        {
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            startInfo.FileName = "cmd.exe";
+            startInfo.UseShellExecute = true;
+            startInfo.Verb = "runas";
+            if (Directory.Exists(path))
+            {
+                string linkName = await Application.Current.MainPage.DisplayPromptAsync("Enter link name", $"Please enter the name of the new link folder.", "OK", "Cancel", null, maxLength: 100);
+                startInfo.Arguments = "/c mklink /D " + Path.Combine(currentPath, linkName) + " " + path;
+            }
+            else
+            {
+                string linkName = await Application.Current.MainPage.DisplayPromptAsync("Enter link name", $"Please enter the name of the new link file.", "OK", "Cancel", null, maxLength: 100);
+                startInfo.Arguments = "/c mklink " + Path.Combine(currentPath, linkName) + " " + path;
+            }
+            process.StartInfo = startInfo;
+            process.Start();
+
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                // Handle failure based on exit code (check mklink documentation for specific codes)
+                await AppShell.Current.DisplayAlert("Error", "Failed to create symbolic link, error code: " + process.ExitCode, "OK");
+            }
+            else
+            {
+                await AppShell.Current.DisplayAlert("Success", "Symbolic link has been created. ", "OK");
+            }
+        } catch (Exception e)
+        {
+            await AppShell.Current.DisplayAlert("Error", "Failed to create symbolic link: " + e.Message, "OK");
+        }
+        PopupOpen = false;
+        if(side == 0)
+        {
+            await LeftSideViewModel.RefreshAsync();
+        } else
+        {
+            await RightSideViewModel.RefreshAsync();
+        }
     }
 }
