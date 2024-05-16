@@ -183,10 +183,14 @@ public class FileOverviewViewModel : ViewModelBase
     private string tempCopyDirectory = Path.Combine(Path.GetTempPath(), "FileManagerCopiedItems");
 
     /// <summary>
-    /// Threading manier: locks
+    /// Threading manier: Locks en Task Parallel Library (TPL)
+    ///
+    /// Voor het kopiëren van meerdere bestanden wordt een combinatie van locking en de Task Parallel Library (TPL) gebruikt.
+    /// De lock zorgt ervoor dat slechts één thread tegelijk toegang heeft tot de _copiedFilesPaths lijst om race-condities te voorkomen.
+    /// De TPL wordt gebruikt om het kopiëren van elk afzonderlijk bestand of directory parallel uit te voeren op de ThreadPool met behulp van taken.
+    /// Dit kan leiden tot betere prestaties, vooral bij het kopiëren van veel bestanden of grote bestanden.
     /// 
-    /// Voor wanneer meerdere bestanden worden gekopïeerd. Door de lock 
-    /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. 
+    /// TPL is niet hetzelfde als Threadpool. TPL biedt hoger-niveau constructies voor parallel programmeren, terwijl ThreadPool een low-level mechanisme is voor het beheren van threads.
     /// </summary>
     public void CopyItems(List<object> selectedItems)
     {
@@ -201,29 +205,56 @@ public class FileOverviewViewModel : ViewModelBase
                 Directory.CreateDirectory(tempCopyDirectory);
             }
 
-            foreach (var item in selectedItems)
+            // Create a list of tasks for copying files in parallel
+            List<Task> copyTasks = new List<Task>();
+
+            // TPL: Use Parallel.ForEach to execute a parallel loop over the selected items
+            Parallel.ForEach(selectedItems, item =>
             {
                 if (item is FileItem fileItem) // if file
                 {
-                    // Copy file to temporary directory
-                    string fileName = Path.GetFileName(fileItem.FilePath);
-                    string tempFilePath = Path.Combine(tempCopyDirectory, fileName);
-                    File.Copy(fileItem.FilePath, tempFilePath, true);
+                    // Copy file to temporary directory using a separate task
+                    // TPL: Use Task.Run to create and execute a new task on the ThreadPool
+                    Task copyTask = Task.Run(() =>
+                    {
+                        string fileName = Path.GetFileName(fileItem.FilePath);
+                        string tempFilePath = Path.Combine(tempCopyDirectory, fileName);
+                        File.Copy(fileItem.FilePath, tempFilePath, true);
 
-                    // Add path of file to list
-                    _copiedFilesPaths.Add(tempFilePath);
+                        // Add path of file to list (within the lock)
+                        lock (_copiedFilesPaths)
+                        {
+                            _copiedFilesPaths.Add(tempFilePath);
+                        }
+                    });
+
+                    // TPL: Add the copy task to the list of tasks
+                    copyTasks.Add(copyTask);
                 }
                 else if (item is DirectoryItem directoryItem) // if directory
                 {
-                    // Copy folder to temporary directory
-                    string dirName = Path.GetFileName(directoryItem.FilePath);
-                    string tempDirPath = Path.Combine(tempCopyDirectory, dirName);
-                    DirectoryCopy(directoryItem.FilePath, tempDirPath, true);
+                    // Copy folder to temporary directory using a separate task
+                    // TPL: Use Task.Run to create and execute a new task on the ThreadPool
+                    Task copyTask = Task.Run(() =>
+                    {
+                        string dirName = Path.GetFileName(directoryItem.FilePath);
+                        string tempDirPath = Path.Combine(tempCopyDirectory, dirName);
+                        DirectoryCopy(directoryItem.FilePath, tempDirPath, true);
 
-                    // Add path of copied folder to list
-                    _copiedFilesPaths.Add(tempDirPath);
+                        // Add path of copied folder to list (within the lock)
+                        lock (_copiedFilesPaths)
+                        {
+                            _copiedFilesPaths.Add(tempDirPath);
+                        }
+                    });
+
+                    // TPL: Add the copy task to the list of tasks
+                    copyTasks.Add(copyTask);
                 }
-            }
+            });
+
+            // TPL: Wait for all copy tasks to complete
+            Task.WaitAll(copyTasks.ToArray());
         }
     }
 
