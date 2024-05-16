@@ -228,10 +228,10 @@ public class FileOverviewViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Threadming manier: Threadpool
+    /// Threading manier: ThreadPool
     /// 
     /// Deze methode kopieert een directory recursief naar een nieuwe locatie, waarbij bestanden en submappen parallel worden gekopieerd met behulp van de ThreadPool van .NET.
-    /// Door Parallel.ForEach te gebruiken, wordt de onderliggende ThreadPool van .NET gebruikt om de iteraties over bestanden en directories te verdelen over meerdere threads.
+    /// Door gebruik te maken van ThreadPool.QueueUserWorkItem wordt de onderliggende ThreadPool van .NET gebruikt om de kopieeroperaties over meerdere threads te verdelen.
     /// Dit maakt effectief gebruik van beschikbare CPU-cycli en kan leiden tot betere prestaties, vooral bij het kopiëren van grote hoeveelheden data of het gebruik van langzame opslagmedia.
     /// </summary>
     /// <param name="sourceDirPath"></param>
@@ -247,26 +247,35 @@ public class FileOverviewViewModel : ViewModelBase
             throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
         }
 
-        DirectoryInfo[] dirs = dir.GetDirectories();
         Directory.CreateDirectory(destDirPath);
 
-        // Use Parallel.ForEach to copy files in parallel
-        Parallel.ForEach(dir.GetFiles(), file =>
+        var files = dir.GetFiles();
+        var dirs = dir.GetDirectories();
+
+        // Use ThreadPool to copy files in parallel
+        foreach (var file in files)
         {
-            string tempPath = Path.Combine(destDirPath, file.Name);
-            file.CopyTo(tempPath, true);
-        });
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                string tempPath = Path.Combine(destDirPath, file.Name);
+                file.CopyTo(tempPath, true);
+            });
+        }
 
         if (copySubDirs)
         {
-            // Use Parallel.ForEach to copy subdirectories in parallel
-            Parallel.ForEach(dirs, subdir =>
+            // Use ThreadPool to copy subdirectories in parallel
+            foreach (var subdir in dirs)
             {
-                string tempPath = Path.Combine(destDirPath, subdir.Name);
-                DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
-            });
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    string tempPath = Path.Combine(destDirPath, subdir.Name);
+                    DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                });
+            }
         }
     }
+
 
     /// <summary>
     /// Threading manier: locks
