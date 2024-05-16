@@ -583,7 +583,8 @@ namespace FileManager.ViewModels
 
                     var icon = await GetFileIcon(fileInfo.FullName);
 
-                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, _side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEdit));
+                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension + (FileUtil.IsSymbolicLink(file.FullName) ? " (Link)" : ""),
+                        icon, _side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEdit));
                 }));
 
 
