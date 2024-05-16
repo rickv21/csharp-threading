@@ -98,6 +98,7 @@ public class FileOverviewViewModel : ViewModelBase
         _rightSideViewModels.Add(RightSideViewModel);
 
         OnPropertyChanged(nameof(LeftSideViewModels));
+        OnPropertyChanged(nameof(RightSideViewModel));
     }
 
     public FileOverviewViewModel()
@@ -113,6 +114,7 @@ public class FileOverviewViewModel : ViewModelBase
         _rightSideViewModels.Add(RightSideViewModel);
 
         OnPropertyChanged(nameof(LeftSideViewModels));
+        OnPropertyChanged(nameof(RightSideViewModel));
     }
 
     // List needs to be manipulated in order for the Picker values to be updated
@@ -120,39 +122,28 @@ public class FileOverviewViewModel : ViewModelBase
     {
         if (item.Side == 0)
         {
-            if (item.FileName != "...")
-            {
-                LeftSideViewModel.CurrentPath = item.FilePath;
-            }
-            else
-            {
-                LeftSideViewModel.CurrentPath = Directory.GetParent(LeftSideViewModel.CurrentPath).FullName;
-            }
-            await UpdateTabAsync(LeftSideViewModels, LeftSideViewModel);
+            LeftSideViewModel.ItemDoubleTappedCommand.Execute(item);
+            LeftSideViewModel = UpdateTab(LeftSideViewModels, LeftSideViewModel);
         }
         else
         {
-            if (item.FileName != "...")
-            {
-                RightSideViewModel.CurrentPath = item.FilePath;
-            }
-            else
-            {
-                RightSideViewModel.CurrentPath = Directory.GetParent(RightSideViewModel.CurrentPath).FullName;
-            }
-            await UpdateTabAsync(RightSideViewModels, RightSideViewModel);
+            RightSideViewModel.ItemDoubleTappedCommand.Execute(item);
+            RightSideViewModel = UpdateTab(RightSideViewModels, RightSideViewModel);
         }
     }
 
-    private async Task UpdateTabAsync(ObservableCollection<FileListViewModel> viewModels, FileListViewModel viewModel)
+    private FileListViewModel UpdateTab(ObservableCollection<FileListViewModel> viewModels, FileListViewModel viewModel)
     {
         int index = viewModels.IndexOf(viewModel);
         FileListViewModel copy = viewModel as FileListViewModel;
         viewModels.RemoveAt(index);
         viewModels.Insert(index, copy);
 
+        return copy;
+
         // Wait for the UI to update before proceeding
-        await Task.Delay(100);
+        //await Task.Delay(100);
+
     }
 
     public async Task<string> SelectActionAsync()
@@ -225,6 +216,7 @@ public class FileOverviewViewModel : ViewModelBase
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
                 _rightSideViewModels.Add(new FileListViewModel(_fileIconCache, 1));
+                RightSideViewModel = RightSideViewModels[RightSideViewModels.Count - 1];
                 OnPropertyChanged(nameof(RightSideViewModels));
             });
         }
