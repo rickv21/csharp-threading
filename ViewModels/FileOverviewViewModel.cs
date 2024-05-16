@@ -194,7 +194,7 @@ public class FileOverviewViewModel : ViewModelBase
     /// Voor wanneer meerdere bestanden worden gekopïeerd. Door de lock 
     /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. 
     /// </summary>
-    public void CopyItems(List<object> selectedItems, string regex)
+    public void CopyItems(List<object> selectedItems, string regex = "")
     {
         lock (_copiedFilesPaths)
         {
