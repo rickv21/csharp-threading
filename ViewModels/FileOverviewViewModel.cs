@@ -4,11 +4,13 @@ using System.Drawing;
 using System.IO;
 using System.Runtime;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Views;
 using FileManager.Models;
 using FileManager.Views.Popups;
+using Microsoft.Maui.Storage;
 using Application = Microsoft.Maui.Controls.Application;
 
 namespace FileManager.ViewModels;
@@ -86,13 +88,13 @@ public class FileOverviewViewModel : ViewModelBase
 
     public async Task<string> SelectActionAsync()
     {
-        return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Move");
+        return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Paste", "Move");
     }
 
     public async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
     {
         string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Microsoft.Maui.Keyboard.Numeric);
-        if(int.Parse(number) > MAX_THREADS || int.Parse(number) < 1)
+        if (int.Parse(number) > MAX_THREADS || int.Parse(number) < 1)
         {
             return (number, null);
         }
@@ -107,7 +109,7 @@ public class FileOverviewViewModel : ViewModelBase
         return (number, null);
     }
 
-    public async Task ProcessActionAsync(string action, int number, string regex, ContentPage view, IList<Item> items)
+    public async Task ProcessActionAsync(string action, int number, string regex, ContentPage view, IList<Item> items, List<object> selectedItems, string targetPath)
     {
         var fileCount = 0;
         foreach (var item in items)
@@ -130,7 +132,11 @@ public class FileOverviewViewModel : ViewModelBase
                     break;
                 case "Copy":
                     await Task.Delay(2000);
-                    // Perform Copy action based on 'number'
+                    CopyItems(selectedItems, regex);
+                    break;
+                case "Paste":
+                    await Task.Delay(2000);
+                    PasteItems(targetPath, regex);
                     break;
             }
         }
@@ -188,7 +194,7 @@ public class FileOverviewViewModel : ViewModelBase
     /// Voor wanneer meerdere bestanden worden gekopïeerd. Door de lock 
     /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. 
     /// </summary>
-    public void CopyItems(List<object> selectedItems)
+    public void CopyItems(List<object> selectedItems, string regex)
     {
         lock (_copiedFilesPaths)
         {
@@ -207,18 +213,21 @@ public class FileOverviewViewModel : ViewModelBase
                 {
                     // Copy file to temporary directory
                     string fileName = Path.GetFileName(fileItem.FilePath);
-                    string tempFilePath = Path.Combine(tempCopyDirectory, fileName);
-                    File.Copy(fileItem.FilePath, tempFilePath, true);
+                    if (Regex.IsMatch(fileName, regex))
+                    {
+                        string tempFilePath = Path.Combine(tempCopyDirectory, fileName);
+                        File.Copy(fileItem.FilePath, tempFilePath, true);
 
-                    // Add path of file to list
-                    _copiedFilesPaths.Add(tempFilePath);
+                        // Add path of file to list
+                        _copiedFilesPaths.Add(tempFilePath);
+                    }
                 }
                 else if (item is DirectoryItem directoryItem) // if directory
                 {
                     // Copy folder to temporary directory
                     string dirName = Path.GetFileName(directoryItem.FilePath);
                     string tempDirPath = Path.Combine(tempCopyDirectory, dirName);
-                    DirectoryCopy(directoryItem.FilePath, tempDirPath, true);
+                    DirectoryCopy(directoryItem.FilePath, tempDirPath, true, regex);
 
                     // Add path of copied folder to list
                     _copiedFilesPaths.Add(tempDirPath);
@@ -238,7 +247,7 @@ public class FileOverviewViewModel : ViewModelBase
     /// <param name="destDirPath"></param>
     /// <param name="copySubDirs"></param>
     /// <exception cref="DirectoryNotFoundException"></exception>
-    private void DirectoryCopy(string sourceDirPath, string destDirPath, bool copySubDirs)
+    private void DirectoryCopy(string sourceDirPath, string destDirPath, bool copySubDirs, string regex)
     {
         DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
 
@@ -253,8 +262,11 @@ public class FileOverviewViewModel : ViewModelBase
         // Use Parallel.ForEach to copy files in parallel
         Parallel.ForEach(dir.GetFiles(), file =>
         {
-            string tempPath = Path.Combine(destDirPath, file.Name);
-            file.CopyTo(tempPath, true);
+            if (Regex.IsMatch(file.Name, regex))
+            {
+                string tempPath = Path.Combine(destDirPath, file.Name);
+                file.CopyTo(tempPath, true);
+            }
         });
 
         if (copySubDirs)
@@ -263,7 +275,7 @@ public class FileOverviewViewModel : ViewModelBase
             Parallel.ForEach(dirs, subdir =>
             {
                 string tempPath = Path.Combine(destDirPath, subdir.Name);
-                DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                DirectoryCopy(subdir.FullName, tempPath, copySubDirs, regex);
             });
         }
     }
@@ -275,7 +287,7 @@ public class FileOverviewViewModel : ViewModelBase
     /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. Hierbij kunnen niet meerdere bronnen
     /// de lijst bewerken.
     /// </summary>
-    public void PasteItems(string targetPath)
+    public void PasteItems(string targetPath, string regex = "")
     {
         lock (_copiedFilesPaths)
         {
@@ -304,7 +316,7 @@ public class FileOverviewViewModel : ViewModelBase
                     }
 
                     // Copy directory
-                    DirectoryCopy(sourcePath, destFilePath, true);
+                    DirectoryCopy(sourcePath, destFilePath, true, regex);
                 }
             }
 
@@ -347,7 +359,7 @@ public class FileOverviewViewModel : ViewModelBase
 
     private int CountFiles(Item item)
     {
-        if(item.Type != ItemType.Dir)
+        if (item.Type != ItemType.Dir)
         {
             return 1;
         }
