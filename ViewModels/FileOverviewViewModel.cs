@@ -84,13 +84,13 @@ public class FileOverviewViewModel : ViewModelBase
 
     public async Task<string> SelectActionAsync()
     {
-        return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Move");
+        return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Paste", "Move");
     }
 
     public async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
     {
         string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Microsoft.Maui.Keyboard.Numeric);
-        if(int.Parse(number) > MAX_THREADS || int.Parse(number) < 1)
+        if (int.Parse(number) > MAX_THREADS || int.Parse(number) < 1)
         {
             return (number, null);
         }
@@ -105,18 +105,20 @@ public class FileOverviewViewModel : ViewModelBase
         return (number, null);
     }
 
-    public async Task ProcessActionAsync(string action, int number, string regex)
+    public async Task ProcessActionAsync(string action, int number, string regex, List<object> selectedItems, string targetPath)
     {
         switch (action)
         {
             case "Move":
-                // Perform Move action based on 'number'
                 break;
             case "Copy":
-                // Perform Copy action based on 'number'
+                CopyItems(selectedItems);
+                break;
+            case "Paste":
+                PasteItems(targetPath);
+                break;
                 break;
         }
-
     }
 
     public void PassClickEvent(string key)
