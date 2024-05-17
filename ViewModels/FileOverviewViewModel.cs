@@ -221,7 +221,6 @@ public class FileOverviewViewModel : ViewModelBase
                     break;
                 case "Paste":
                     await Task.Delay(2000);
-                    Debug.WriteLine("TARGEEEET: " + targetPath );
                     await PasteItems(targetPath);
                     break;
             }
@@ -479,22 +478,15 @@ public class FileOverviewViewModel : ViewModelBase
     /// </summary>
     public async Task PasteItems(string targetPath)
     {
-        Debug.WriteLine("PASTEEEE");
         lock (_copiedFilesPaths)
         {
-            Debug.WriteLine("bleep???");
-
-            Debug.WriteLine("target " + targetPath);
-
             foreach (var sourcePath in _copiedFilesPaths)
             {
                 string fileName = Path.GetFileName(sourcePath);
                 string destFilePath = Path.Combine(targetPath, fileName);
-                Debug.WriteLine("bleep");
 
                 if (File.Exists(sourcePath))
                 {
-                    Debug.WriteLine("bloop");
 
                     if (File.Exists(destFilePath))
                     {
@@ -504,19 +496,15 @@ public class FileOverviewViewModel : ViewModelBase
 
                     // Copy file
                     File.Copy(sourcePath, destFilePath, true);
-                    Debug.WriteLine("paste file");
 
                 }
                 else if (Directory.Exists(sourcePath))
                 {
-                    Debug.WriteLine("blep");
-
                     if (Directory.Exists(destFilePath))
                     {
                         MessageBox.Show("Directory already exists in target path: " + destFilePath, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
-                    Debug.WriteLine("paste folder");
 
                     // Copy directory
                     DirectoryCopy(sourcePath, destFilePath, true);
