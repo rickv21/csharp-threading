@@ -12,8 +12,8 @@
 
 ## Bestandsbeheer
 - **Bestanden Selecteren**: Selecteer meerdere bestanden door ze aan te klikken (multi-select modus).
-- **Bestanden Verslepen**: Sleep bestanden van de ene kant naar de andere of binnen dezelfde zijde.
-- **Bestanden Kopieren of verplaatsen**: Maak na het verslepen de keuze om de bestanden kopieren of plakken.
+- **Bestanden Verslepen**: Sleep bestanden van de ene kant naar de andere en klik op move. Het is van belang de bestanden OP een item aan de andere kant te slepen omdat het drop veld enkel zo lang is als er items zijn.
+- **Bestanden Kopieren en plakken**: Om bestanden te kopieren selecteer je ze eerst. Daarna sleep je ze naar de andere kant om het pop-up scherm te krijgen. Het is van belang de bestanden OP een item aan de andere kant te slepen omdat het drop veld enkel zo lang is als er items zijn. In het pop-up scherm selecteer je copy. De bestanden zijn nu gekopieerd. Deselecteer de bestanden en selecteer daarna de map waar je wilt plakken. Sleep deze map naar de andere zijde en klik op paste.
 - **Thread aantal selecteren**: Maak een keuze over hoeveel threads er gebruikt zullen worden voor de gekozen actie.
 - **Filteren**: Geef een regex voor het filteren op welke geselecteerde bestanden blootgesteld zullen worden aan het kopieren en plakken.
 
@@ -36,4 +36,5 @@
 ## Keyboard Shortcuts
 - **F2**: Raster/Lijst weergave
 - **F5**: Vernieuwen
+
 
