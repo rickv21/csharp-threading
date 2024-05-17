@@ -3,16 +3,13 @@ using System.Runtime.InteropServices;
 using FileManager.Models;
 using FileManager.ViewModels;
 using SharpHook;
-using CommunityToolkit.Maui.Views;
-using FileManager.Views.Popups;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace FileManager.Views;
 
 public partial class FileOverviewPage : ContentPage
 {
     private readonly FileOverviewViewModel viewModel;
+
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
@@ -54,10 +51,10 @@ public partial class FileOverviewPage : ContentPage
         });
 
         //Some more keyboard selection prevention.
-        if (key == "tab")
+    /*    if (key == "tab")
         {
             e.SuppressEvent = true;
-        }
+        }*/
 
         //Ignore enter and backspace if path entry field is focused.
         if ((key == "enter" || key == "numpadenter") || key == "backspace")
@@ -207,7 +204,6 @@ public partial class FileOverviewPage : ContentPage
         }
     }
     
-    
     private async void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
@@ -241,8 +237,7 @@ public partial class FileOverviewPage : ContentPage
                 await DisplayAlert("Alert", "You have to select first to delete", "OK");
                 return;
             }
-
-            await viewModel.RightSideViewModel.DeleteItem();
+            viewModel.RightSideViewModel.DeleteItem();
         }
         else if (item.Text == "Copy")
         {
@@ -252,6 +247,10 @@ public partial class FileOverviewPage : ContentPage
         {
             await viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
             RefreshAllPages("right");
+        }
+        else if (item.Text == "Create symbolic link")
+        {
+            viewModel.CreateSymbolicLink(1);
         }
     }
 
@@ -300,6 +299,10 @@ public partial class FileOverviewPage : ContentPage
         {
             await viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
             RefreshAllPages("left");
+        }
+        else if (item.Text == "Create symbolic link")
+        {
+            viewModel.CreateSymbolicLink(0);
         }
     }
 
@@ -395,6 +398,37 @@ public partial class FileOverviewPage : ContentPage
         }
     }
 
+    void AddLeftTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.AddTabAsync(0));
+    }
+
+    void RemoveLeftTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.RemoveTabAsync(0));
+    }
+
+    void AddRightTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.AddTabAsync(1));
+    }
+
+    void RemoveRightTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.RemoveTabAsync(1));
+    }
+
+    void OnItemDrop(object sender, DropEventArgs e)
+    {
+        var droppedItems = e.Data.Properties["files"] as IList<object>;
+        if (droppedItems != null && droppedItems.Count > 0)
+        {
+            var itemList = droppedItems.OfType<Item>().ToList();
+            _ = OnItemDropAsync(itemList);
+        }
+
+    }
+                
     // Helper method to copy directory recursively
     private void CopyDirectory(string sourceDirPath, string destDirPath)
     {

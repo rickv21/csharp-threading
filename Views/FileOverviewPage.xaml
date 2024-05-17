@@ -2,10 +2,16 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FileManager.Views.FileOverviewPage"
-             xmlns:local="clr-namespace:FileManager.ViewModels">
+             xmlns:local="clr-namespace:FileManager.ViewModels"
+             xmlns:resources="clr-namespace:FileManager.Resources.Converters">
     <ContentPage.BindingContext>
         <local:FileOverviewViewModel />
     </ContentPage.BindingContext>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <resources:PickerConverter x:Key="PickerConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="50*" />
@@ -15,7 +21,13 @@
         <!-- Left side -->
         <Border Stroke="Aqua" StrokeThickness="1" x:Name="LeftBorder" StrokeShape="RoundRectangle 5,10,0,0" Grid.Column="0">
             <Grid>
-                <StackLayout  BackgroundColor="#252526">
+                <StackLayout BackgroundColor="#252526">
+                        <StackLayout Orientation="Horizontal">
+                        <Picker HorizontalOptions="FillAndExpand" ItemsSource="{Binding LeftSideViewModels}" ItemDisplayBinding="{Binding CurrentPath, Converter={StaticResource PickerConverter}}" SelectedItem="{Binding LeftSideViewModel}"/>
+                        <Button HeightRequest="20" CornerRadius="0" Text="Add" BackgroundColor="DeepSkyBlue" Clicked="AddLeftTab" TextColor="White"/>
+                        <Button HeightRequest="20" CornerRadius="0" Text="Remove" BackgroundColor="IndianRed" Clicked="RemoveLeftTab" TextColor="White"/>
+
+                    </StackLayout>
                     <Entry x:Name="LeftPathField" Text="{Binding LeftSideViewModel.CurrentPath}" ReturnCommand="{Binding LeftSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5"  HorizontalOptions="FillAndExpand" />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -77,7 +89,6 @@
                                 </Label>
                         </Border>
                     </Grid>
-
                     <!-- Content for the left ScrollView -->
                     <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
                         <CollectionView.GestureRecognizers>
@@ -98,7 +109,7 @@
                                         <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
-                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
@@ -115,6 +126,11 @@
                                             <MenuFlyoutItem Text="Delete" Clicked="LeftContextClick">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Create symbolic link" Clicked="LeftContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#128279;" FontFamily="Arial" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Copy" Clicked="LeftContextClick">
@@ -161,7 +177,13 @@
         <!-- Right side -->
         <Border Stroke="Transparent" StrokeThickness="1" x:Name="RightBorder" StrokeShape="RoundRectangle 0,0,0,10" Grid.Column="1">
             <Grid>
-            <StackLayout BackgroundColor="#252526">
+                <StackLayout BackgroundColor="#252526">
+                    <StackLayout Orientation="Horizontal">
+                        <Picker HorizontalOptions="FillAndExpand" ItemsSource="{Binding RightSideViewModels}" ItemDisplayBinding="{Binding CurrentPath, Converter={StaticResource PickerConverter}}" SelectedItem="{Binding RightSideViewModel}"/>
+                        <Button HeightRequest="20" CornerRadius="0" Text="Add" BackgroundColor="DeepSkyBlue" Clicked="AddRightTab" TextColor="White"/>
+                        <Button HeightRequest="20" CornerRadius="0" Text="Remove" BackgroundColor="IndianRed" Clicked="RemoveRightTab" TextColor="White"/>
+                    </StackLayout>
+  
                     <Entry x:Name="RightPathField" Text="{Binding RightSideViewModel.CurrentPath}" ReturnCommand="{Binding RightSideViewModel.PathChangedCommand}" BackgroundColor="#4b4b4d" IsReadOnly="False"  Margin="5, 0, 0, 5" HorizontalOptions="FillAndExpand" />
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -244,23 +266,28 @@
                                         <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
-                                            <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
-                                        </Grid.GestureRecognizers>
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal" />
-                                            <VisualState x:Name="Selected">
-                                                <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor" Value="Transparent" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                    </Grid.GestureRecognizers>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="Selected">
+                                            <VisualState.Setters>
+                                                <Setter Property="BackgroundColor" Value="Transparent" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
                                     <FlyoutBase.ContextFlyout>
                                         <MenuFlyout>
                                             <MenuFlyoutItem Text="Delete" Clicked="RightContextClick">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Create symbolic link" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#128279;" FontFamily="Arial" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Copy" Clicked="RightContextClick">
