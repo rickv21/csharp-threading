@@ -24,6 +24,10 @@ public partial class FileOverviewPage : ContentPage
         Task.Run(() => RegisterKeybindingsAsync());
     }
 
+    /// <summary>
+    /// Registers keybindings asynchronously.
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task RegisterKeybindingsAsync()
     {
         var hook = new SimpleGlobalHook();
@@ -31,6 +35,11 @@ public partial class FileOverviewPage : ContentPage
         await hook.RunAsync();
     }
 
+    /// <summary>
+    /// Handles the key press event.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="KeyboardHookEventArgs"/> instance containing the event data.</param>
     private void OnKeyPressed(object? sender, KeyboardHookEventArgs e)
     {
         var activeWindowHandle = GetForegroundWindow();
@@ -88,7 +97,11 @@ public partial class FileOverviewPage : ContentPage
         viewModel.PassClickEvent(key);
     }
 
-
+    /// <summary>
+    /// Handles the item tap event.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     public void OnItemTapped(object sender, EventArgs e)
     {
         var item = ((sender as Grid).BindingContext as Item);
@@ -135,7 +148,10 @@ public partial class FileOverviewPage : ContentPage
         viewModel.UpdateSelected(getCurrentView(0).SelectedItems, getCurrentView(1).SelectedItems);
     }
 
-
+    /// <summary>
+    /// Handles the drag starting event.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
     public void OnDragStarting(object sender, DragStartingEventArgs e)
     {
         var dragGestureRecognizer = (DragGestureRecognizer)sender;
@@ -183,6 +199,11 @@ public partial class FileOverviewPage : ContentPage
         }
     }
 
+    /// <summary>
+    /// Handles the item drop event.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="DropEventArgs"/> instance containing the event data.</param>
     public void OnItemDrop(object sender, DropEventArgs e)
     {
         var droppedItems = e.Data.Properties["files"] as IList<object>;
@@ -195,26 +216,11 @@ public partial class FileOverviewPage : ContentPage
         }
     }
 
-    private void RefreshAllPages(string? side)
-    {
-        if (viewModel.LeftSideViewModel.GetCurrentPath().Equals(viewModel.RightSideViewModel.GetCurrentPath()))
-        {
-            viewModel.RightSideViewModel.RefreshAsync();
-            viewModel.LeftSideViewModel.RefreshAsync();
-        }
-        else
-        {
-            if (side.Equals("left"))
-            {
-                viewModel.LeftSideViewModel.RefreshAsync();
-            }
-            else if (side.Equals("right"))
-            {
-                viewModel.RightSideViewModel.RefreshAsync();
-            }
-        }
-    }
-
+    /// <summary>
+    /// Handles the right-click context menu event on the right side.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     private async void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
@@ -236,7 +242,7 @@ public partial class FileOverviewPage : ContentPage
                 string extension = fileInfo.Extension;
 
                 FileListViewModel.RenameItem(selectedItem, userInput, extension);
-                RefreshAllPages("right");
+                viewModel.RightSideViewModel.RefreshFiles();
             }
             else
             {
@@ -258,6 +264,11 @@ public partial class FileOverviewPage : ContentPage
         }
     }
 
+    /// <summary>
+    /// Handles the left-click context menu event.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     private async void LeftContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
@@ -278,7 +289,7 @@ public partial class FileOverviewPage : ContentPage
                 string extension = fileInfo.Extension;
 
                 FileListViewModel.RenameItem(selectedItem, userInput, extension);
-                RefreshAllPages("left");
+                viewModel.LeftSideViewModel.RefreshFiles();
             }
             else
             {
@@ -294,7 +305,9 @@ public partial class FileOverviewPage : ContentPage
             }
 
             await viewModel.LeftSideViewModel.DeleteItem();
-            RefreshAllPages("");
+            viewModel.LeftSideViewModel.RefreshFiles();
+            viewModel.RightSideViewModel.RefreshFiles();
+
         }
         else if (item.Text == "Create symbolic link")
         {
@@ -302,48 +315,11 @@ public partial class FileOverviewPage : ContentPage
         }
     }
 
-    void FileDrop(object sender, DropEventArgs e)
-    {
-        var dropGestureRecognizer = (DropGestureRecognizer)sender;
-        var collectionView = FindParentCollectionView(dropGestureRecognizer);
-
-        if (collectionView != null)
-        {
-            var viewModel = BindingContext as FileOverviewViewModel;
-
-            // Get target path
-            string targetPath = string.Empty;
-            if (collectionView == getCurrentView(1))
-            {
-                targetPath = viewModel.RightSideViewModel.CurrentPath;
-            }
-            else if (collectionView == getCurrentView(0))
-            {
-                targetPath = viewModel.LeftSideViewModel.CurrentPath;
-            }
-
-            // Ensure thread safety with locking
-            lock (viewModel)
-            {
-                // Iterate over dropped files and move them to the target path
-                foreach (var file in viewModel.DroppedFiles)
-                {
-                    // Ensure that the file is not null and the target path is valid
-                    if (file != null && !string.IsNullOrEmpty(targetPath))
-                    {
-                        //TODO: Needs to be connected to popups (@Monique).
-                        MoveFile(file, targetPath);
-                    }
-                }
-
-                RefreshAllPages("");
-
-                viewModel.RightSideViewModel.RefreshFiles();
-                viewModel.LeftSideViewModel.RefreshFiles();
-            }
-        }
-    }
-
+    /// <summary>
+    /// Finds the parent CollectionView instance from a given DropGestureRecognizer.
+    /// </summary>
+    /// <param name="dropGestureRecognizer">The DropGestureRecognizer instance.</param>
+    /// <returns>The parent CollectionView instance, or null if not found.</returns>
     private CollectionView FindParentCollectionView(DropGestureRecognizer dropGestureRecognizer)
     {
         var parent = dropGestureRecognizer.Parent;
@@ -358,6 +334,12 @@ public partial class FileOverviewPage : ContentPage
         return null;
     }
 
+    /// <summary>
+    /// Moves a file or directory to the specified target path.
+    /// </summary>
+    /// <param name="file">The file or directory to move.</param>
+    /// <param name="targetPath">The target path where the file or directory should be moved.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task MoveFile(Item file, string targetPath)
     {
         // Get only the file name from the file path
@@ -384,7 +366,7 @@ public partial class FileOverviewPage : ContentPage
             }
 
             // Copy the directory and its contents recursively
-            CopyDirectory(file.FilePath, newFilePath);
+            CopyMoveDirectory(file.FilePath, newFilePath);
 
             // Delete the original directory
             Directory.Delete(file.FilePath, true);
@@ -400,28 +382,56 @@ public partial class FileOverviewPage : ContentPage
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Adds a new tab to the left side.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     void AddLeftTab(object sender, EventArgs e)
     {
         Task.Run(async () => await viewModel.AddTabAsync(0));
     }
+
+    /// <summary>
+    /// Removes a tab from the left side.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
 
     void RemoveLeftTab(object sender, EventArgs e)
     {
         Task.Run(async () => await viewModel.RemoveTabAsync(0));
     }
 
+    /// <summary>
+    /// Adds a new tab to the right side.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+
     void AddRightTab(object sender, EventArgs e)
     {
         Task.Run(async () => await viewModel.AddTabAsync(1));
     }
+
+    /// <summary>
+    /// Removes a tab from the right side.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
 
     void RemoveRightTab(object sender, EventArgs e)
     {
         Task.Run(async () => await viewModel.RemoveTabAsync(1));
     }
 
-    // Helper method to copy directory recursively
-    private void CopyDirectory(string sourceDirPath, string destDirPath)
+    /// <summary>
+    /// Copies a directory recursively from the source path to the destination path. This is a helper method to be able to move
+    /// a directory to a different location. 
+    /// </summary>
+    /// <param name="sourceDirPath">The path of the source directory.</param>
+    /// <param name="destDirPath">The path of the destination directory.</param>
+    private void CopyMoveDirectory(string sourceDirPath, string destDirPath)
     {
         // Create the destination directory if it doesn't exist
         if (!Directory.Exists(destDirPath))
@@ -442,10 +452,15 @@ public partial class FileOverviewPage : ContentPage
         {
             string dirName = Path.GetFileName(subDirPath);
             string destSubDirPath = Path.Combine(destDirPath, dirName);
-            CopyDirectory(subDirPath, destSubDirPath);
+            CopyMoveDirectory(subDirPath, destSubDirPath);
         }
     }
 
+    /// <summary>
+    /// Gets the path of the selected folder on the specified side.
+    /// </summary>
+    /// <param name="side">The side to get the selected folder path from (0 for left, 1 for right).</param>
+    /// <returns>The path of the selected folder, or null if no folder is selected.</returns>
     private string GetSelectedFolderPath(int side)
     {
         IList<Item> selectedItems = null;
@@ -470,12 +485,12 @@ public partial class FileOverviewPage : ContentPage
         return null;
     }
 
-    //void OnCollectionViewSizeChanged(object sender, EventArgs e)
-    //{
-    //    // Replace YourCollectionViewName with the name of your CollectionView
-    //    RightCollection.ItemsSource = null;
-    //    RightCollection.ItemsSource = Files;
-    //}
+    /// <summary>
+    /// Handles the item drop event asynchronously.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="items">The list of items being dropped.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
 
     async Task OnItemDropAsync(object sender, IList<Item> items)
     {
@@ -501,13 +516,13 @@ public partial class FileOverviewPage : ContentPage
             {
                 string numerOfThreads = "1";
                 string regex = null;
-                if(action.ToLower() != "copy")
+                if (action.ToLower() != "copy")
                 {
                     (string, string?) userInput = await FileOverviewViewModel.PromptUserAsync(action.ToLower(), needsRegex);
                     numerOfThreads = userInput.Item1;
                     regex = userInput.Item2;
                 }
-   
+
                 if (numerOfThreads != null)
                 {
                     if (int.TryParse(numerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
@@ -567,44 +582,54 @@ public partial class FileOverviewPage : ContentPage
             }
         }
     }
-        private void ToggleRosterView_Clicked()
+
+    /// <summary>
+    /// Toggles the roster view on and off.
+    /// </summary>
+    private void ToggleRosterView_Clicked()
+    {
+        isRosterView = !isRosterView;
+        if (isRosterView)
         {
-            isRosterView = !isRosterView;
-            if (isRosterView)
-            {
-                LeftListCollection.IsEnabled = false;
-                LeftListCollection.IsVisible = false;
+            LeftListCollection.IsEnabled = false;
+            LeftListCollection.IsVisible = false;
 
-                LeftRosterCollection.IsEnabled = true;
-                LeftRosterCollection.IsVisible = true;
+            LeftRosterCollection.IsEnabled = true;
+            LeftRosterCollection.IsVisible = true;
 
-                RightListCollection.IsEnabled = false;
-                RightListCollection.IsVisible = false;
+            RightListCollection.IsEnabled = false;
+            RightListCollection.IsVisible = false;
 
-                RightRosterCollection.IsEnabled = true;
-                RightRosterCollection.IsVisible = true;
-            }
-            else
-            {
-                LeftListCollection.IsEnabled = true;
-                LeftListCollection.IsVisible = true;
-
-                LeftRosterCollection.IsEnabled = false;
-                LeftRosterCollection.IsVisible = false;
-
-                RightListCollection.IsEnabled = true;
-                RightListCollection.IsVisible = true;
-
-                RightRosterCollection.IsEnabled = false;
-                RightRosterCollection.IsVisible = false;
-            }
+            RightRosterCollection.IsEnabled = true;
+            RightRosterCollection.IsVisible = true;
         }
+        else
+        {
+            LeftListCollection.IsEnabled = true;
+            LeftListCollection.IsVisible = true;
+
+            LeftRosterCollection.IsEnabled = false;
+            LeftRosterCollection.IsVisible = false;
+
+            RightListCollection.IsEnabled = true;
+            RightListCollection.IsVisible = true;
+
+            RightRosterCollection.IsEnabled = false;
+            RightRosterCollection.IsVisible = false;
+        }
+    }
+
+    /// <summary>
+    /// Gets the current view (CollectionView) based on the side and roster view state.
+    /// </summary>
+    /// <param name="side">The side to get the view from (0 for left, 1 for right).</param>
+    /// <returns>The current CollectionView instance.</returns>
 
     private CollectionView getCurrentView(int side)
     {
         if (isRosterView)
         {
-            if(side == 0)
+            if (side == 0)
             {
                 return LeftRosterCollection;
             }
