@@ -269,7 +269,7 @@ namespace FileManager.ViewModels
             FileNameText = "Filename";
             InfoText = "Info";
             DateText = "Date";
-            
+
             if (folder != null)
             {
                 sortedItems.Insert(0, folder);
@@ -535,7 +535,8 @@ namespace FileManager.ViewModels
                     CurrentPath = item.FilePath;
                     await FillList(directoryInfo);
                     return;
-                } else
+                }
+                else
                 {
                     await AppShell.Current.DisplayAlert("Invalid location", "This folder does not exist anymore!", "OK");
                     await RefreshAsync();

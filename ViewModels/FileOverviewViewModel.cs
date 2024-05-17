@@ -167,13 +167,13 @@ public class FileOverviewViewModel : ViewModelBase
 
     public static async Task<string> SelectActionAsync()
     {
-        return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Move");
+        return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Paste", "Move");
     }
 
     public static async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
     {
         string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Microsoft.Maui.Keyboard.Numeric);
-        if(int.Parse(number) > MAX_THREADS || int.Parse(number) < 1)
+        if (int.Parse(number) > MAX_THREADS || int.Parse(number) < 1)
         {
             return (number, null);
         }
@@ -188,7 +188,7 @@ public class FileOverviewViewModel : ViewModelBase
         return (number, null);
     }
 
-    public async Task ProcessActionAsync(string action, int number, string regex, ContentPage view, IList<Item> items)
+    public async Task ProcessActionAsync(string action, int number, string regex, ContentPage view, IList<Item> items, List<object> selectedItems, string targetPath)
     {
         var fileCount = 0;
         foreach (var item in items)
@@ -211,7 +211,11 @@ public class FileOverviewViewModel : ViewModelBase
                     break;
                 case "Copy":
                     await Task.Delay(2000);
-                    // Perform Copy action based on 'number'
+                    CopyItems(selectedItems);
+                    break;
+                case "Paste":
+                    await Task.Delay(2000);
+                    PasteItems(targetPath);
                     break;
             }
         }
@@ -476,7 +480,7 @@ public class FileOverviewViewModel : ViewModelBase
 
     private int CountFiles(Item item)
     {
-        if(item.Type != ItemType.Dir)
+        if (item.Type != ItemType.Dir)
         {
             return 1;
         }
