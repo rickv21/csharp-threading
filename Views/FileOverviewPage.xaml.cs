@@ -427,12 +427,18 @@ public partial class FileOverviewPage : ContentPage
         {
             try
             {
-                (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
-                var numnerOfThreads = userInput.Item1;
-                var regex = userInput.Item2;
-                if (userInput.Item1 != null)
+                string numerOfThreads = "1";
+                string regex = null;
+                if(action.ToLower() != "copy")
                 {
-                    if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
+                    (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
+                    numerOfThreads = userInput.Item1;
+                    regex = userInput.Item2;
+                }
+   
+                if (numerOfThreads != null)
+                {
+                    if (int.TryParse(numerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
                     {
                         if (LeftCollection.SelectedItems.ToList().Count() >= 1)
                         {
