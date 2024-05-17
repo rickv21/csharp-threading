@@ -223,14 +223,6 @@ public partial class FileOverviewPage : ContentPage
 
             viewModel.RightSideViewModel.DeleteItem();
         }
-        else if (item.Text == "Copy")
-        {
-            //viewModel.CopyItems(RightCollection.SelectedItems.ToList());
-        }
-        else if (item.Text == "Paste")
-        {
-            viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
-        }
     }
 
     private async void LeftContextClick(object sender, EventArgs e)
@@ -254,14 +246,6 @@ public partial class FileOverviewPage : ContentPage
             }
 
             viewModel.LeftSideViewModel.DeleteItem();
-        }
-        else if (item.Text == "Copy")
-        {
-            //viewModel.CopyItems(LeftCollection.SelectedItems.ToList());
-        }
-        else if (item.Text == "Paste")
-        {
-            viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
         }
     }
 
