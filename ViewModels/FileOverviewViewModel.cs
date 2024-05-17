@@ -188,14 +188,14 @@ public class FileOverviewViewModel : ViewModelBase
     private string tempCopyDirectory = Path.Combine(Path.GetTempPath(), "FileManagerCopiedItems");
 
     /// <summary>
-    /// Threading manier: Locks en Task Parallel Library (TPL)
-    ///
-    /// Voor het kopiëren van meerdere bestanden wordt een combinatie van locking en de Task Parallel Library (TPL) gebruikt.
-    /// De lock zorgt ervoor dat slechts één thread tegelijk toegang heeft tot de _copiedFilesPaths lijst om race-condities te voorkomen.
-    /// De TPL wordt gebruikt om het kopiëren van elk afzonderlijk bestand of directory parallel uit te voeren op de ThreadPool met behulp van taken.
-    /// Dit kan leiden tot betere prestaties, vooral bij het kopiëren van veel bestanden of grote bestanden.
+    /// Threading: Locks en Task Parallel Library (TPL)
     /// 
-    /// TPL is niet hetzelfde als threadpool. Het biedt hoger-niveau constructies voor parallel programmeren, terwijl ThreadPool een low-level mechanisme is voor het beheren van threads.
+    /// For copying multiple files, a combination of locking and the Task Parallel Library (TPL) is used.
+    /// The lock ensures that only one thread at a time can access the _copiedFilesPaths list to prevent race conditions.
+    /// The TPL is used to perform the copying of each individual file or directory in parallel on the ThreadPool using tasks.
+    /// This can lead to better performance, especially when copying many files or large files.
+    /// 
+    /// TPL is not the same as threadpool. It provides higher-level constructs for parallel programming, while ThreadPool is a low-level mechanism for managing threads.
     /// </summary>
     public async Task CopyItems(List<object> selectedItems, int maxDegreeOfParallelism)
     {
@@ -262,11 +262,11 @@ public class FileOverviewViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Threadming manier: Threadpool
-    /// 
-    /// Deze methode kopieert een directory recursief naar een nieuwe locatie, waarbij bestanden en submappen parallel worden gekopieerd met behulp van de ThreadPool van .NET.
-    /// Door Parallel.ForEach te gebruiken, wordt de onderliggende ThreadPool van .NET gebruikt om de iteraties over bestanden en directories te verdelen over meerdere threads.
-    /// Dit maakt effectief gebruik van beschikbare CPU-cycli en kan leiden tot betere prestaties, vooral bij het kopiëren van grote hoeveelheden data of het gebruik van langzame opslagmedia.
+    /// Threading: Threadpool
+    ///  
+    /// This method recursively copies a directory to a new location, copying files and subdirectories in parallel using .NET's ThreadPool.
+    /// By using Parallel.ForEach, .NET's underlying ThreadPool is used to distribute iterations across files and directories across multiple threads.
+    /// This makes effective use of available CPU cycles and can lead to better performance, especially when copying large amounts of data or using slow storage media.
     /// </summary>
     /// <param name="sourceDirPath"></param>
     /// <param name="destDirPath"></param>
@@ -332,11 +332,11 @@ public class FileOverviewViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Threading manier: locks
+    /// Threading: locks
     /// 
-    /// Voor wanneer meerdere bestanden worden geplakt of misschien nog bestanden worden gekopieerd. Door de lock 
-    /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. Hierbij kunnen niet meerdere bronnen
-    /// de lijst bewerken.
+    /// For when multiple files are pasted or perhaps files are copied. By the lock 
+    /// only 1 file or directory has access to the _copiedFilesPaths list. Here, multiple sources cannot
+    /// edit the list.
     /// </summary>
     public void PasteItems(string targetPath)
     {
