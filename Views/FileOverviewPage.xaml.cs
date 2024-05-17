@@ -29,8 +29,6 @@ public partial class FileOverviewPage : ContentPage
         viewModel = new FileOverviewViewModel();
         BindingContext = viewModel;
        
-        
-        
         Task.Run(() => RegisterKeybindingsAsync());
     }
 
@@ -66,6 +64,15 @@ public partial class FileOverviewPage : ContentPage
         if (key == "tab")
         {
             e.SuppressEvent = true;
+        }
+
+        if(key == "f2")
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ToggleRosterView_Clicked();
+            });
+            return;
         }
 
         //Ignore enter and backspace if path entry field is focused.
@@ -440,7 +447,7 @@ public partial class FileOverviewPage : ContentPage
         }
 
     }
-    private void ToggleRosterView_Clicked(object sender, EventArgs e)
+    private void ToggleRosterView_Clicked()
     {
         isRosterView = !isRosterView;
         if(isRosterView)

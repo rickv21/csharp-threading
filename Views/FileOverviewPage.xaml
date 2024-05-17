@@ -444,11 +444,5 @@ ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name
                 <ActivityIndicator x:Name="RightLoadingIndicator" IsVisible="{Binding RightSideViewModel.IsLoading}" IsRunning="{Binding RightSideViewModel.IsLoading}" VerticalOptions="Center" HorizontalOptions="Center"  />
             </Grid>
         </Border>
-        <Button Text="Toggle Roster View"
-                Grid.Column="0"
-                Clicked="ToggleRosterView_Clicked"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"
-                BackgroundColor="LightGray" />
     </Grid>
 </ContentPage>
