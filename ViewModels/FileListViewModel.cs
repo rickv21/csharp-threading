@@ -114,6 +114,11 @@ namespace FileManager.ViewModels
         public ICommand SortFilesOnSizeCommand { get; }
         public ICommand SortFilesOnDateCommand { get; }
 
+        public FileListViewModel()
+        {
+
+        }
+
         public FileListViewModel(ConcurrentDictionary<string, byte[]> fileIconCache, short side)
         {
             _side = side;

@@ -12,6 +12,11 @@
         public string ReadableSize { get; set; }
         public short Side { get; }
 
+        public Item()
+        {
+
+        }
+
         public Item(string fileName, string filePath, ImageSource icon, short side, Boolean hidden, Boolean isLink)
         {
             FileName = fileName;

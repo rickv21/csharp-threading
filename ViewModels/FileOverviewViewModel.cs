@@ -16,6 +16,7 @@ using Application = Microsoft.Maui.Controls.Application;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Newtonsoft.Json;
+using CommunityToolkit.Maui.Core.Extensions;
 
 namespace FileManager.ViewModels;
 
@@ -544,6 +545,19 @@ public class FileOverviewViewModel : ViewModelBase
         Directory.Delete(sourceDirPath, false);
     }
 
+    private ObservableCollection<dynamic> _favoriteItems = [];
+    public ObservableCollection<dynamic> FavoriteItems
+    {
+        get { return _favoriteItems; }
+        set { _favoriteItems = value; }
+    }
+
+
+    public ObservableCollection<dynamic> GetFavoriteItems()
+    {
+        return FavoriteItems;
+    }
+
     public async void FavoriteItem(object item)
     {
         string filePath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\FileManager\favorites.json";
@@ -554,28 +568,69 @@ public class FileOverviewViewModel : ViewModelBase
                 ? new List<dynamic>()
                 : JsonConvert.DeserializeObject<List<dynamic>>(existingJsonContent);
 
+        string updatedJsonData = "";
+
         if (item is DirectoryItem)
         {
-            //Debug.WriteLine("dir");
             DirectoryItem dirItem = (DirectoryItem)item;
             favorites.Add(dirItem);
         }
         else if (item is FileItem)
         {
-            //Debug.WriteLine("file");
             FileItem fileItem = (FileItem)item;
-            favorites.Add(fileItem);
+            if (!fileItem.FileInfo.ToString().Contains("Hidden"))
+            {
+                favorites.Add(fileItem);
+                
+            }
         }
 
-        string updatedJsonData = JsonConvert.SerializeObject(favorites, Newtonsoft.Json.Formatting.Indented);
-
+        updatedJsonData = JsonConvert.SerializeObject(favorites, Formatting.Indented);
         await File.WriteAllTextAsync(filePath, updatedJsonData);
 
     }
 
     public async void UnfavoriteItem(object item)
     {
+        string filePath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\FileManager\favorites.json";
 
+        string existingJsonContent = File.Exists(filePath) ? await File.ReadAllTextAsync(filePath) : "";
+
+        ObservableCollection<dynamic> newDataList = JsonConvert.DeserializeObject<ObservableCollection<dynamic>>(existingJsonContent);
+
+        var favorites = JsonConvert.DeserializeObject<List<dynamic>>(existingJsonContent);
+        DirectoryItem dirItem = new();
+        FileItem fileItem;
+
+        if (item is DirectoryItem)
+        {
+            dirItem = (DirectoryItem)item;
+            var itemsToKeep = favorites.Where(fav => fav is DirectoryItem && !((DirectoryItem)fav).FilePath.Equals(dirItem.FilePath)).ToList();
+            newDataList.Clear();
+            foreach (dynamic itemToKeep in itemsToKeep)
+            {
+                newDataList.Add(itemToKeep);
+            }
+        }
+        else if (item is FileItem)
+        {
+            fileItem = (FileItem)item;
+            var fileToRemove = favorites.OfType<FileItem>().FirstOrDefault(f => f.FilePath == fileItem.FilePath);
+            if (fileToRemove != null)
+            {
+                favorites.Remove(fileToRemove);
+            }
+            newDataList.Clear();
+            foreach (dynamic itemToKeep in favorites)
+            {
+                newDataList.Add(itemToKeep);
+            }
+        }
+
+        File.Delete(filePath);
+        string updatedJsonData = JsonConvert.SerializeObject(newDataList, Formatting.Indented);
+        FavoriteItems = newDataList;
+        await File.WriteAllTextAsync(filePath, updatedJsonData);
     }
 
     private static int CountFiles(Item item)

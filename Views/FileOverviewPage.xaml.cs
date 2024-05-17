@@ -37,21 +37,9 @@ public partial class FileOverviewPage : ContentPage
         }
     }
 
-    public void OnFavoriteTapped(object sender, EventArgs e)
+    public async void OnFavoriteTapped(object sender, EventArgs e)
     {
         var label = (Label)sender;
-        //if (label.BindingContext is DirectoryItem)
-        //{
-        //    _ = (DirectoryItem)label.BindingContext;
-        //    Debug.WriteLine("DIR");
-        //    viewModel.FavoriteItem("directory");
-        //}
-        //else if (label.BindingContext is FileItem)
-        //{
-        //    _ = (FileItem)label.BindingContext;
-        //    Debug.WriteLine("FILE");
-        //    viewModel.FavoriteItem("file");
-        //}
 
         if (label.Text.Equals("★"))
         {
@@ -60,8 +48,22 @@ public partial class FileOverviewPage : ContentPage
         }
         else
         {
-            viewModel.FavoriteItem(label.BindingContext);
-            label.Text = "★";
+            if (label.BindingContext is FileItem)
+            {
+                FileItem fileItem = (FileItem)label.BindingContext;
+                if (fileItem.FileInfo.ToString().Contains("Hidden"))
+                {
+                    await DisplayAlert("Error", $"Hidden files can't be favorited", "OK");
+                    return;
+                }
+                viewModel.FavoriteItem(label.BindingContext);
+                label.Text = "★";
+            }
+            else
+            {
+                viewModel.FavoriteItem(label.BindingContext);
+                label.Text = "★";
+            }
         }
     }
 
