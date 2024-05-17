@@ -13,6 +13,8 @@ using CommunityToolkit.Maui.Views;
 using FileManager.Models;
 using FileManager.Views.Popups;
 using Application = Microsoft.Maui.Controls.Application;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace FileManager.ViewModels;
 
@@ -53,6 +55,20 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
+
+    private ObservableCollection<FileListViewModel> _leftSideViewModels;
+    public ObservableCollection<FileListViewModel> LeftSideViewModels
+    {
+        get { return _leftSideViewModels; }
+    }
+    private ObservableCollection<FileListViewModel> _rightSideViewModels;
+    public ObservableCollection<FileListViewModel> RightSideViewModels
+    {
+        get { return _rightSideViewModels; }
+    }
+
+    public ICommand ItemDoubleTappedCommand { get; }
+
     private readonly ConcurrentDictionary<string, byte[]> _fileIconCache = new();
 
     private int _activeSide;
@@ -89,13 +105,64 @@ public class FileOverviewViewModel : ViewModelBase
 
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
+        
+        ItemDoubleTappedCommand = new Command<Item>(OnItemDoubleTapped);
+        
+        _leftSideViewModels = new ObservableCollection<FileListViewModel>();
+        _rightSideViewModels = new ObservableCollection<FileListViewModel>();
+        LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
+        RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
+
+        _leftSideViewModels.Add(LeftSideViewModel);
+        _rightSideViewModels.Add(RightSideViewModel);
+
+        OnPropertyChanged(nameof(LeftSideViewModels));
+        OnPropertyChanged(nameof(RightSideViewModel));
     }
 
     public FileOverviewViewModel()
     {
+        ItemDoubleTappedCommand = new Command<Item>(OnItemDoubleTapped);
+        
+        _leftSideViewModels = new ObservableCollection<FileListViewModel>();
+        _rightSideViewModels = new ObservableCollection<FileListViewModel>();
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
-        ActiveSide = 0;
+
+        _leftSideViewModels.Add(LeftSideViewModel);
+        _rightSideViewModels.Add(RightSideViewModel);
+
+        OnPropertyChanged(nameof(LeftSideViewModels));
+        OnPropertyChanged(nameof(RightSideViewModel));
+    }
+
+    // List needs to be manipulated in order for the Picker values to be updated
+    async void OnItemDoubleTapped(Item item)
+    {
+        if (item.Side == 0)
+        {
+            LeftSideViewModel.ItemDoubleTappedCommand.Execute(item);
+            LeftSideViewModel = UpdateTab(LeftSideViewModels, LeftSideViewModel);
+        }
+        else
+        {
+            RightSideViewModel.ItemDoubleTappedCommand.Execute(item);
+            RightSideViewModel = UpdateTab(RightSideViewModels, RightSideViewModel);
+        }
+    }
+
+    private FileListViewModel UpdateTab(ObservableCollection<FileListViewModel> viewModels, FileListViewModel viewModel)
+    {
+        int index = viewModels.IndexOf(viewModel);
+        FileListViewModel copy = viewModel as FileListViewModel;
+        viewModels.RemoveAt(index);
+        viewModels.Insert(index, copy);
+
+        return copy;
+
+        // Wait for the UI to update before proceeding
+        //await Task.Delay(100);
+
     }
 
     public async Task<string> SelectActionAsync()
@@ -149,6 +216,57 @@ public class FileOverviewViewModel : ViewModelBase
             }
         }
         popup.Close();
+    }
+
+
+    public async Task AddTabAsync(int side)
+    {
+        if (side == 0)
+        {
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                _leftSideViewModels.Add(new FileListViewModel(_fileIconCache, 0));
+                LeftSideViewModel = LeftSideViewModels[LeftSideViewModels.Count - 1];
+                OnPropertyChanged(nameof(LeftSideViewModels));
+            });
+        }
+        else
+        {
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                _rightSideViewModels.Add(new FileListViewModel(_fileIconCache, 1));
+                RightSideViewModel = RightSideViewModels[RightSideViewModels.Count - 1];
+                OnPropertyChanged(nameof(RightSideViewModels));
+            });
+        }
+    }
+
+    public async Task RemoveTabAsync(int side)
+    {
+        if (side == 0)
+        {
+            if (_leftSideViewModels.Count <= 1)
+            {
+                return;
+            }
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                LeftSideViewModels.Remove(LeftSideViewModel);
+                LeftSideViewModel = LeftSideViewModels[0];
+            });
+        }
+        else
+        {
+            if (_rightSideViewModels.Count <= 1)
+            {
+                return;
+            }
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                RightSideViewModels.Remove(RightSideViewModel);
+                RightSideViewModel = RightSideViewModels[0];
+            });
+        }
     }
 
     public void PassClickEvent(string key)
@@ -386,7 +504,15 @@ public class FileOverviewViewModel : ViewModelBase
         PopupOpen = true;
         string currentPath = (side == 0 ? LeftSideViewModel.CurrentPath : RightSideViewModel.CurrentPath).Replace("/", "\\");
         string path = await Application.Current.MainPage.DisplayPromptAsync("Enter source path", $"Please enter the path of the file to create a symbolic link of. The symbolic link will be created in the current folder.", "OK", "Cancel", null, maxLength: 100);
-
+        if(path == null)
+        {
+            return;
+        }
+        if(path == "")
+        {
+            await AppShell.Current.DisplayAlert("Error", "The path cannot be empty.", "OK");
+            return;
+        }
         path = path.Replace("/", "\\");
 
         try
@@ -400,11 +526,29 @@ public class FileOverviewViewModel : ViewModelBase
             if (Directory.Exists(path))
             {
                 string linkName = await Application.Current.MainPage.DisplayPromptAsync("Enter link name", $"Please enter the name of the new link folder.", "OK", "Cancel", null, maxLength: 100);
+                if (linkName == null)
+                {
+                    return;
+                }
+                if (linkName == "")
+                {
+                    await AppShell.Current.DisplayAlert("Error", "The folder name cannot be empty.", "OK");
+                    return;
+                }
                 startInfo.Arguments = "/c mklink /D " + Path.Combine(currentPath, linkName) + " " + path;
             }
             else
             {
                 string linkName = await Application.Current.MainPage.DisplayPromptAsync("Enter link name", $"Please enter the name of the new link file.", "OK", "Cancel", null, maxLength: 100);
+                if (linkName == null)
+                {
+                    return;
+                }
+                if (linkName == "")
+                {
+                    await AppShell.Current.DisplayAlert("Error", "The file name cannot be empty.", "OK");
+                    return;
+                }
                 startInfo.Arguments = "/c mklink " + Path.Combine(currentPath, linkName) + " " + path;
             }
             process.StartInfo = startInfo;
@@ -413,8 +557,8 @@ public class FileOverviewViewModel : ViewModelBase
             process.WaitForExit();
             if (process.ExitCode != 0)
             {
-                // Handle failure based on exit code (check mklink documentation for specific codes)
-                await AppShell.Current.DisplayAlert("Error", "Failed to create symbolic link, error code: " + process.ExitCode, "OK");
+                // Handle failure based on exit code.
+                await AppShell.Current.DisplayAlert("Error", "Failed to create symbolic link.", "OK");
             }
             else
             {
@@ -422,7 +566,15 @@ public class FileOverviewViewModel : ViewModelBase
             }
         } catch (Exception e)
         {
-            await AppShell.Current.DisplayAlert("Error", "Failed to create symbolic link: " + e.Message, "OK");
+            if (e is Win32Exception exception)
+            {
+                if(exception.NativeErrorCode == 1223)
+                {
+                    //Permission canceled.
+                    return;
+                }
+            }
+            await AppShell.Current.DisplayAlert("Error", "Something went wrong creating the symbolic link.", "OK");
         }
         PopupOpen = false;
         if(side == 0)
