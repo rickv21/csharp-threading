@@ -231,6 +231,10 @@ public partial class FileOverviewPage : ContentPage
         {
             viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
         }
+        else if (item.Text == "Create symbolic link")
+        {
+            viewModel.CreateSymbolicLink(1);
+        }
     }
 
     private async void LeftContextClick(object sender, EventArgs e)
@@ -262,6 +266,10 @@ public partial class FileOverviewPage : ContentPage
         else if (item.Text == "Paste")
         {
             viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
+        }
+        else if (item.Text == "Create symbolic link")
+        {
+            viewModel.CreateSymbolicLink(0);
         }
     }
 

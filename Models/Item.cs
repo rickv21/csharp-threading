@@ -12,14 +12,14 @@
         public string ReadableSize { get; set; }
         public short Side { get; }
 
-        public Item(string fileName, string filePath, ImageSource icon, short side, Boolean hidden)
+        public Item(string fileName, string filePath, ImageSource icon, short side, Boolean hidden, Boolean isLink)
         {
             FileName = fileName;
             FilePath = filePath;
             Side = side;
             Size = 0;
             Icon = icon;
-            FileInfo = hidden ? "(Hidden)" : "";
+            FileInfo = hidden ? "(Hidden)" : " "  + (isLink ? "(Link)" : "");
         }
 
         public override string ToString()

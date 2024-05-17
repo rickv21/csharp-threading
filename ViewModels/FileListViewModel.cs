@@ -385,7 +385,7 @@ namespace FileManager.ViewModels
                     {
                         return;
                     }
-                    Task.Run(async () => await OpenItemAsync(new DirectoryItem("...", "", 0, _side, false, null, ItemType.TopDir)));
+                    Task.Run(async () => await OpenItemAsync(new DirectoryItem("...", "", 0, _side, false, false, null, ItemType.TopDir)));
                     return;
                 case "enter":
                 case "numpadenter":
@@ -568,7 +568,7 @@ namespace FileManager.ViewModels
                     }
                     Debug.WriteLine(dir.FullName);
 
-                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, _side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
+                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, _side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), FileUtil.IsSymbolicLink(dir.FullName),  lastEditDirectory, ItemType.Dir));
                 }));
 
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
@@ -583,13 +583,13 @@ namespace FileManager.ViewModels
 
                     var icon = await GetFileIcon(fileInfo.FullName);
 
-                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, _side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEdit));
+                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, _side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), FileUtil.IsSymbolicLink(file.FullName), lastEdit));
                 }));
 
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    Files.Add(new DirectoryItem("...", "", 0, _side, false, null, ItemType.TopDir));
+                    Files.Add(new DirectoryItem("...", "", 0, _side, false, false, null, ItemType.TopDir));
                     foreach (var item in fileSystemInfos.OrderBy(fsi => fsi is FileItem).ThenBy(fsi => fsi.FileName))
                     {
                         Files.Add(item);
