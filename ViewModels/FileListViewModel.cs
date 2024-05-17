@@ -44,7 +44,7 @@ namespace FileManager.ViewModels
             }
         }
 
-        public String CurrentPath
+        public string CurrentPath
         {
             get { return _currentPath; }
             set
@@ -117,6 +117,51 @@ namespace FileManager.ViewModels
 
 
             Task.Run(async () => await FillList(d));
+        }
+
+        public string GetCurrentPath()
+        {
+            return CurrentPath;
+        }
+
+        public static void RenameItem(Item selectedItem, string newName, string extension)
+        {
+            if (selectedItem != null)
+            {
+                string oldPath = selectedItem.FilePath;
+                string newPath = Path.Combine(Path.GetDirectoryName(oldPath), newName + extension);
+                try
+                {
+                    if (Directory.Exists(oldPath))
+                    {
+                        Directory.Move(oldPath, newPath);
+                    }
+                    else if (File.Exists(oldPath))
+                    {
+                        File.Move(oldPath, newPath);
+                    }
+                    selectedItem.FileName = newName + extension;
+                } catch (IOException ex)
+                {
+                    Shell.Current.DisplayAlert("Error", "The given name already exists in the current folder.", "OK");
+                    return;
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    Shell.Current.DisplayAlert("Error", "You do not have permission to rename this file.", "OK");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Shell.Current.DisplayAlert("Error", "An error occurred while renaming the file: " + ex.Message, "OK");
+                    return;
+                }
+  
+            }
+            else
+            {
+                Shell.Current.DisplayAlert("No file selected", "Please select a file to rename", "");
+            }
         }
 
         private static bool IsSortedOnDate(ObservableCollection<Item> files)
@@ -373,7 +418,7 @@ namespace FileManager.ViewModels
                     return;
                 case "f2":
                     //Rename current item.
-                    RenameItem(null, null);
+                    RenameItem(null, null, null);
                     return;
                 case "f8":
                     //Delete current item.
@@ -385,7 +430,7 @@ namespace FileManager.ViewModels
                     {
                         return;
                     }
-                    Task.Run(async () => await OpenItemAsync(new DirectoryItem("...", "", 0, _side, false, null, ItemType.TopDir)));
+                    Task.Run(async () => await OpenItemAsync(new DirectoryItem("...", "", 0, _side, false, false, null, ItemType.TopDir)));
                     return;
                 case "enter":
                 case "numpadenter":
@@ -396,12 +441,6 @@ namespace FileManager.ViewModels
             }
         }
 
-        public void RenameItem(Item item, string newName)
-        {
-            Debug.WriteLine("Changing name of item.");
-        }
-
-
         public async Task RefreshAsync()
         {
             Debug.WriteLine("Refresh.");
@@ -410,7 +449,7 @@ namespace FileManager.ViewModels
                 FillDriveList();
                 return;
             }
-            DirectoryInfo d = new DirectoryInfo(CurrentPath);
+            DirectoryInfo d = new(CurrentPath);
             await FillList(d);
         }
 
@@ -424,7 +463,7 @@ namespace FileManager.ViewModels
 
             if (_fileIconCache.TryGetValue(extension, out var byteArray))
             {
-                MemoryStream ms2 = new MemoryStream(byteArray);
+                MemoryStream ms2 = new(byteArray);
                 return new StreamImageSource { Stream = token => Task.FromResult<Stream>(new MemoryStream(byteArray)) };
             }
 
@@ -433,7 +472,7 @@ namespace FileManager.ViewModels
             Bitmap bitmap = rawIcon.ToBitmap();
 
             // Save the Bitmap to a MemoryStream
-            MemoryStream ms = new MemoryStream();
+            MemoryStream ms = new();
             bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
 
             // Convert the MemoryStream to a byte array and add it to the cache
@@ -444,14 +483,14 @@ namespace FileManager.ViewModels
             return new StreamImageSource { Stream = token => Task.FromResult<Stream>(new MemoryStream(ms.ToArray())) };
         }
 
-        void PathChanged(string value)
+        public async void PathChanged(string value)
         {
             if (CurrentPath.Length == 0)
             {
                 FillDriveList();
                 return;
             }
-            DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPath);
+            DirectoryInfo directoryInfo = new(CurrentPath);
             if (_files == null)
             {
                 //Debug to check if this is ever hit.
@@ -460,11 +499,11 @@ namespace FileManager.ViewModels
             }
             if (!Directory.Exists(directoryInfo.FullName))
             {
-                AppShell.Current.DisplayAlert("Invalid location", "This path does not exist!", "OK");
+                await AppShell.Current.DisplayAlert("Invalid location", "This path does not exist, please try again", "OK");
                 CurrentPath = _previousPath;
                 return;
             }
-            Task.Run(async () => await FillList(directoryInfo));
+            await Task.Run(async () => await FillList(directoryInfo));
         }
 
 
@@ -492,7 +531,7 @@ namespace FileManager.ViewModels
                 {
                     Debug.WriteLine("Exists");
                     // If the item is a folder, update the Files collection to show the contents of the folder
-                    DirectoryInfo directoryInfo = new DirectoryInfo(item.FilePath);
+                    DirectoryInfo directoryInfo = new(item.FilePath);
                     CurrentPath = item.FilePath;
                     await FillList(directoryInfo);
                     return;
@@ -506,7 +545,7 @@ namespace FileManager.ViewModels
             }
             else if (item is FileItem)
             {
-                FileInfo fileInfo = new FileInfo(item.FilePath);
+                FileInfo fileInfo = new(item.FilePath);
                 Process.Start(new ProcessStartInfo(fileInfo.FullName) { UseShellExecute = true });
             }
         }
@@ -556,25 +595,24 @@ namespace FileManager.ViewModels
             try
             {
 
-                ConcurrentBag<Item> fileSystemInfos = new ConcurrentBag<Item>();
+                ConcurrentBag<Item> fileSystemInfos = [];
 
                 await Task.WhenAll(d.EnumerateDirectories().Select(async dir =>
                 {
                     // It's a directory
-                    DirectoryInfo dirInfo = new DirectoryInfo(dir.FullName);
+                    DirectoryInfo dirInfo = new(dir.FullName);
                     DateTime lastEditDirectory = DateTime.MinValue;
                     if (dirInfo.LastWriteTime != DateTime.MinValue)
                     {
                         lastEditDirectory = dirInfo.LastWriteTime;
                     }
-                    Debug.WriteLine(dir.FullName);
 
-                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, _side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEditDirectory, ItemType.Dir));
+                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, _side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), FileUtil.IsSymbolicLink(dir.FullName),  lastEditDirectory, ItemType.Dir));
                 }));
 
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
                 {
-                    FileInfo fileInfo = new FileInfo(file.FullName);
+                    FileInfo fileInfo = new(file.FullName);
                     long size = fileInfo.Length;
                     DateTime lastEdit = DateTime.MinValue;
                     if (fileInfo.LastWriteTime != DateTime.MinValue)
@@ -584,13 +622,13 @@ namespace FileManager.ViewModels
 
                     var icon = await GetFileIcon(fileInfo.FullName);
 
-                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, _side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), lastEdit));
+                    fileSystemInfos.Add(new FileItem(fileInfo.Name, fileInfo.FullName, size, fileInfo.Extension, icon, _side, (file.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), FileUtil.IsSymbolicLink(file.FullName), lastEdit));
                 }));
 
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    Files.Add(new DirectoryItem("...", "", 0, _side, false, null, ItemType.TopDir));
+                    Files.Add(new DirectoryItem("...", "", 0, _side, false, false, null, ItemType.TopDir));
                     foreach (var item in fileSystemInfos.OrderBy(fsi => fsi is FileItem).ThenBy(fsi => fsi.FileName))
                     {
                         Files.Add(item);
@@ -604,25 +642,25 @@ namespace FileManager.ViewModels
             }
             catch (UnauthorizedAccessException e)
             {
-                await AppShell.Current.DisplayAlert("No permission", "You do not have permission to access this folder.", "OK");
+                await Shell.Current.DisplayAlert("No permission", "You do not have permission to access this folder.", "OK");
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     IsLoading = false;
                 });
-                DirectoryInfo directoryInfo = new DirectoryInfo(_previousPath);
+                DirectoryInfo directoryInfo = new(_previousPath);
                 CurrentPath = _previousPath;
                 await FillList(directoryInfo);
             }
         }
 
-        public void RefreshFiles()
+        public async void RefreshFiles()
         {
-            DirectoryInfo directoryInfo = new DirectoryInfo(CurrentPath);
+            DirectoryInfo directoryInfo = new(CurrentPath);
             _files.Clear();
-            FillList(directoryInfo);
+            await FillList(directoryInfo);
         }
 
-        public async void DeleteItem()
+        public async Task DeleteItem()
         {
             if (SelectedItems == null || SelectedItems.Count == 0)
             {
@@ -659,33 +697,16 @@ namespace FileManager.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    string errorMessage;
-
-                    switch (ex)
+                    string errorMessage = ex switch
                     {
-                        case ArgumentException:
-                            errorMessage = "The path is a zero-length string, is malformed, contains only white space, or contains invalid characters (including wildcard characters). The path is a device path (starts with \\\\.\\).";
-                            break;
-                        case DirectoryNotFoundException:
-                            errorMessage = "The directory does not exist or is a file.";
-                            break;
-                        case IOException:
-                            errorMessage = "A file in the directory or subdirectory is in use.";
-                            break;
-                        case NotSupportedException:
-                            errorMessage = "The directory name contains a colon (:).";
-                            break;
-                        case SecurityException:
-                            errorMessage = "The user does not have required permissions.";
-                            break;
-                        case OperationCanceledException:
-                            errorMessage = "The user cancels the operation or the directory cannot be deleted.";
-                            break;
-                        default:
-                            errorMessage = "An unexpected error occurred while deleting the item.";
-                            break;
-                    }
-
+                        ArgumentException => "The path is a zero-length string, is malformed, contains only white space, or contains invalid characters (including wildcard characters). The path is a device path (starts with \\\\.\\).",
+                        DirectoryNotFoundException => "The directory does not exist or is a file.",
+                        IOException => "A file in the directory or subdirectory is in use.",
+                        NotSupportedException => "The directory name contains a colon (:).",
+                        SecurityException => "The user does not have required permissions.",
+                        OperationCanceledException => "The user cancels the operation or the directory cannot be deleted.",
+                        _ => "An unexpected error occurred while deleting the item.",
+                    };
                     ShowErrorMessageBox(errorMessage, ex.Message);
 
                 }
@@ -695,7 +716,7 @@ namespace FileManager.ViewModels
             }
         }
 
-        private void ShowErrorMessageBox(string message, string details)
+        private static void ShowErrorMessageBox(string message, string details)
         {
             MessageBox.Show($"{message}\n\nDetails: {details}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }

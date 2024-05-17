@@ -1,26 +1,15 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using FileManager.Models;
 using FileManager.ViewModels;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.UI.StartScreen;
 using SharpHook;
-using CommunityToolkit.Maui.Views;
-using FileManager.Views.Popups;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace FileManager.Views;
 
 public partial class FileOverviewPage : ContentPage
 {
-    private FileOverviewViewModel viewModel;
+    private readonly FileOverviewViewModel viewModel;
+
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
@@ -62,10 +51,10 @@ public partial class FileOverviewPage : ContentPage
         });
 
         //Some more keyboard selection prevention.
-        if (key == "tab")
+    /*    if (key == "tab")
         {
             e.SuppressEvent = true;
-        }
+        }*/
 
         //Ignore enter and backspace if path entry field is focused.
         if ((key == "enter" || key == "numpadenter") || key == "backspace")
@@ -84,13 +73,11 @@ public partial class FileOverviewPage : ContentPage
                     return;
                 }
             }
-
-
         }
         viewModel.PassClickEvent(key);
     }
 
-    void OnItemTapped(object sender, EventArgs e)
+    public void OnItemTapped(object sender, EventArgs e)
     {
         var item = ((sender as Grid).BindingContext as Item);
 
@@ -137,7 +124,7 @@ public partial class FileOverviewPage : ContentPage
     }
 
 
-    void OnDragStarting(object sender, DragStartingEventArgs e)
+    public void OnDragStarting(object sender, DragStartingEventArgs e)
     {
         var dragGestureRecognizer = (DragGestureRecognizer)sender;
         var grid = (Grid)dragGestureRecognizer.Parent;
@@ -148,7 +135,6 @@ public partial class FileOverviewPage : ContentPage
             e.Cancel = true;
             return;
         }
-
 
         if (item.Side == 0)
         {
@@ -161,7 +147,7 @@ public partial class FileOverviewPage : ContentPage
             viewModel.DroppedFiles = LeftCollection.SelectedItems.Cast<Item>();
             foreach (var debugItem in viewModel.DroppedFiles)
             {
-                System.Diagnostics.Debug.WriteLine(debugItem.ToString());
+                Debug.WriteLine(debugItem.ToString());
             }
 
             // e.Data.Properties.Add("files", viewModel.DroppedFiles);  
@@ -179,17 +165,16 @@ public partial class FileOverviewPage : ContentPage
             viewModel.DroppedFiles = RightCollection.SelectedItems.Cast<Item>();
             foreach (var debugItem in viewModel.DroppedFiles)
             {
-                System.Diagnostics.Debug.WriteLine(debugItem.ToString());
+                Debug.WriteLine(debugItem.ToString());
             }
 
             e.Data.Properties.Add("files", RightCollection.SelectedItems);
         }
     }
 
-    void OnItemDrop(object sender, DropEventArgs e)
+    public void OnItemDrop(object sender, DropEventArgs e)
     {
         var droppedItems = e.Data.Properties["files"] as IList<object>;
-
 
         if (droppedItems != null && droppedItems.Count > 0)
         {
@@ -197,21 +182,55 @@ public partial class FileOverviewPage : ContentPage
 
             _ = OnItemDropAsync(sender, itemList);
         }
-
     }
 
+    private void RefreshAllPages(string? side)
+    {
+        if (viewModel.LeftSideViewModel.GetCurrentPath().Equals(viewModel.RightSideViewModel.GetCurrentPath()))
+        {
+            viewModel.RightSideViewModel.RefreshAsync();
+            viewModel.LeftSideViewModel.RefreshAsync();
+        }
+        else
+        {
+            if (side.Equals("left"))
+            {
+                viewModel.LeftSideViewModel.RefreshAsync();
+            }
+            else if (side.Equals ("right"))
+            {
+                viewModel.RightSideViewModel.RefreshAsync();
+            }
+        }
+    }
 
     private async void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
-        if (item.Text == "Refresh")
+        if (item.Text.Equals("Refresh"))
         {
-            Task.Run(() => viewModel.RightSideViewModel.RefreshAsync());
-        }
-        else if (item.Text == "Rename")
+            viewModel.RightSideViewModel.RefreshAsync();
+        } 
+        else if (item.Text.Equals("Rename"))
         {
-            //TODO
-            viewModel.RightSideViewModel.RenameItem(null, null);
+            var menuItem = (MenuFlyoutItem)sender;
+            var selectedItem = (Item)menuItem.CommandParameter;
+            viewModel.PopupOpen = true;
+
+            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
+            viewModel.PopupOpen = false;
+            if (!string.IsNullOrEmpty(userInput))
+            {
+                FileInfo fileInfo = new(selectedItem.FilePath);
+                string extension = fileInfo.Extension;
+
+                FileListViewModel.RenameItem(selectedItem, userInput, extension);
+                RefreshAllPages("right");
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please enter a new name", "OK");
+            }
         }
         else if (item.Text == "Delete")
         {
@@ -220,40 +239,60 @@ public partial class FileOverviewPage : ContentPage
                 await DisplayAlert("Alert", "You have to select first to delete", "OK");
                 return;
             }
-
             viewModel.RightSideViewModel.DeleteItem();
         }
         else if (item.Text == "Copy")
         {
-            viewModel.CopyItems(RightCollection.SelectedItems.ToList());
+            viewModel.CopyItems([.. RightCollection.SelectedItems]);
         }
         else if (item.Text == "Paste")
         {
-            viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
+            await viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
+            RefreshAllPages("right");
+        }
+        else if (item.Text == "Create symbolic link")
+        {
+            viewModel.CreateSymbolicLink(1);
         }
     }
 
     private async void LeftContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
-        if (item.Text == "Refresh")
+        if (item.Text.Equals("Refresh"))
         {
-            Task.Run(() => viewModel.LeftSideViewModel.RefreshAsync());
+            await Task.Run(() => viewModel.LeftSideViewModel.RefreshAsync());
         }
         else if (item.Text == "Rename")
         {
-            //TODO
-            viewModel.LeftSideViewModel.RenameItem(null, null);
+            var menuItem = (MenuFlyoutItem)sender;
+            Item selectedItem = (Item)menuItem.CommandParameter;
+            viewModel.PopupOpen = true;
+            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
+            viewModel.PopupOpen = false;
+            if (!string.IsNullOrEmpty(userInput))
+            {
+                FileInfo fileInfo = new(selectedItem.FilePath);
+                string extension = fileInfo.Extension;
+
+                FileListViewModel.RenameItem(selectedItem, userInput, extension);
+                RefreshAllPages("left");
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please enter a new name", "OK");
+            }
         }
         else if (item.Text == "Delete")
         {
             if (LeftCollection.SelectedItems.Count == 0)
             {
-                await DisplayAlert("Alert", "You have to select first to delete", "OK");
+                await DisplayAlert("Alert", "Please select a file to delete first", "OK");
                 return;
             }
 
-            viewModel.LeftSideViewModel.DeleteItem();
+            await viewModel.LeftSideViewModel.DeleteItem();
+            RefreshAllPages("");
         }
         else if (item.Text == "Copy")
         {
@@ -261,7 +300,12 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Paste")
         {
-            viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
+            await viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
+            RefreshAllPages("left");
+        }
+        else if (item.Text == "Create symbolic link")
+        {
+            viewModel.CreateSymbolicLink(0);
         }
     }
 
@@ -298,6 +342,8 @@ public partial class FileOverviewPage : ContentPage
                         MoveFile(file, targetPath);
                     }
                 }
+
+                RefreshAllPages("");
 
                 viewModel.RightSideViewModel.RefreshFiles();
                 viewModel.LeftSideViewModel.RefreshFiles();
@@ -361,12 +407,29 @@ public partial class FileOverviewPage : ContentPage
         await Task.CompletedTask;
     }
 
+    void AddLeftTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.AddTabAsync(0));
+    }
 
+    void RemoveLeftTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.RemoveTabAsync(0));
+    }
+
+    void AddRightTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.AddTabAsync(1));
+    }
+
+    void RemoveRightTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.RemoveTabAsync(1));
+    }
+         
     // Helper method to copy directory recursively
     private void CopyDirectory(string sourceDirPath, string destDirPath)
     {
-        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
-
         // Create the destination directory if it doesn't exist
         if (!Directory.Exists(destDirPath))
         {
@@ -443,7 +506,7 @@ public partial class FileOverviewPage : ContentPage
         {
             try
             {
-                (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
+                (string, string?) userInput = await FileOverviewViewModel.PromptUserAsync(action.ToLower(), needsRegex);
                 var numnerOfThreads = userInput.Item1;
                 var regex = userInput.Item2;
                 if (userInput.Item1 != null)

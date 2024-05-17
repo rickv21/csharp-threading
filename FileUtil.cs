@@ -23,5 +23,24 @@
 
             return "0 B";
         }
+
+        public static bool IsSymbolicLink(string path)
+        {
+            try
+            {
+                return File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Handle potential permission issues
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions
+                throw;
+            }
+        }
     }
+
 }
