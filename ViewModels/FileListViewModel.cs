@@ -13,11 +13,13 @@ namespace FileManager.ViewModels
     public class FileListViewModel : ViewModelBase
     {
         private ObservableCollection<Item> _files;
+        private readonly object _filesLock = new object();
         private string _currentPath;
         private string _previousPath;
         private readonly ConcurrentDictionary<string, byte[]> _fileIconCache;
         private readonly short _side;
         private IList<object> _selectedItems;
+        private readonly object _selectedItemsLock = new object();
         private bool _isLoading;
 
         private string _fileNameText;
@@ -27,20 +29,38 @@ namespace FileManager.ViewModels
 
         public ObservableCollection<Item> Files
         {
-            get { return _files; }
+            get
+            {
+                lock (_filesLock)
+                {
+                    return _files;
+                }
+            }
             set
             {
-                _files = value;
-                OnPropertyChanged(nameof(Files));
+                lock (_filesLock)
+                {
+                    _files = value;
+                    OnPropertyChanged(nameof(Files));
+                }
             }
         }
 
         public IList<object> SelectedItems
         {
-            get { return _selectedItems; }
+            get
+            {
+                lock (_selectedItemsLock)
+                {
+                    return _selectedItems;
+                }
+            }
             set
             {
-                _selectedItems = value;
+                lock (_selectedItemsLock)
+                {
+                    _selectedItems = value;
+                }
             }
         }
 

@@ -252,15 +252,6 @@ public partial class FileOverviewPage : ContentPage
             }
             viewModel.RightSideViewModel.DeleteItem();
         }
-        else if (item.Text == "Copy")
-        {
-            viewModel.CopyItems(getCurrentView(1).SelectedItems.ToList());
-        }
-        else if (item.Text == "Paste")
-        {
-            await viewModel.PasteItems(viewModel.RightSideViewModel.CurrentPath);
-            RefreshAllPages("right");
-        }
         else if (item.Text == "Create symbolic link")
         {
             viewModel.CreateSymbolicLink(1);
@@ -304,15 +295,6 @@ public partial class FileOverviewPage : ContentPage
 
             await viewModel.LeftSideViewModel.DeleteItem();
             RefreshAllPages("");
-        }
-        else if (item.Text == "Copy")
-        {
-            viewModel.CopyItems(getCurrentView(0).SelectedItems.ToList());
-        }
-        else if (item.Text == "Paste")
-        {
-            await viewModel.PasteItems(viewModel.LeftSideViewModel.CurrentPath);
-            RefreshAllPages("left");
         }
         else if (item.Text == "Create symbolic link")
         {
@@ -517,23 +499,26 @@ public partial class FileOverviewPage : ContentPage
         {
             try
             {
-                (string, string?) userInput = await FileOverviewViewModel.PromptUserAsync(action.ToLower(), needsRegex);
-                var numnerOfThreads = userInput.Item1;
-                var regex = userInput.Item2;
-                if (userInput.Item1 != null)
+                string numerOfThreads = "1";
+                string regex = null;
+                if(action.ToLower() != "copy")
                 {
-                    if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
+                    (string, string?) userInput = await FileOverviewViewModel.PromptUserAsync(action.ToLower(), needsRegex);
+                    numerOfThreads = userInput.Item1;
+                    regex = userInput.Item2;
+                }
+   
+                if (numerOfThreads != null)
+                {
+                    if (int.TryParse(numerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
                     {
                         if (LeftListCollection.SelectedItems.ToList().Count() >= 1)
                         {
-                            Debug.WriteLine("Target L to R " + GetSelectedFolderPath(0));
-                            await viewModel.ProcessActionAsync(action, number, regex, this, items, LeftListCollection.SelectedItems.ToList(), GetSelectedFolderPath(1));
+                            await viewModel.ProcessActionAsync(action, number, regex, this, items, LeftListCollection.SelectedItems.ToList(), GetSelectedFolderPath(0));
                         }
                         if (RightListCollection.SelectedItems.ToList().Count() >= 1)
                         {
-                            Debug.WriteLine("Target R to L " + GetSelectedFolderPath(0));
-
-                            await viewModel.ProcessActionAsync(action, number, regex, this, items, RightListCollection.SelectedItems.ToList(), GetSelectedFolderPath(0));
+                            await viewModel.ProcessActionAsync(action, number, regex, this, items, RightListCollection.SelectedItems.ToList(), GetSelectedFolderPath(1));
                         }
                     }
                     else if (number < 1)
@@ -570,7 +555,6 @@ public partial class FileOverviewPage : ContentPage
                 targetPath = viewModel.LeftSideViewModel.CurrentPath;
             }
 
-
             // Iterate over dropped files and move them to the target path
             foreach (var file in viewModel.DroppedFiles)
             {
@@ -582,7 +566,6 @@ public partial class FileOverviewPage : ContentPage
                 }
             }
         }
-
     }
         private void ToggleRosterView_Clicked()
         {

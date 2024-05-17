@@ -18,6 +18,11 @@ using System.ComponentModel;
 
 namespace FileManager.ViewModels;
 
+/// <summary>
+/// Threading: async & await.
+/// 
+/// In the viewmodels async and await are used to run code without blocking the UI thread.
+/// </summary>
 public class FileOverviewViewModel : ViewModelBase
 {
     public static int MAX_THREADS = 255;
@@ -211,11 +216,11 @@ public class FileOverviewViewModel : ViewModelBase
                     break;
                 case "Copy":
                     await Task.Delay(2000);
-                    CopyItems(selectedItems);
+                    await CopyItems(selectedItems, number);
                     break;
                 case "Paste":
                     await Task.Delay(2000);
-                    PasteItems(targetPath);
+                    await PasteItems(targetPath);
                     break;
             }
         }
@@ -320,13 +325,18 @@ public class FileOverviewViewModel : ViewModelBase
     private readonly string tempCopyDirectory = Path.Combine(Path.GetTempPath(), "FileManagerCopiedItems");
 
     /// <summary>
-    /// Threading manier: locks
+    /// Threading: Locks en Task Parallel Library (TPL)
     /// 
-    /// Voor wanneer meerdere bestanden worden gekopïeerd. Door de lock 
-    /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. 
+    /// For copying multiple files, a combination of locking and the Task Parallel Library (TPL) is used.
+    /// The lock ensures that only one thread at a time can access the _copiedFilesPaths list to prevent race conditions.
+    /// The TPL is used to perform the copying of each individual file or directory in parallel on the ThreadPool using tasks.
+    /// This can lead to better performance, especially when copying many files or large files.
+    /// 
+    /// TPL is not the same as threadpool. It provides higher-level constructs for parallel programming, while ThreadPool is a low-level mechanism for managing threads.
     /// </summary>
-    public void CopyItems(List<object> selectedItems)
+    public async Task CopyItems(List<object> selectedItems, int maxDegreeOfParallelism)
     {
+        // Lock to ensure thread safety when modifying shared resources
         lock (_copiedFilesPaths)
         {
             // Clear the list of copied files paths
@@ -337,80 +347,133 @@ public class FileOverviewViewModel : ViewModelBase
             {
                 Directory.CreateDirectory(tempCopyDirectory);
             }
+        }
 
-            foreach (var item in selectedItems)
+        // Create a dictionary to store the thread IDs
+        var threadIds = new ConcurrentDictionary<int, bool>();
+
+        await Task.Run(() =>
+        {
+            // TPL with specific degree of parallelism
+            Parallel.ForEach(selectedItems, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, item =>
             {
-                if (item is FileItem fileItem) // if file
+                // Get the current thread ID
+                int threadId = Thread.CurrentThread.ManagedThreadId;
+
+                // Add the thread ID to the dictionary if it doesn't exist
+                threadIds.TryAdd(threadId, true);
+
+                if (item is FileItem fileItem) // If file
                 {
-                    // Copy file to temporary directory
                     string fileName = Path.GetFileName(fileItem.FilePath);
                     string tempFilePath = Path.Combine(tempCopyDirectory, fileName);
+
+                    // Perform file copy synchronously
                     File.Copy(fileItem.FilePath, tempFilePath, true);
 
-                    // Add path of file to list
-                    _copiedFilesPaths.Add(tempFilePath);
+                    // Lock within the synchronous method
+                    lock (_copiedFilesPaths)
+                    {
+                        _copiedFilesPaths.Add(tempFilePath);
+                    }
                 }
-                else if (item is DirectoryItem directoryItem) // if directory
+                else if (item is DirectoryItem directoryItem) // If directory
                 {
-                    // Copy folder to temporary directory
                     string dirName = Path.GetFileName(directoryItem.FilePath);
                     string tempDirPath = Path.Combine(tempCopyDirectory, dirName);
+
+                    // Perform directory copy synchronously
                     DirectoryCopy(directoryItem.FilePath, tempDirPath, true);
 
-                    // Add path of copied folder to list
-                    _copiedFilesPaths.Add(tempDirPath);
+                    // Lock within the synchronous method
+                    lock (_copiedFilesPaths)
+                    {
+                        _copiedFilesPaths.Add(tempDirPath);
+                    }
                 }
-            }
-        }
+            });
+        });
+
+        // Print the number of threads used
+        Debug.WriteLine($"Number of threads used: {threadIds.Count}");
     }
 
     /// <summary>
-    /// Threadming manier: Threadpool
-    /// 
-    /// Deze methode kopieert een directory recursief naar een nieuwe locatie, waarbij bestanden en submappen parallel worden gekopieerd met behulp van de ThreadPool van .NET.
-    /// Door Parallel.ForEach te gebruiken, wordt de onderliggende ThreadPool van .NET gebruikt om de iteraties over bestanden en directories te verdelen over meerdere threads.
-    /// Dit maakt effectief gebruik van beschikbare CPU-cycli en kan leiden tot betere prestaties, vooral bij het kopiëren van grote hoeveelheden data of het gebruik van langzame opslagmedia.
+    /// Threading: Threadpool
+    ///  
+    /// This method recursively copies a directory to a new location, copying files and subdirectories in parallel using .NET's ThreadPool.
+    /// By using Parallel.ForEach, .NET's underlying ThreadPool is used to distribute iterations across files and directories across multiple threads.
+    /// This makes effective use of available CPU cycles and can lead to better performance, especially when copying large amounts of data or using slow storage media.
     /// </summary>
     /// <param name="sourceDirPath"></param>
     /// <param name="destDirPath"></param>
     /// <param name="copySubDirs"></param>
     /// <exception cref="DirectoryNotFoundException"></exception>
-    private static void DirectoryCopy(string sourceDirPath, string destDirPath, bool copySubDirs)
+    private void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
     {
-        DirectoryInfo dir = new(sourceDirPath);
+        // Get the subdirectories for the specified directory.
+        DirectoryInfo dir = new DirectoryInfo(sourceDirName);
 
         if (!dir.Exists)
         {
-            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+            throw new DirectoryNotFoundException(
+                "Source directory does not exist or could not be found: "
+                + sourceDirName);
         }
 
         DirectoryInfo[] dirs = dir.GetDirectories();
-        Directory.CreateDirectory(destDirPath);
 
-        // Use Parallel.ForEach to copy files in parallel
-        Parallel.ForEach(dir.GetFiles(), file =>
+        // If the destination directory doesn't exist, create it.
+        if (!Directory.Exists(destDirName))
         {
-            string tempPath = Path.Combine(destDirPath, file.Name);
-            file.CopyTo(tempPath, true);
-        });
+            Directory.CreateDirectory(destDirName);
+        }
 
+        // Use ThreadPool to copy files and directories
+        var copyTasks = new List<Task>();
+
+        // Get the files in the directory and copy them to the new location.
+        FileInfo[] files = dir.GetFiles();
+        foreach (FileInfo file in files)
+        {
+            var copyTask = new Task(() =>
+            {
+                string tempPath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(tempPath, true);
+            });
+
+            // Queue the task to the ThreadPool
+            ThreadPool.QueueUserWorkItem(_ => copyTask.Start());
+            copyTasks.Add(copyTask);
+        }
+
+        // If copying subdirectories, copy them and their contents to new location.
         if (copySubDirs)
         {
-            // Use Parallel.ForEach to copy subdirectories in parallel
-            Parallel.ForEach(dirs, subdir =>
+            foreach (DirectoryInfo subdir in dirs)
             {
-                string tempPath = Path.Combine(destDirPath, subdir.Name);
-                DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
-            });
+                var copyTask = new Task(() =>
+                {
+                    string tempPath = Path.Combine(destDirName, subdir.Name);
+                    DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
+                });
+
+                // Queue the task to the ThreadPool
+                ThreadPool.QueueUserWorkItem(_ => copyTask.Start());
+                copyTasks.Add(copyTask);
+            }
         }
+
+        // Wait for all copy tasks to complete
+        Task.WaitAll(copyTasks.ToArray());
     }
 
     /// <summary>
-    /// Threading manier: locks
+    /// Threading: locks
     /// 
-    /// Voor wanneer meerdere bestanden worden geplakt of misschien nog bestanden worden gekopieerd. Door de lock 
-    /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. Hierbij kunnen niet meerdere bronnen
-    /// de lijst bewerken.
+    /// For when multiple files are pasted or perhaps files are copied. By the lock 
+    /// only 1 file or directory has access to the _copiedFilesPaths list. Here, multiple sources cannot
+    /// edit the list.
     /// </summary>
     public async Task PasteItems(string targetPath)
     {
@@ -423,6 +486,7 @@ public class FileOverviewViewModel : ViewModelBase
 
                 if (File.Exists(sourcePath))
                 {
+
                     if (File.Exists(destFilePath))
                     {
                         MessageBox.Show("File already exists in target path: " + destFilePath, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -431,6 +495,7 @@ public class FileOverviewViewModel : ViewModelBase
 
                     // Copy file
                     File.Copy(sourcePath, destFilePath, true);
+
                 }
                 else if (Directory.Exists(sourcePath))
                 {
