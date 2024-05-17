@@ -128,6 +128,11 @@
                                                     <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Create symbolic link" Clicked="LeftContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#128279;" FontFamily="Arial" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Copy" Clicked="LeftContextClick">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
@@ -278,6 +283,11 @@
                                             <MenuFlyoutItem Text="Delete" Clicked="RightContextClick">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
+                                                </MenuFlyoutItem.IconImageSource>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem Text="Create symbolic link" Clicked="RightContextClick">
+                                                <MenuFlyoutItem.IconImageSource>
+                                                    <FontImageSource Glyph="&#128279;" FontFamily="Arial" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Copy" Clicked="RightContextClick">
