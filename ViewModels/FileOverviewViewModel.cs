@@ -15,6 +15,7 @@ using FileManager.Views.Popups;
 using Application = Microsoft.Maui.Controls.Application;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 
 namespace FileManager.ViewModels;
 
@@ -220,7 +221,7 @@ public class FileOverviewViewModel : ViewModelBase
                     break;
                 case "Paste":
                     await Task.Delay(2000);
-                    await PasteItems(targetPath);
+                    await PasteItems(targetPath, regex);
                     break;
             }
         }
@@ -475,38 +476,42 @@ public class FileOverviewViewModel : ViewModelBase
     /// only 1 file or directory has access to the _copiedFilesPaths list. Here, multiple sources cannot
     /// edit the list.
     /// </summary>
-    public async Task PasteItems(string targetPath)
+    public async Task PasteItems(string targetPath, string regex)
     {
         lock (_copiedFilesPaths)
         {
             foreach (var sourcePath in _copiedFilesPaths)
             {
                 string fileName = Path.GetFileName(sourcePath);
-                string destFilePath = Path.Combine(targetPath, fileName);
-
-                if (File.Exists(sourcePath))
+                if (Regex.IsMatch(fileName, regex))
                 {
 
-                    if (File.Exists(destFilePath))
+                    string destFilePath = Path.Combine(targetPath, fileName);
+
+                    if (File.Exists(sourcePath))
                     {
-                        MessageBox.Show("File already exists in target path: " + destFilePath, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
+
+                        if (File.Exists(destFilePath))
+                        {
+                            MessageBox.Show("File already exists in target path: " + destFilePath, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            return;
+                        }
+
+                        // Copy file
+                        File.Copy(sourcePath, destFilePath, true);
+
                     }
-
-                    // Copy file
-                    File.Copy(sourcePath, destFilePath, true);
-
-                }
-                else if (Directory.Exists(sourcePath))
-                {
-                    if (Directory.Exists(destFilePath))
+                    else if (Directory.Exists(sourcePath))
                     {
-                        MessageBox.Show("Directory already exists in target path: " + destFilePath, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
+                        if (Directory.Exists(destFilePath))
+                        {
+                            MessageBox.Show("Directory already exists in target path: " + destFilePath, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            return;
+                        }
 
-                    // Copy directory
-                    DirectoryCopy(sourcePath, destFilePath, true);
+                        // Copy directory
+                        DirectoryCopy(sourcePath, destFilePath, true);
+                    }
                 }
             }
 
