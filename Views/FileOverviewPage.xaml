@@ -133,16 +133,6 @@
                                                     <FontImageSource Glyph="&#128279;" FontFamily="Arial" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Copy" Clicked="LeftContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Paste" Clicked="LeftContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick" CommandParameter="{Binding}"
                                Command="{Binding Source={x:Reference RightListCollection}}">
                                                 <MenuFlyoutItem.IconImageSource>
@@ -326,16 +316,6 @@
                                             <MenuFlyoutItem Text="Create symbolic link" Clicked="RightContextClick">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128279;" FontFamily="Arial" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Copy" Clicked="RightContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Paste" Clicked="RightContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="RightContextClick" CommandParameter="{Binding}"
