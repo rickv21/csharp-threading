@@ -91,9 +91,6 @@
                     </Grid>
                     <!-- Content for the left ScrollView -->
                     <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftListCollection" VerticalOptions="FillAndExpand" >
-                        <CollectionView.GestureRecognizers>
-                            <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
-                        </CollectionView.GestureRecognizers>
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -276,9 +273,6 @@
 
                     <!-- Content for the right ScrollView -->
                     <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightListCollection" VerticalOptions="FillAndExpand" >
-                        <CollectionView.GestureRecognizers>
-                            <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
-                        </CollectionView.GestureRecognizers>
                         <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Grid>
