@@ -14,6 +14,7 @@ using FileManager.Models;
 using FileManager.Views.Popups;
 using Application = Microsoft.Maui.Controls.Application;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace FileManager.ViewModels;
 
@@ -503,7 +504,15 @@ public class FileOverviewViewModel : ViewModelBase
         PopupOpen = true;
         string currentPath = (side == 0 ? LeftSideViewModel.CurrentPath : RightSideViewModel.CurrentPath).Replace("/", "\\");
         string path = await Application.Current.MainPage.DisplayPromptAsync("Enter source path", $"Please enter the path of the file to create a symbolic link of. The symbolic link will be created in the current folder.", "OK", "Cancel", null, maxLength: 100);
-
+        if(path == null)
+        {
+            return;
+        }
+        if(path == "")
+        {
+            await AppShell.Current.DisplayAlert("Error", "The path cannot be empty.", "OK");
+            return;
+        }
         path = path.Replace("/", "\\");
 
         try
@@ -517,11 +526,29 @@ public class FileOverviewViewModel : ViewModelBase
             if (Directory.Exists(path))
             {
                 string linkName = await Application.Current.MainPage.DisplayPromptAsync("Enter link name", $"Please enter the name of the new link folder.", "OK", "Cancel", null, maxLength: 100);
+                if (linkName == null)
+                {
+                    return;
+                }
+                if (linkName == "")
+                {
+                    await AppShell.Current.DisplayAlert("Error", "The folder name cannot be empty.", "OK");
+                    return;
+                }
                 startInfo.Arguments = "/c mklink /D " + Path.Combine(currentPath, linkName) + " " + path;
             }
             else
             {
                 string linkName = await Application.Current.MainPage.DisplayPromptAsync("Enter link name", $"Please enter the name of the new link file.", "OK", "Cancel", null, maxLength: 100);
+                if (linkName == null)
+                {
+                    return;
+                }
+                if (linkName == "")
+                {
+                    await AppShell.Current.DisplayAlert("Error", "The file name cannot be empty.", "OK");
+                    return;
+                }
                 startInfo.Arguments = "/c mklink " + Path.Combine(currentPath, linkName) + " " + path;
             }
             process.StartInfo = startInfo;
@@ -530,8 +557,8 @@ public class FileOverviewViewModel : ViewModelBase
             process.WaitForExit();
             if (process.ExitCode != 0)
             {
-                // Handle failure based on exit code (check mklink documentation for specific codes)
-                await AppShell.Current.DisplayAlert("Error", "Failed to create symbolic link, error code: " + process.ExitCode, "OK");
+                // Handle failure based on exit code.
+                await AppShell.Current.DisplayAlert("Error", "Failed to create symbolic link.", "OK");
             }
             else
             {
@@ -539,7 +566,15 @@ public class FileOverviewViewModel : ViewModelBase
             }
         } catch (Exception e)
         {
-            await AppShell.Current.DisplayAlert("Error", "Failed to create symbolic link: " + e.Message, "OK");
+            if (e is Win32Exception exception)
+            {
+                if(exception.NativeErrorCode == 1223)
+                {
+                    //Permission canceled.
+                    return;
+                }
+            }
+            await AppShell.Current.DisplayAlert("Error", "Something went wrong creating the symbolic link.", "OK");
         }
         PopupOpen = false;
         if(side == 0)
