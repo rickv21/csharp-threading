@@ -1,9 +1,10 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using FileManager.Models;
 using FileManager.ViewModels;
 using SharpHook;
 using Microsoft.Maui.Controls;
+using System.Collections.ObjectModel;
 
 namespace FileManager.Views;
 
@@ -22,6 +23,46 @@ public partial class FileOverviewPage : ContentPage
         BindingContext = viewModel;
 
         Task.Run(() => RegisterKeybindingsAsync());
+    }
+
+    ObservableCollection<object> favoritesCollection;
+
+    public ObservableCollection<object> FavoritesCollection
+    {
+        get { return favoritesCollection; }
+        set
+        {
+            _ = value;
+            OnPropertyChanged(nameof(FavoritesCollection));
+        }
+    }
+
+    public void OnFavoriteTapped(object sender, EventArgs e)
+    {
+        var label = (Label)sender;
+        //if (label.BindingContext is DirectoryItem)
+        //{
+        //    _ = (DirectoryItem)label.BindingContext;
+        //    Debug.WriteLine("DIR");
+        //    viewModel.FavoriteItem("directory");
+        //}
+        //else if (label.BindingContext is FileItem)
+        //{
+        //    _ = (FileItem)label.BindingContext;
+        //    Debug.WriteLine("FILE");
+        //    viewModel.FavoriteItem("file");
+        //}
+
+        if (label.Text.Equals("★"))
+        {
+            viewModel.UnfavoriteItem(label.BindingContext);
+            label.Text = "☆";
+        }
+        else
+        {
+            viewModel.FavoriteItem(label.BindingContext);
+            label.Text = "★";
+        }
     }
 
     private async Task RegisterKeybindingsAsync()

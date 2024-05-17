@@ -15,6 +15,7 @@ using FileManager.Views.Popups;
 using Application = Microsoft.Maui.Controls.Application;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Newtonsoft.Json;
 
 namespace FileManager.ViewModels;
 
@@ -555,7 +556,41 @@ public class FileOverviewViewModel : ViewModelBase
         Directory.Delete(sourceDirPath, false);
     }
 
-    private int CountFiles(Item item)
+    public async void FavoriteItem(object item)
+    {
+        string filePath = $@"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\FileManager\favorites.json";
+
+        string existingJsonContent = File.Exists(filePath) ? await File.ReadAllTextAsync(filePath) : "";
+
+        var favorites = string.IsNullOrEmpty(existingJsonContent)
+                ? new List<dynamic>()
+                : JsonConvert.DeserializeObject<List<dynamic>>(existingJsonContent);
+
+        if (item is DirectoryItem)
+        {
+            //Debug.WriteLine("dir");
+            DirectoryItem dirItem = (DirectoryItem)item;
+            favorites.Add(dirItem);
+        }
+        else if (item is FileItem)
+        {
+            //Debug.WriteLine("file");
+            FileItem fileItem = (FileItem)item;
+            favorites.Add(fileItem);
+        }
+
+        string updatedJsonData = JsonConvert.SerializeObject(favorites, Newtonsoft.Json.Formatting.Indented);
+
+        await File.WriteAllTextAsync(filePath, updatedJsonData);
+
+    }
+
+    public async void UnfavoriteItem(object item)
+    {
+
+    }
+
+    private static int CountFiles(Item item)
     {
         if (item.Type != ItemType.Dir)
         {
@@ -597,6 +632,7 @@ public class FileOverviewViewModel : ViewModelBase
             startInfo.FileName = "cmd.exe";
             startInfo.UseShellExecute = true;
             startInfo.Verb = "runas";
+            
             if (Directory.Exists(path))
             {
                 string linkName = await Application.Current.MainPage.DisplayPromptAsync("Enter link name", $"Please enter the name of the new link folder.", "OK", "Cancel", null, maxLength: 100);

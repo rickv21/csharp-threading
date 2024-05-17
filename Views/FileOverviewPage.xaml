@@ -149,7 +149,19 @@
                                             </MenuFlyoutItem>
                                         </MenuFlyout>
                                     </FlyoutBase.ContextFlyout>
-                                    <Label Text="" VerticalOptions="Center" HorizontalOptions="Center" />
+                                    <Label x:Name="Favorite" Text="☆" Grid.Column="0" FontSize="Medium" VerticalOptions="Center" HorizontalOptions="Center" BindingContext="{Binding FilePath}">
+                                        <Label.BindingContext>
+                                            <Binding Path="." />
+                                        </Label.BindingContext>
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnFavoriteTapped" />
+                                        </Label.GestureRecognizers>
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FileName}" Value="...">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
                                     <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="1" />
                                     <Label Text="{Binding FileName}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="2" />
                                     <Label Text="{Binding FileInfo}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="3" />
@@ -334,7 +346,19 @@
                                             </MenuFlyoutItem>
                                         </MenuFlyout>
                                     </FlyoutBase.ContextFlyout>
-                                    <Label Grid.Column="0" Text="" VerticalOptions="Center" HorizontalOptions="Center" />
+                                    <Label x:Name="Favorite" Text="☆" Grid.Column="0" FontSize="Medium" VerticalOptions="Center" HorizontalOptions="Center" BindingContext="{Binding FilePath}">
+                                        <Label.BindingContext>
+                                            <Binding Path="." />
+                                        </Label.BindingContext>
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnFavoriteTapped" />
+                                        </Label.GestureRecognizers>
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FileName}" Value="...">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
                                     <Image Source="{Binding Icon}" WidthRequest="50" HeightRequest="50" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="1" />
                                     <Label Text="{Binding FileName}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="2" />
                                     <Label Text="{Binding FileInfo}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="3" />
