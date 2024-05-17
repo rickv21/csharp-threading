@@ -452,13 +452,10 @@ public partial class FileOverviewPage : ContentPage
                     {
                         if (LeftCollection.SelectedItems.ToList().Count() >= 1)
                         {
-                            Debug.WriteLine("Target L to R " + GetSelectedFolderPath(0));
                             await viewModel.ProcessActionAsync(action, number, regex, this, items, LeftCollection.SelectedItems.ToList(), GetSelectedFolderPath(1));
                         }
                         if (RightCollection.SelectedItems.ToList().Count() >= 1)
                         {
-                            Debug.WriteLine("Target R to L " + GetSelectedFolderPath(0));
-
                             await viewModel.ProcessActionAsync(action, number, regex, this, items, RightCollection.SelectedItems.ToList(), GetSelectedFolderPath(0));
                         }
                     }

@@ -194,10 +194,11 @@ public class FileOverviewViewModel : ViewModelBase
     /// De TPL wordt gebruikt om het kopiëren van elk afzonderlijk bestand of directory parallel uit te voeren op de ThreadPool met behulp van taken.
     /// Dit kan leiden tot betere prestaties, vooral bij het kopiëren van veel bestanden of grote bestanden.
     /// 
-    /// TPL is niet hetzelfde als Threadpool. TPL biedt hoger-niveau constructies voor parallel programmeren, terwijl ThreadPool een low-level mechanisme is voor het beheren van threads.
+    /// TPL is niet hetzelfde als threadpool. Het biedt hoger-niveau constructies voor parallel programmeren, terwijl ThreadPool een low-level mechanisme is voor het beheren van threads.
     /// </summary>
-    public void CopyItems(List<object> selectedItems)
+    public async Task CopyItems(List<object> selectedItems)
     {
+        // Lock to ensure thread safety when modifying shared resources
         lock (_copiedFilesPaths)
         {
             // Clear the list of copied files paths
@@ -208,109 +209,122 @@ public class FileOverviewViewModel : ViewModelBase
             {
                 Directory.CreateDirectory(tempCopyDirectory);
             }
+        }
 
-            // Create a list of tasks for copying files in parallel
-            List<Task> copyTasks = new List<Task>();
-
-            // TPL: Use Parallel.ForEach to execute a parallel loop over the selected items
+        // Use Parallel.ForEach for parallel processing
+        await Task.Run(() =>
+        {
             Parallel.ForEach(selectedItems, item =>
             {
-                if (item is FileItem fileItem) // if file
+                if (item is FileItem fileItem) // If file
                 {
-                    // Copy file to temporary directory using a separate task
-                    // TPL: Use Task.Run to create and execute a new task on the ThreadPool
-                    Task copyTask = Task.Run(() =>
+                    // TPL: Use Task.Run for asynchronous file copying
+                    Task.Run(() =>
                     {
                         string fileName = Path.GetFileName(fileItem.FilePath);
                         string tempFilePath = Path.Combine(tempCopyDirectory, fileName);
+
+                        // Perform file copy synchronously
                         File.Copy(fileItem.FilePath, tempFilePath, true);
 
-                        // Add path of file to list (within the lock)
+                        // Lock within the synchronous method
                         lock (_copiedFilesPaths)
                         {
                             _copiedFilesPaths.Add(tempFilePath);
                         }
                     });
-
-                    // TPL: Add the copy task to the list of tasks
-                    copyTasks.Add(copyTask);
                 }
-                else if (item is DirectoryItem directoryItem) // if directory
+                else if (item is DirectoryItem directoryItem) // If directory
                 {
-                    // Copy folder to temporary directory using a separate task
-                    // TPL: Use Task.Run to create and execute a new task on the ThreadPool
-                    Task copyTask = Task.Run(() =>
+                    // TPL: Use Task.Run for asynchronous directory copying
+                    Task.Run(() =>
                     {
                         string dirName = Path.GetFileName(directoryItem.FilePath);
                         string tempDirPath = Path.Combine(tempCopyDirectory, dirName);
+
+                        // Perform directory copy synchronously
                         DirectoryCopy(directoryItem.FilePath, tempDirPath, true);
 
-                        // Add path of copied folder to list (within the lock)
+                        // Lock within the synchronous method
                         lock (_copiedFilesPaths)
                         {
                             _copiedFilesPaths.Add(tempDirPath);
                         }
                     });
-
-                    // TPL: Add the copy task to the list of tasks
-                    copyTasks.Add(copyTask);
                 }
             });
-
-            // TPL: Wait for all copy tasks to complete
-            Task.WaitAll(copyTasks.ToArray());
-        }
+        });
     }
 
     /// <summary>
-    /// Threading manier: ThreadPool
+    /// Threadming manier: Threadpool
     /// 
     /// Deze methode kopieert een directory recursief naar een nieuwe locatie, waarbij bestanden en submappen parallel worden gekopieerd met behulp van de ThreadPool van .NET.
-    /// Door gebruik te maken van ThreadPool.QueueUserWorkItem wordt de onderliggende ThreadPool van .NET gebruikt om de kopieeroperaties over meerdere threads te verdelen.
+    /// Door Parallel.ForEach te gebruiken, wordt de onderliggende ThreadPool van .NET gebruikt om de iteraties over bestanden en directories te verdelen over meerdere threads.
     /// Dit maakt effectief gebruik van beschikbare CPU-cycli en kan leiden tot betere prestaties, vooral bij het kopiëren van grote hoeveelheden data of het gebruik van langzame opslagmedia.
     /// </summary>
     /// <param name="sourceDirPath"></param>
     /// <param name="destDirPath"></param>
     /// <param name="copySubDirs"></param>
     /// <exception cref="DirectoryNotFoundException"></exception>
-    private void DirectoryCopy(string sourceDirPath, string destDirPath, bool copySubDirs)
+    private void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
     {
-        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
+        // Get the subdirectories for the specified directory.
+        DirectoryInfo dir = new DirectoryInfo(sourceDirName);
 
         if (!dir.Exists)
         {
-            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+            throw new DirectoryNotFoundException(
+                "Source directory does not exist or could not be found: "
+                + sourceDirName);
         }
 
-        Directory.CreateDirectory(destDirPath);
+        DirectoryInfo[] dirs = dir.GetDirectories();
 
-        var files = dir.GetFiles();
-        var dirs = dir.GetDirectories();
-
-        // Use ThreadPool to copy files in parallel
-        foreach (var file in files)
+        // If the destination directory doesn't exist, create it.
+        if (!Directory.Exists(destDirName))
         {
-            ThreadPool.QueueUserWorkItem(_ =>
+            Directory.CreateDirectory(destDirName);
+        }
+
+        // Use ThreadPool to copy files and directories
+        var copyTasks = new List<Task>();
+
+        // Get the files in the directory and copy them to the new location.
+        FileInfo[] files = dir.GetFiles();
+        foreach (FileInfo file in files)
+        {
+            var copyTask = new Task(() =>
             {
-                string tempPath = Path.Combine(destDirPath, file.Name);
+                string tempPath = Path.Combine(destDirName, file.Name);
                 file.CopyTo(tempPath, true);
             });
+
+            // Queue the task to the ThreadPool
+            ThreadPool.QueueUserWorkItem(_ => copyTask.Start());
+            copyTasks.Add(copyTask);
         }
 
+        // If copying subdirectories, copy them and their contents to new location.
         if (copySubDirs)
         {
-            // Use ThreadPool to copy subdirectories in parallel
-            foreach (var subdir in dirs)
+            foreach (DirectoryInfo subdir in dirs)
             {
-                ThreadPool.QueueUserWorkItem(_ =>
+                var copyTask = new Task(() =>
                 {
-                    string tempPath = Path.Combine(destDirPath, subdir.Name);
+                    string tempPath = Path.Combine(destDirName, subdir.Name);
                     DirectoryCopy(subdir.FullName, tempPath, copySubDirs);
                 });
+
+                // Queue the task to the ThreadPool
+                ThreadPool.QueueUserWorkItem(_ => copyTask.Start());
+                copyTasks.Add(copyTask);
             }
         }
-    }
 
+        // Wait for all copy tasks to complete
+        Task.WaitAll(copyTasks.ToArray());
+    }
 
     /// <summary>
     /// Threading manier: locks
