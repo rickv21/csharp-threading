@@ -500,7 +500,7 @@ public partial class FileOverviewPage : ContentPage
             needsRegex = true;
         }
 
-        string action = await viewModel.SelectActionAsync();
+        string action = await FileOverviewViewModel.SelectActionAsync();
 
         if (action != null && action != "Cancel" && action != "Move")
         {
