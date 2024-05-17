@@ -225,7 +225,7 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Copy")
         {
-            viewModel.CopyItems(RightCollection.SelectedItems.ToList());
+            //viewModel.CopyItems(RightCollection.SelectedItems.ToList());
         }
         else if (item.Text == "Paste")
         {
@@ -257,7 +257,7 @@ public partial class FileOverviewPage : ContentPage
         }
         else if (item.Text == "Copy")
         {
-            viewModel.CopyItems(LeftCollection.SelectedItems.ToList());
+            //viewModel.CopyItems(LeftCollection.SelectedItems.ToList());
         }
         else if (item.Text == "Paste")
         {
@@ -476,33 +476,6 @@ public partial class FileOverviewPage : ContentPage
             catch (Exception e)
             {
                 await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
-            }
-        }
-        else if (action != null && action == "Move")
-        {
-            var dropGestureRecognizer = (DropGestureRecognizer)sender;
-            var collectionView = FindParentCollectionView(dropGestureRecognizer);
-
-            string targetPath = string.Empty;
-            if (collectionView == RightCollection)
-            {
-                targetPath = viewModel.RightSideViewModel.CurrentPath;
-            }
-            else if (collectionView == LeftCollection)
-            {
-                targetPath = viewModel.LeftSideViewModel.CurrentPath;
-            }
-
-
-            // Iterate over dropped files and move them to the target path
-            foreach (var file in viewModel.DroppedFiles)
-            {
-                // Ensure that the file is not null and the target path is valid
-                if (file != null && !string.IsNullOrEmpty(targetPath))
-                {
-                    //TODO: Needs to be connected to popups (@Monique).
-                    await MoveFile(file, targetPath);
-                }
             }
         }
     }

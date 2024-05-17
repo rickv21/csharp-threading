@@ -130,7 +130,7 @@ public class FileOverviewViewModel : ViewModelBase
                     break;
                 case "Copy":
                     await Task.Delay(2000);
-                    CopyItems(selectedItems);
+                    await CopyItems(selectedItems, number);
                     break;
                 case "Paste":
                     await Task.Delay(2000);
@@ -140,6 +140,7 @@ public class FileOverviewViewModel : ViewModelBase
         }
         popup.Close();
     }
+
 
     public void PassClickEvent(string key)
     {
@@ -196,7 +197,7 @@ public class FileOverviewViewModel : ViewModelBase
     /// 
     /// TPL is niet hetzelfde als threadpool. Het biedt hoger-niveau constructies voor parallel programmeren, terwijl ThreadPool een low-level mechanisme is voor het beheren van threads.
     /// </summary>
-    public async Task CopyItems(List<object> selectedItems)
+    public async Task CopyItems(List<object> selectedItems, int maxDegreeOfParallelism)
     {
         // Lock to ensure thread safety when modifying shared resources
         lock (_copiedFilesPaths)
@@ -211,49 +212,53 @@ public class FileOverviewViewModel : ViewModelBase
             }
         }
 
-        // Use Parallel.ForEach for parallel processing
+        // Create a dictionary to store the thread IDs
+        var threadIds = new ConcurrentDictionary<int, bool>();
+
         await Task.Run(() =>
         {
-            Parallel.ForEach(selectedItems, item =>
+            // TPL with specific degree of parallelism
+            Parallel.ForEach(selectedItems, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, item =>
             {
+                // Get the current thread ID
+                int threadId = Thread.CurrentThread.ManagedThreadId;
+
+                // Add the thread ID to the dictionary if it doesn't exist
+                threadIds.TryAdd(threadId, true);
+
                 if (item is FileItem fileItem) // If file
                 {
-                    // TPL: Use Task.Run for asynchronous file copying
-                    Task.Run(() =>
+                    string fileName = Path.GetFileName(fileItem.FilePath);
+                    string tempFilePath = Path.Combine(tempCopyDirectory, fileName);
+
+                    // Perform file copy synchronously
+                    File.Copy(fileItem.FilePath, tempFilePath, true);
+
+                    // Lock within the synchronous method
+                    lock (_copiedFilesPaths)
                     {
-                        string fileName = Path.GetFileName(fileItem.FilePath);
-                        string tempFilePath = Path.Combine(tempCopyDirectory, fileName);
-
-                        // Perform file copy synchronously
-                        File.Copy(fileItem.FilePath, tempFilePath, true);
-
-                        // Lock within the synchronous method
-                        lock (_copiedFilesPaths)
-                        {
-                            _copiedFilesPaths.Add(tempFilePath);
-                        }
-                    });
+                        _copiedFilesPaths.Add(tempFilePath);
+                    }
                 }
                 else if (item is DirectoryItem directoryItem) // If directory
                 {
-                    // TPL: Use Task.Run for asynchronous directory copying
-                    Task.Run(() =>
+                    string dirName = Path.GetFileName(directoryItem.FilePath);
+                    string tempDirPath = Path.Combine(tempCopyDirectory, dirName);
+
+                    // Perform directory copy synchronously
+                    DirectoryCopy(directoryItem.FilePath, tempDirPath, true);
+
+                    // Lock within the synchronous method
+                    lock (_copiedFilesPaths)
                     {
-                        string dirName = Path.GetFileName(directoryItem.FilePath);
-                        string tempDirPath = Path.Combine(tempCopyDirectory, dirName);
-
-                        // Perform directory copy synchronously
-                        DirectoryCopy(directoryItem.FilePath, tempDirPath, true);
-
-                        // Lock within the synchronous method
-                        lock (_copiedFilesPaths)
-                        {
-                            _copiedFilesPaths.Add(tempDirPath);
-                        }
-                    });
+                        _copiedFilesPaths.Add(tempDirPath);
+                    }
                 }
             });
         });
+
+        // Print the number of threads used
+        Debug.WriteLine($"Number of threads used: {threadIds.Count}");
     }
 
     /// <summary>
