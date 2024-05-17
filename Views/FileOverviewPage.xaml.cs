@@ -491,7 +491,6 @@ public partial class FileOverviewPage : ContentPage
     /// <param name="sender">The source of the event.</param>
     /// <param name="items">The list of items being dropped.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-
     async Task OnItemDropAsync(object sender, IList<Item> items)
     {
         if (items.Count == 0)
@@ -576,7 +575,6 @@ public partial class FileOverviewPage : ContentPage
                 // Ensure that the file is not null and the target path is valid
                 if (file != null && !string.IsNullOrEmpty(targetPath))
                 {
-                    //TODO: Needs to be connected to popups (@Monique).
                     await MoveFile(file, targetPath);
                 }
             }
