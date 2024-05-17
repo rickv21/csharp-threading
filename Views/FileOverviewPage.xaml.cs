@@ -20,7 +20,7 @@ public partial class FileOverviewPage : ContentPage
         InitializeComponent();
         viewModel = new FileOverviewViewModel();
         BindingContext = viewModel;
-       
+
         Task.Run(() => RegisterKeybindingsAsync());
     }
 
@@ -53,12 +53,12 @@ public partial class FileOverviewPage : ContentPage
         });
 
         //Some more keyboard selection prevention.
-    /*    if (key == "tab")
-        {
-            e.SuppressEvent = true;
-        }*/
+        /*    if (key == "tab")
+            {
+                e.SuppressEvent = true;
+            }*/
 
-        if(key == "f2")
+        if (key == "f2")
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -87,6 +87,7 @@ public partial class FileOverviewPage : ContentPage
         }
         viewModel.PassClickEvent(key);
     }
+
 
     public void OnItemTapped(object sender, EventArgs e)
     {
@@ -155,31 +156,31 @@ public partial class FileOverviewPage : ContentPage
                 getCurrentView(0).SelectedItems.Add(item);
             }
             viewModel.DroppedFiles = getCurrentView(0).SelectedItems.Cast<Item>();
-           foreach (var debugItem in viewModel.DroppedFiles)
-              {
+            foreach (var debugItem in viewModel.DroppedFiles)
+            {
                 System.Diagnostics.Debug.WriteLine(debugItem.ToString());
             }
 
-             // e.Data.Properties.Add("files", viewModel.DroppedFiles);  
-              e.Data.Properties.Add("files", getCurrentView(0).SelectedItems);
+            // e.Data.Properties.Add("files", viewModel.DroppedFiles);  
+            e.Data.Properties.Add("files", getCurrentView(0).SelectedItems);
 
         }
-                else if (item.Side == 1)
-                {
-                    //Right side.
-                    if (!getCurrentView(1).SelectedItems.Contains(item))
-                    {
-                        getCurrentView(1).SelectedItems.Add(item);
-                    }
+        else if (item.Side == 1)
+        {
+            //Right side.
+            if (!getCurrentView(1).SelectedItems.Contains(item))
+            {
+                getCurrentView(1).SelectedItems.Add(item);
+            }
 
-                    viewModel.DroppedFiles = getCurrentView(1).SelectedItems.Cast<Item>();
-                    foreach (var debugItem in viewModel.DroppedFiles)
-                    {
-                        System.Diagnostics.Debug.WriteLine(debugItem.ToString());
-                    }
+            viewModel.DroppedFiles = getCurrentView(1).SelectedItems.Cast<Item>();
+            foreach (var debugItem in viewModel.DroppedFiles)
+            {
+                System.Diagnostics.Debug.WriteLine(debugItem.ToString());
+            }
 
-                    e.Data.Properties.Add("files", getCurrentView(1).SelectedItems);
-                }
+            e.Data.Properties.Add("files", getCurrentView(1).SelectedItems);
+        }
     }
 
     public void OnItemDrop(object sender, DropEventArgs e)
@@ -207,7 +208,7 @@ public partial class FileOverviewPage : ContentPage
             {
                 viewModel.LeftSideViewModel.RefreshAsync();
             }
-            else if (side.Equals ("right"))
+            else if (side.Equals("right"))
             {
                 viewModel.RightSideViewModel.RefreshAsync();
             }
@@ -220,7 +221,7 @@ public partial class FileOverviewPage : ContentPage
         if (item.Text.Equals("Refresh"))
         {
             viewModel.RightSideViewModel.RefreshAsync();
-        } 
+        }
         else if (item.Text.Equals("Rename"))
         {
             var menuItem = (MenuFlyoutItem)sender;
@@ -436,7 +437,7 @@ public partial class FileOverviewPage : ContentPage
     {
         Task.Run(async () => await viewModel.RemoveTabAsync(1));
     }
-         
+
     // Helper method to copy directory recursively
     private void CopyDirectory(string sourceDirPath, string destDirPath)
     {
@@ -468,11 +469,11 @@ public partial class FileOverviewPage : ContentPage
         IList<Item> selectedItems = null;
         if (side == 0)
         {
-            selectedItems = LeftCollection.SelectedItems.Cast<Item>().ToList();
+            selectedItems = LeftListCollection.SelectedItems.Cast<Item>().ToList();
         }
         else if (side == 1)
         {
-            selectedItems = RightCollection.SelectedItems.Cast<Item>().ToList();
+            selectedItems = RightListCollection.SelectedItems.Cast<Item>().ToList();
         }
 
         if (selectedItems != null && selectedItems.Count == 1)
@@ -523,16 +524,16 @@ public partial class FileOverviewPage : ContentPage
                 {
                     if (int.TryParse(numnerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
                     {
-                        if (LeftCollection.SelectedItems.ToList().Count() >= 1)
+                        if (LeftListCollection.SelectedItems.ToList().Count() >= 1)
                         {
                             Debug.WriteLine("Target L to R " + GetSelectedFolderPath(0));
-                            await viewModel.ProcessActionAsync(action, number, regex, this, items, LeftCollection.SelectedItems.ToList(), GetSelectedFolderPath(1));
+                            await viewModel.ProcessActionAsync(action, number, regex, this, items, LeftListCollection.SelectedItems.ToList(), GetSelectedFolderPath(1));
                         }
-                        if (RightCollection.SelectedItems.ToList().Count() >= 1)
+                        if (RightListCollection.SelectedItems.ToList().Count() >= 1)
                         {
                             Debug.WriteLine("Target R to L " + GetSelectedFolderPath(0));
 
-                            await viewModel.ProcessActionAsync(action, number, regex, this, items, RightCollection.SelectedItems.ToList(), GetSelectedFolderPath(0));
+                            await viewModel.ProcessActionAsync(action, number, regex, this, items, RightListCollection.SelectedItems.ToList(), GetSelectedFolderPath(0));
                         }
                     }
                     else if (number < 1)
@@ -553,17 +554,18 @@ public partial class FileOverviewPage : ContentPage
             {
                 await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
             }
-             else if (action != null && action == "Move")
+        }
+        else if (action != null && action == "Move")
         {
             var dropGestureRecognizer = (DropGestureRecognizer)sender;
             var collectionView = FindParentCollectionView(dropGestureRecognizer);
 
             string targetPath = string.Empty;
-            if (collectionView == RightCollection)
+            if (collectionView == RightListCollection)
             {
                 targetPath = viewModel.RightSideViewModel.CurrentPath;
             }
-            else if (collectionView == LeftCollection)
+            else if (collectionView == LeftListCollection)
             {
                 targetPath = viewModel.LeftSideViewModel.CurrentPath;
             }
@@ -582,38 +584,38 @@ public partial class FileOverviewPage : ContentPage
         }
 
     }
-    private void ToggleRosterView_Clicked()
-    {
-        isRosterView = !isRosterView;
-        if(isRosterView)
+        private void ToggleRosterView_Clicked()
         {
-            LeftListCollection.IsEnabled = false;
-            LeftListCollection.IsVisible = false;
+            isRosterView = !isRosterView;
+            if (isRosterView)
+            {
+                LeftListCollection.IsEnabled = false;
+                LeftListCollection.IsVisible = false;
 
-            LeftRosterCollection.IsEnabled = true;
-            LeftRosterCollection.IsVisible = true;
+                LeftRosterCollection.IsEnabled = true;
+                LeftRosterCollection.IsVisible = true;
 
-            RightListCollection.IsEnabled = false;
-            RightListCollection.IsVisible = false;
+                RightListCollection.IsEnabled = false;
+                RightListCollection.IsVisible = false;
 
-            RightRosterCollection.IsEnabled = true;
-            RightRosterCollection.IsVisible = true;
+                RightRosterCollection.IsEnabled = true;
+                RightRosterCollection.IsVisible = true;
+            }
+            else
+            {
+                LeftListCollection.IsEnabled = true;
+                LeftListCollection.IsVisible = true;
+
+                LeftRosterCollection.IsEnabled = false;
+                LeftRosterCollection.IsVisible = false;
+
+                RightListCollection.IsEnabled = true;
+                RightListCollection.IsVisible = true;
+
+                RightRosterCollection.IsEnabled = false;
+                RightRosterCollection.IsVisible = false;
+            }
         }
-        else
-        {
-            LeftListCollection.IsEnabled = true;
-            LeftListCollection.IsVisible = true;
-
-            LeftRosterCollection.IsEnabled = false;
-            LeftRosterCollection.IsVisible = false;
-
-            RightListCollection.IsEnabled = true;
-            RightListCollection.IsVisible = true;
-
-            RightRosterCollection.IsEnabled = false;
-            RightRosterCollection.IsVisible = false;
-        }
-    }
 
     private CollectionView getCurrentView(int side)
     {

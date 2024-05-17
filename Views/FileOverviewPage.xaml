@@ -109,7 +109,7 @@
                                         <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
-                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftListCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
@@ -144,7 +144,7 @@
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick" CommandParameter="{Binding}"
-                               Command="{Binding Source={x:Reference RightCollection}}">
+                               Command="{Binding Source={x:Reference RightListCollection}}">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128221;"
                  FontFamily="Arial" />
@@ -200,39 +200,7 @@
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FlyoutBase.ContextFlyout>
-                                        <MenuFlyout>
-                                            <MenuFlyoutItem Text="Delete" Clicked="LeftContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Copy" Clicked="LeftContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Paste" Clicked="LeftContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick"
-           Command="{Binding Source={x:Reference RightRosterCollection}}">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#128221;"
-                 FontFamily="Arial" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Refresh" Clicked="LeftContextClick"
-        Command="{Binding Source={x:Reference RightRosterCollection}}">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#8634;"
-                 FontFamily="Arial" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                        </MenuFlyout>
-                                    </FlyoutBase.ContextFlyout>
+                                   
                                     <Image Source="{Binding Icon}" WidthRequest="30" HeightRequest="30" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="0" />
                                     <Label Text="{Binding FileName}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="1" FontSize="10"/>
                                 </Grid>
@@ -336,7 +304,7 @@
                                         <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
-                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightListCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
@@ -371,7 +339,7 @@
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="RightContextClick" CommandParameter="{Binding}"
-                               Command="{Binding Source={x:Reference RightCollection}}" >
+                               Command="{Binding Source={x:Reference RightListCollection}}" >
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128221;"
                                      FontFamily="Arial" />
@@ -427,39 +395,7 @@ ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name
                                             </VisualState>
                                         </VisualStateGroup>
                                     </VisualStateManager.VisualStateGroups>
-                                    <FlyoutBase.ContextFlyout>
-                                        <MenuFlyout>
-                                            <MenuFlyoutItem Text="Delete" Clicked="RightContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#128465;" FontFamily="Arial" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Copy" Clicked="RightContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#xE8C8;" FontFamily="Segoe MDL2 Assets" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Paste" Clicked="RightContextClick">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#xE77F;" FontFamily="Segoe MDL2 Assets" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Rename" Clicked="RightContextClick"
-       Command="{Binding Source={x:Reference LeftRosterCollection}}">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#128221;"
-             FontFamily="Arial" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                            <MenuFlyoutItem Text="Refresh" Clicked="RightContextClick"
-    Command="{Binding Source={x:Reference LeftRosterCollection}}">
-                                                <MenuFlyoutItem.IconImageSource>
-                                                    <FontImageSource Glyph="&#8634;"
-             FontFamily="Arial" />
-                                                </MenuFlyoutItem.IconImageSource>
-                                            </MenuFlyoutItem>
-                                        </MenuFlyout>
-                                    </FlyoutBase.ContextFlyout>
+                                   
                                     <Image Source="{Binding Icon}" WidthRequest="30" HeightRequest="30" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="0" />
                                     <Label Text="{Binding FileName}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="1" FontSize="10"/>
                                 </Grid>
