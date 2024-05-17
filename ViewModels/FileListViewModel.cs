@@ -27,6 +27,9 @@ namespace FileManager.ViewModels
         private string _sizeText;
         private string _dateText;
 
+        /// <summary>
+        /// Gets or sets the collection of files, ensuring thread-safety using a lock.
+        /// </summary>
         public ObservableCollection<Item> Files
         {
             get
@@ -46,6 +49,9 @@ namespace FileManager.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets the list of selected items, ensuring thread-safety using a lock.
+        /// </summary>
         public IList<object> SelectedItems
         {
             get
@@ -64,6 +70,9 @@ namespace FileManager.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets the current path and notifies when the value changes.
+        /// </summary>
         public string CurrentPath
         {
             get { return _currentPath; }
@@ -74,6 +83,9 @@ namespace FileManager.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets the loading state and notifies when the value changes.
+        /// </summary>
         public bool IsLoading
         {
             get { return _isLoading; }
@@ -84,36 +96,73 @@ namespace FileManager.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets the file name text and notifies when the value changes.
+        /// </summary>
         public string FileNameText
         {
             get { return _fileNameText; }
             set { _fileNameText = value; OnPropertyChanged(nameof(FileNameText)); }
         }
 
+        /// <summary>
+        /// Gets or sets the info text and notifies when the value changes.
+        /// </summary>
         public string InfoText
         {
             get { return _infoText; }
             set { _infoText = value; OnPropertyChanged(nameof(InfoText)); }
         }
 
+        /// <summary>
+        /// Gets or sets the size text and notifies when the value changes.
+        /// </summary>
         public string SizeText
         {
             get { return _sizeText; }
             set { _sizeText = value; OnPropertyChanged(nameof(SizeText)); }
         }
 
+        /// <summary>
+        /// Gets or sets the date text and notifies when the value changes.
+        /// </summary>
         public string DateText
         {
             get { return _dateText; }
             set { _dateText = value; OnPropertyChanged(nameof(DateText)); }
         }
 
+        /// <summary>
+        /// Command triggered when an item is double-tapped.
+        /// </summary>
         public ICommand ItemDoubleTappedCommand { get; }
+
+        /// <summary>
+        /// Command triggered when the path is changed.
+        /// </summary>
         public ICommand PathChangedCommand { get; }
+
+        /// <summary>
+        /// Command to sort files alphabetically.
+        /// </summary>
         public ICommand SortFilesCommand { get; }
+
+        /// <summary>
+        /// Command to sort files based on size.
+        /// </summary>
         public ICommand SortFilesOnSizeCommand { get; }
+
+        /// <summary>
+        /// Command to sort files based on date.
+        /// </summary>
         public ICommand SortFilesOnDateCommand { get; }
 
+
+        /// <summary>
+        /// Initializes a new instance of the FileListViewModel class with the specified file icon cache and side.
+        /// </summary>
+        /// <param name="fileIconCache">The cache for file icons.</param>
+        /// <param name="side">The side of the file explorer.</param>
         public FileListViewModel(ConcurrentDictionary<string, byte[]> fileIconCache, short side)
         {
             _side = side;
@@ -144,6 +193,12 @@ namespace FileManager.ViewModels
             return CurrentPath;
         }
 
+        /// <summary>
+        /// Renames the selected item with a new name and handles exceptions.
+        /// </summary>
+        /// <param name="selectedItem">The item to rename.</param>
+        /// <param name="newName">The new name for the item.</param>
+        /// <param name="extension">The extension for the item.</param>
         public static void RenameItem(Item selectedItem, string newName, string extension)
         {
             if (selectedItem != null)
@@ -161,7 +216,8 @@ namespace FileManager.ViewModels
                         File.Move(oldPath, newPath);
                     }
                     selectedItem.FileName = newName + extension;
-                } catch (IOException ex)
+                }
+                catch (IOException ex)
                 {
                     Shell.Current.DisplayAlert("Error", "The given name already exists in the current folder.", "OK");
                     return;
@@ -176,7 +232,7 @@ namespace FileManager.ViewModels
                     Shell.Current.DisplayAlert("Error", "An error occurred while renaming the file: " + ex.Message, "OK");
                     return;
                 }
-  
+
             }
             else
             {
@@ -184,6 +240,11 @@ namespace FileManager.ViewModels
             }
         }
 
+        /// <summary>
+        /// Checks if the files are sorted by date.
+        /// </summary>
+        /// <param name="files">The collection of files to check.</param>
+        /// <returns>True if the files are sorted by date; otherwise, false.</returns>
         private static bool IsSortedOnDate(ObservableCollection<Item> files)
         {
             for (int i = 1; i < files.Count; i++)
@@ -197,6 +258,12 @@ namespace FileManager.ViewModels
             return false;
         }
 
+        /// <summary>
+        /// Sorts the files by date in ascending or descending order.
+        /// </summary>
+        /// <param name="files">The collection of files to sort.</param>
+        /// <param name="isAscending">Whether to sort in ascending order.</param>
+        /// <returns>The sorted collection of files.</returns>
         private ObservableCollection<Item> SortFileDates(ObservableCollection<Item> files, bool isAscending)
         {
             ObservableCollection<Item> sortedItems = [];
@@ -235,6 +302,9 @@ namespace FileManager.ViewModels
             return sortedItems;
         }
 
+        /// <summary>
+        /// Sorts the files based on the date.
+        /// </summary>
         private void SortFilesOnDate()
         {
             if (IsLoading)
@@ -244,6 +314,11 @@ namespace FileManager.ViewModels
             Files = SortFileDates(_files, IsSortedOnDate(_files));
         }
 
+        /// <summary>
+        /// Checks if the files are sorted by size.
+        /// </summary>
+        /// <param name="files">The collection of files to check.</param>
+        /// <returns>True if the files are sorted by size; otherwise, false.</returns>
         private static bool IsSortedOnSize(ObservableCollection<Item> files)
         {
             for (int i = 1; i < files.Count; i++)
@@ -257,6 +332,12 @@ namespace FileManager.ViewModels
             return false;
         }
 
+        /// <summary>
+        /// Sorts the files by size in ascending or descending order.
+        /// </summary>
+        /// <param name="files">The collection of files to sort.</param>
+        /// <param name="isAscending">Indicates whether the sorting should be in ascending order.</param>
+        /// <returns>A sorted collection of files.</returns>
         private ObservableCollection<Item> SortFileSizes(ObservableCollection<Item> files, bool isAscending)
         {
             ObservableCollection<Item> sortedItems = [];
@@ -298,6 +379,9 @@ namespace FileManager.ViewModels
             return sortedItems;
         }
 
+        /// <summary>
+        /// Sorts the files based on their size.
+        /// </summary>
         private void SortFilesOnSize()
         {
             if (IsLoading)
@@ -307,6 +391,12 @@ namespace FileManager.ViewModels
             Files = SortFileSizes(_files, IsSortedOnSize(_files));
         }
 
+        /// <summary>
+        /// Checks if the files are sorted alphabetically by a given label.
+        /// </summary>
+        /// <param name="files">The collection of files to check.</param>
+        /// <param name="labelText">The label text to determine the sorting criteria.</param>
+        /// <returns>True if the files are sorted alphabetically; otherwise, false.</returns>
         private static bool IsSortedOnAlphabeticalLabel(ObservableCollection<Item> files, string labelText)
         {
             for (int i = 1; i < files.Count; i++)
@@ -330,6 +420,12 @@ namespace FileManager.ViewModels
             return false;
         }
 
+        /// <summary>
+        /// Gets the sorted items based on the specified label text.
+        /// </summary>
+        /// <param name="files">The collection of files to sort.</param>
+        /// <param name="labelText">The label text to determine the sorting criteria.</param>
+        /// <returns>A sorted collection of items.</returns>
         private ObservableCollection<Item> GetSortedItems(ObservableCollection<Item> files, string labelText)
         {
             bool isSorted = IsSortedOnAlphabeticalLabel(files, labelText);
@@ -385,6 +481,12 @@ namespace FileManager.ViewModels
             throw new Exception("Something went wrong");
         }
 
+        /// <summary>
+        /// Sorts the file names alphabetically based on the specified label text.
+        /// </summary>
+        /// <param name="files">The collection of files to sort.</param>
+        /// <param name="labelText">The label text to determine the sorting criteria.</param>
+        /// <returns>A sorted collection of files.</returns>
         private ObservableCollection<Item> SortFileNames(ObservableCollection<Item> files, string labelText)
         {
             bool isSorted = IsSortedOnAlphabeticalLabel(files, labelText);
@@ -400,6 +502,10 @@ namespace FileManager.ViewModels
             return sortedItemsExcludingFolder;
         }
 
+        /// <summary>
+        /// Sorts the files alphabetically based on the specified label text.
+        /// </summary>
+        /// <param name="labelText">The label text to determine the sorting criteria.</param>
         private void SortFilesAlphabetically(string labelText)
         {
             if (IsLoading)
@@ -409,6 +515,10 @@ namespace FileManager.ViewModels
             Files = SortFileNames(_files, labelText);
         }
 
+        /// <summary>
+        /// Handles various key press events to perform corresponding file operations.
+        /// </summary>
+        /// <param name="key">The key pressed by the user.</param>
         public void HandleClick(string key)
         {
             if (IsLoading)
@@ -461,6 +571,10 @@ namespace FileManager.ViewModels
             }
         }
 
+        /// <summary>
+        /// Refreshes the current file list asynchronously.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task RefreshAsync()
         {
             Debug.WriteLine("Refresh.");
@@ -473,6 +587,11 @@ namespace FileManager.ViewModels
             await FillList(d);
         }
 
+        /// <summary>
+        /// Retrieves the icon of a file or folder as an image source.
+        /// </summary>
+        /// <param name="filePath">The path of the file or folder.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the image source.</returns>
         public async Task<ImageSource> GetFileIcon(string filePath)
         {
             if (Directory.Exists(filePath))
@@ -503,6 +622,10 @@ namespace FileManager.ViewModels
             return new StreamImageSource { Stream = token => Task.FromResult<Stream>(new MemoryStream(ms.ToArray())) };
         }
 
+        /// <summary>
+        /// Handles the path change event, updating the file list accordingly.
+        /// </summary>
+        /// <param name="value">The new path value.</param>
         public async void PathChanged(string value)
         {
             if (CurrentPath.Length == 0)
@@ -526,7 +649,11 @@ namespace FileManager.ViewModels
             await Task.Run(async () => await FillList(directoryInfo));
         }
 
-
+        /// <summary>
+        /// Opens the specified item. If it's a directory, updates the file list; if it's a file, opens it.
+        /// </summary>
+        /// <param name="item">The item to open.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task OpenItemAsync(Item item)
         {
             Debug.WriteLine("Testing - " + item.FilePath);
@@ -570,6 +697,9 @@ namespace FileManager.ViewModels
             }
         }
 
+        /// <summary>
+        /// Fills the list of drives in the file explorer.
+        /// </summary>
         private void FillDriveList()
         {
             if (IsLoading)
@@ -594,6 +724,11 @@ namespace FileManager.ViewModels
             });
         }
 
+        /// <summary>
+        /// Fills the list of files and directories in the specified directory.
+        /// </summary>
+        /// <param name="d">The directory to list the contents of.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task FillList(DirectoryInfo d)
         {
             if (IsLoading)
@@ -627,7 +762,7 @@ namespace FileManager.ViewModels
                         lastEditDirectory = dirInfo.LastWriteTime;
                     }
 
-                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, _side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), FileUtil.IsSymbolicLink(dir.FullName),  lastEditDirectory, ItemType.Dir));
+                    fileSystemInfos.Add(new DirectoryItem(dirInfo.Name, dirInfo.FullName, 0, _side, (dir.Attributes & FileAttributes.Hidden) == (FileAttributes.Hidden), FileUtil.IsSymbolicLink(dir.FullName), lastEditDirectory, ItemType.Dir));
                 }));
 
                 await Task.WhenAll(d.EnumerateFiles().Select(async file =>
@@ -673,6 +808,9 @@ namespace FileManager.ViewModels
             }
         }
 
+        /// <summary>
+        /// Refreshes the list of files in the current directory.
+        /// </summary>
         public async void RefreshFiles()
         {
             DirectoryInfo directoryInfo = new(CurrentPath);
@@ -680,6 +818,10 @@ namespace FileManager.ViewModels
             await FillList(directoryInfo);
         }
 
+        /// <summary>
+        /// Deletes the selected items, moving them to the recycle bin.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task DeleteItem()
         {
             if (SelectedItems == null || SelectedItems.Count == 0)
@@ -736,6 +878,11 @@ namespace FileManager.ViewModels
             }
         }
 
+        /// <summary>
+        /// Shows an error message box with the specified message and details.
+        /// </summary>
+        /// <param name="message">The error message to display.</param>
+        /// <param name="details">Additional details about the error.</param>
         private static void ShowErrorMessageBox(string message, string details)
         {
             MessageBox.Show($"{message}\n\nDetails: {details}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);

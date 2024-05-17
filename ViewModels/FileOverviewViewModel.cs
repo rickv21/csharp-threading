@@ -142,7 +142,10 @@ public class FileOverviewViewModel : ViewModelBase
         OnPropertyChanged(nameof(RightSideViewModel));
     }
 
-    // List needs to be manipulated in order for the Picker values to be updated
+    /// <summary>
+    /// Handles the double-tap event on an item.
+    /// </summary>
+    /// <param name="item">The tapped item.</param>
     async void OnItemDoubleTapped(Item item)
     {
         if (item.Side == 0)
@@ -157,6 +160,12 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Updates the tab with the given view model in the provided collection.
+    /// </summary>
+    /// <param name="viewModels">The collection of view models.</param>
+    /// <param name="viewModel">The view model to update.</param>
+    /// <returns>The updated view model.</returns>
     private FileListViewModel UpdateTab(ObservableCollection<FileListViewModel> viewModels, FileListViewModel viewModel)
     {
         int index = viewModels.IndexOf(viewModel);
@@ -171,11 +180,21 @@ public class FileOverviewViewModel : ViewModelBase
 
     }
 
+    /// <summary>
+    /// Displays an action sheet to select an action.
+    /// </summary>
+    /// <returns>The selected action, or null if canceled.</returns>
     public static async Task<string> SelectActionAsync()
     {
         return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Paste", "Move");
     }
 
+    /// <summary>
+    /// Prompts the user to enter the number of threads and a regular expression (if applicable).
+    /// </summary>
+    /// <param name="action">The action for which the input is required.</param>
+    /// <param name="isDir">Indicates whether a regular expression is required (for directories).</param>
+    /// <returns>A tuple containing the number of threads and the regular expression (if applicable).</returns>
     public static async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
     {
         string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Microsoft.Maui.Keyboard.Numeric);
@@ -194,6 +213,17 @@ public class FileOverviewViewModel : ViewModelBase
         return (number, null);
     }
 
+    /// <summary>
+    /// Processes the specified action asynchronously with the given number of threads, regular expression, and selected items.
+    /// </summary>
+    /// <param name="action">The action to perform (e.g., "Move", "Copy", "Paste").</param>
+    /// <param name="number">The number of threads to use for the action.</param>
+    /// <param name="regex">The regular expression to use for filtering files (if applicable).</param>
+    /// <param name="view">The content page where the popup should be displayed.</param>
+    /// <param name="items">The list of items to perform the action on.</param>
+    /// <param name="selectedItems">The list of selected items.</param>
+    /// <param name="targetPath">The target path for the action (if applicable).</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task ProcessActionAsync(string action, int number, string regex, ContentPage view, IList<Item> items, List<object> selectedItems, string targetPath)
     {
         var fileCount = 0;
@@ -228,7 +258,11 @@ public class FileOverviewViewModel : ViewModelBase
         popup.Close();
     }
 
-
+    /// <summary>
+    /// Adds a new tab (FileListViewModel) to the specified side (left or right).
+    /// </summary>
+    /// <param name="side">The side to add the tab to (0 for left, 1 for right).</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task AddTabAsync(int side)
     {
         if (side == 0)
@@ -251,6 +285,11 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Removes a tab (FileListViewModel) from the specified side (left or right).
+    /// </summary>
+    /// <param name="side">The side to remove the tab from (0 for left, 1 for right).</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task RemoveTabAsync(int side)
     {
         if (side == 0)
@@ -279,6 +318,10 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Passes the click event to the active side (left or right).
+    /// </summary>
+    /// <param name="key">The key that was pressed.</param>
     public void PassClickEvent(string key)
     {
         Debug.WriteLine("Pass click event " + ActiveSide);
@@ -296,13 +339,22 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
-
+    /// <summary>
+    /// Updates the selected items in the left and right side view models.
+    /// </summary>
+    /// <param name="leftSelectedItems">The selected items on the left side.</param>
+    /// <param name="rightSelectedItems">The selected items on the right side.</param>
     public void UpdateSelected(IList<object> leftSelectedItems, IList<object> rightSelectedItems)
     {
         LeftSideViewModel.SelectedItems = leftSelectedItems;
         RightSideViewModel.SelectedItems = rightSelectedItems;
     }
 
+    /// <summary>
+    /// Gets the current path for the specified collection view (left or right).
+    /// </summary>
+    /// <param name="collectionView">The collection view to get the current path for.</param>
+    /// <returns>The current path, or null if the collection view is not found.</returns>
     public string GetCurrentPath(CollectionView collectionView)
     {
         if (collectionView == _leftCollection)
@@ -326,6 +378,8 @@ public class FileOverviewViewModel : ViewModelBase
     private readonly string tempCopyDirectory = Path.Combine(Path.GetTempPath(), "FileManagerCopiedItems");
 
     /// <summary>
+    /// Copies the selected items (files and directories) to a temporary directory in parallel.
+    /// 
     /// Threading: Locks en Task Parallel Library (TPL)
     /// 
     /// For copying multiple files, a combination of locking and the Task Parallel Library (TPL) is used.
@@ -335,6 +389,9 @@ public class FileOverviewViewModel : ViewModelBase
     /// 
     /// TPL is not the same as threadpool. It provides higher-level constructs for parallel programming, while ThreadPool is a low-level mechanism for managing threads.
     /// </summary>
+    /// <param name="selectedItems">The list of selected items to copy.</param>
+    /// <param name="maxDegreeOfParallelism">The maximum degree of parallelism for the copy operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task CopyItems(List<object> selectedItems, int maxDegreeOfParallelism)
     {
         // Lock to ensure thread safety when modifying shared resources
@@ -476,6 +533,8 @@ public class FileOverviewViewModel : ViewModelBase
     /// only 1 file or directory has access to the _copiedFilesPaths list. Here, multiple sources cannot
     /// edit the list.
     /// </summary>
+    /// <param name="targetPath">The target path where the items should be pasted.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task PasteItems(string targetPath, string regex)
     {
         lock (_copiedFilesPaths)
@@ -520,6 +579,12 @@ public class FileOverviewViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Recursively moves a directory to a new location.
+    /// </summary>
+    /// <param name="sourceDirPath">The source path of the directory.</param>
+    /// <param name="destDirPath">The destination path where the directory should be moved.</param>
+    /// <exception cref="DirectoryNotFoundException">Thrown when the source directory does not exist.</exception>
     private static void DirectoryMove(string sourceDirPath, string destDirPath)
     {
         DirectoryInfo dir = new(sourceDirPath);
@@ -548,6 +613,11 @@ public class FileOverviewViewModel : ViewModelBase
         Directory.Delete(sourceDirPath, false);
     }
 
+    /// <summary>
+    /// Counts the number of files in an item (file or directory).
+    /// </summary>
+    /// <param name="item">The item for which to count the files.</param>
+    /// <returns>The number of files in the item.</returns>
     private int CountFiles(Item item)
     {
         if (item.Type != ItemType.Dir)
