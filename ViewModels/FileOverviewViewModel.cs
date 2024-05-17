@@ -165,12 +165,12 @@ public class FileOverviewViewModel : ViewModelBase
 
     }
 
-    public async Task<string> SelectActionAsync()
+    public static async Task<string> SelectActionAsync()
     {
         return await Application.Current.MainPage.DisplayActionSheet("Select Action", "Cancel", null, "Copy", "Move");
     }
 
-    public async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
+    public static async Task<(string, string?)> PromptUserAsync(string action, bool isDir = false)
     {
         string number = await Application.Current.MainPage.DisplayPromptAsync("Enter Number", $"Number of threads for {action}:", "OK", "Cancel", "0", maxLength: 10, keyboard: Microsoft.Maui.Keyboard.Numeric);
         if(int.Parse(number) > MAX_THREADS || int.Parse(number) < 1)
@@ -297,26 +297,23 @@ public class FileOverviewViewModel : ViewModelBase
     {
         if (collectionView == _leftCollection)
         {
-            return LeftSideViewModel.CurrentPath;
+            return LeftSideViewModel.GetCurrentPath();
         }
         else if (collectionView == _rightCollection)
         {
-            return RightSideViewModel.CurrentPath;
+            return RightSideViewModel.GetCurrentPath();
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
-    private List<string> _copiedFilesPaths = new List<string>();
+    private List<string> _copiedFilesPaths = [];
     public List<string> CopiedFilesPaths
     {
         get { return _copiedFilesPaths; }
         set { _copiedFilesPaths = value; }
     }
 
-    private string tempCopyDirectory = Path.Combine(Path.GetTempPath(), "FileManagerCopiedItems");
+    private readonly string tempCopyDirectory = Path.Combine(Path.GetTempPath(), "FileManagerCopiedItems");
 
     /// <summary>
     /// Threading manier: locks
@@ -374,9 +371,9 @@ public class FileOverviewViewModel : ViewModelBase
     /// <param name="destDirPath"></param>
     /// <param name="copySubDirs"></param>
     /// <exception cref="DirectoryNotFoundException"></exception>
-    private void DirectoryCopy(string sourceDirPath, string destDirPath, bool copySubDirs)
+    private static void DirectoryCopy(string sourceDirPath, string destDirPath, bool copySubDirs)
     {
-        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
+        DirectoryInfo dir = new(sourceDirPath);
 
         if (!dir.Exists)
         {
@@ -411,7 +408,7 @@ public class FileOverviewViewModel : ViewModelBase
     /// heeft alleen 1 bestand of map toegang tot de _copiedFilesPaths list. Hierbij kunnen niet meerdere bronnen
     /// de lijst bewerken.
     /// </summary>
-    public void PasteItems(string targetPath)
+    public async Task PasteItems(string targetPath)
     {
         lock (_copiedFilesPaths)
         {
@@ -444,18 +441,14 @@ public class FileOverviewViewModel : ViewModelBase
                 }
             }
 
-            // Refresh
-            RightSideViewModel.RefreshFiles();
-            LeftSideViewModel.RefreshFiles();
-
             // empty copy list
             _copiedFilesPaths.Clear();
         }
     }
 
-    private void DirectoryMove(string sourceDirPath, string destDirPath)
+    private static void DirectoryMove(string sourceDirPath, string destDirPath)
     {
-        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
+        DirectoryInfo dir = new(sourceDirPath);
 
         if (!dir.Exists)
         {
