@@ -215,8 +215,10 @@ public partial class FileOverviewPage : ContentPage
         {
             var menuItem = (MenuFlyoutItem)sender;
             var selectedItem = (Item)menuItem.CommandParameter;
+            viewModel.PopupOpen = true;
 
             string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
+            viewModel.PopupOpen = false;
             if (!string.IsNullOrEmpty(userInput))
             {
                 FileInfo fileInfo = new(selectedItem.FilePath);
@@ -265,8 +267,9 @@ public partial class FileOverviewPage : ContentPage
         {
             var menuItem = (MenuFlyoutItem)sender;
             Item selectedItem = (Item)menuItem.CommandParameter;
-
+            viewModel.PopupOpen = true;
             string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
+            viewModel.PopupOpen = false;
             if (!string.IsNullOrEmpty(userInput))
             {
                 FileInfo fileInfo = new(selectedItem.FilePath);
@@ -417,18 +420,7 @@ public partial class FileOverviewPage : ContentPage
     {
         Task.Run(async () => await viewModel.RemoveTabAsync(1));
     }
-
-    void OnItemDrop(object sender, DropEventArgs e)
-    {
-        var droppedItems = e.Data.Properties["files"] as IList<object>;
-        if (droppedItems != null && droppedItems.Count > 0)
-        {
-            var itemList = droppedItems.OfType<Item>().ToList();
-            _ = OnItemDropAsync(itemList);
-        }
-
-    }
-                
+         
     // Helper method to copy directory recursively
     private void CopyDirectory(string sourceDirPath, string destDirPath)
     {
