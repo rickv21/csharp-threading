@@ -18,6 +18,11 @@ using System.ComponentModel;
 
 namespace FileManager.ViewModels;
 
+/// <summary>
+/// Threading: async & await.
+/// 
+/// In the viewmodels async and await are used to run code without blocking the UI thread.
+/// </summary>
 public class FileOverviewViewModel : ViewModelBase
 {
     public static int MAX_THREADS = 255;
