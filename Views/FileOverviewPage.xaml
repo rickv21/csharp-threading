@@ -90,7 +90,7 @@
                         </Border>
                     </Grid>
                     <!-- Content for the left ScrollView -->
-                    <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftCollection" VerticalOptions="FillAndExpand">
+                    <CollectionView ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftListCollection" VerticalOptions="FillAndExpand" >
                         <CollectionView.GestureRecognizers>
                             <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
                         </CollectionView.GestureRecognizers>
@@ -109,7 +109,7 @@
                                         <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
-                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftListCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
@@ -144,17 +144,17 @@
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="LeftContextClick" CommandParameter="{Binding}"
-                               Command="{Binding Source={x:Reference RightCollection}}">
+                               Command="{Binding Source={x:Reference RightListCollection}}">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128221;"
-                                     FontFamily="Arial" />
+                 FontFamily="Arial" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Refresh" Clicked="LeftContextClick"
-                            Command="{Binding Source={x:Reference RightCollection}}">
+        Command="{Binding Source={x:Reference RightListCollection}}">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#8634;"
-                                     FontFamily="Arial" />
+                 FontFamily="Arial" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                         </MenuFlyout>
@@ -165,6 +165,44 @@
                                     <Label Text="{Binding FileInfo}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="3" />
                                     <Label Text="{Binding ReadableSize}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="4" />
                                     <Label Text="{Binding LastEdited}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="5" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <CollectionView
+    ItemsSource="{Binding LeftSideViewModel.Files}" SelectionMode="Multiple" x:Name="LeftRosterCollection" VerticalOptions="FillAndExpand" IsEnabled="False" IsVisible="False">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Vertical" Span="3" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.GestureRecognizers>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
+                                        <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
+                                        <TapGestureRecognizer Tapped="OnItemTapped" />
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference LeftRosterCollection}, Path=BindingContext.LeftSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                    </Grid.GestureRecognizers>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="Transparent" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                   
+                                    <Image Source="{Binding Icon}" WidthRequest="30" HeightRequest="30" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="0" />
+                                    <Label Text="{Binding FileName}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="1" FontSize="10"/>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -247,7 +285,7 @@
                     </Grid>
 
                     <!-- Content for the right ScrollView -->
-                    <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightCollection" VerticalOptions="FillAndExpand" >
+                    <CollectionView ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightListCollection" VerticalOptions="FillAndExpand" >
                         <CollectionView.GestureRecognizers>
                             <!--<DropGestureRecognizer Drop="FileDrop" /> Needs to be connected to popup @Monique-->
                         </CollectionView.GestureRecognizers>
@@ -266,7 +304,7 @@
                                         <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
                                         <TapGestureRecognizer Tapped="OnItemTapped" />
                                         <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
-                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightListCollection}, Path=BindingContext.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
                                     </Grid.GestureRecognizers>
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
@@ -301,14 +339,14 @@
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Rename" Clicked="RightContextClick" CommandParameter="{Binding}"
-                               Command="{Binding Source={x:Reference RightCollection}}" >
+                               Command="{Binding Source={x:Reference RightListCollection}}" >
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#128221;"
                                      FontFamily="Arial" />
                                                 </MenuFlyoutItem.IconImageSource>
                                             </MenuFlyoutItem>
                                             <MenuFlyoutItem Text="Refresh" Clicked="RightContextClick"
-                            Command="{Binding Source={x:Reference RightCollection}}">
+                            Command="{Binding Source={x:Reference LeftListCollection}}">
                                                 <MenuFlyoutItem.IconImageSource>
                                                     <FontImageSource Glyph="&#8634;"
                                      FontFamily="Arial" />
@@ -326,7 +364,45 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-            </StackLayout>
+                    <CollectionView
+ItemsSource="{Binding RightSideViewModel.Files}" SelectionMode="Multiple" x:Name="RightRosterCollection" VerticalOptions="FillAndExpand" IsEnabled="False" IsVisible="False">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Vertical" Span="3" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.GestureRecognizers>
+                                        <DragGestureRecognizer CanDrag="True" DragStarting="OnDragStarting"/>
+                                        <DropGestureRecognizer AllowDrop="True" Drop="OnItemDrop"/>
+                                        <TapGestureRecognizer Tapped="OnItemTapped" />
+                                        <TapGestureRecognizer NumberOfTapsRequired="2" Command="{Binding Source={x:Reference RightRosterCollection}, Path=BindingContext.RightSideViewModel.ItemDoubleTappedCommand}" CommandParameter="{Binding}" />
+                                    </Grid.GestureRecognizers>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="Transparent" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                   
+                                    <Image Source="{Binding Icon}" WidthRequest="30" HeightRequest="30" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="0" />
+                                    <Label Text="{Binding FileName}" VerticalOptions="Center" HorizontalOptions="Start" Grid.Column="1" FontSize="10"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </StackLayout>
                 <ActivityIndicator x:Name="RightLoadingIndicator" IsVisible="{Binding RightSideViewModel.IsLoading}" IsRunning="{Binding RightSideViewModel.IsLoading}" VerticalOptions="Center" HorizontalOptions="Center"  />
             </Grid>
         </Border>
