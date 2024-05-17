@@ -130,19 +130,37 @@ namespace FileManager.ViewModels
             {
                 string oldPath = selectedItem.FilePath;
                 string newPath = Path.Combine(Path.GetDirectoryName(oldPath), newName + extension);
-                if (Directory.Exists(oldPath))
+                try
                 {
-                    Directory.Move(oldPath, newPath);
-                }
-                else if (File.Exists(oldPath))
+                    if (Directory.Exists(oldPath))
+                    {
+                        Directory.Move(oldPath, newPath);
+                    }
+                    else if (File.Exists(oldPath))
+                    {
+                        File.Move(oldPath, newPath);
+                    }
+                    selectedItem.FileName = newName + extension;
+                } catch (IOException ex)
                 {
-                    File.Move(oldPath, newPath);
+                    Shell.Current.DisplayAlert("Error", "The given name already exists in the current folder.", "OK");
+                    return;
                 }
-                selectedItem.FileName = newName + extension;
+                catch (UnauthorizedAccessException ex)
+                {
+                    Shell.Current.DisplayAlert("Error", "You do not have permission to rename this file.", "OK");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Shell.Current.DisplayAlert("Error", "An error occurred while renaming the file: " + ex.Message, "OK");
+                    return;
+                }
+  
             }
             else
             {
-                ShowErrorMessageBox("Please select a file to rename", "");
+                Shell.Current.DisplayAlert("No file selected", "Please select a file to rename", "");
             }
         }
 

@@ -444,12 +444,12 @@ public partial class FileOverviewPage : ContentPage
             needsRegex = true;
         }
         
-        string action = await viewModel.SelectActionAsync();
+        string action = await FileOverviewViewModel.SelectActionAsync();
         if (action != null && action != "Cancel")
         {
             try
             {
-                (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
+                (string, string?) userInput = await FileOverviewViewModel.PromptUserAsync(action.ToLower(), needsRegex);
                 var numnerOfThreads = userInput.Item1;
                 var regex = userInput.Item2;
                 if (userInput.Item1 != null)
