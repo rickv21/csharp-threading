@@ -1,20 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using FileManager.Models;
 using FileManager.ViewModels;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.UI.StartScreen;
 using SharpHook;
-using CommunityToolkit.Maui.Views;
-using FileManager.Views.Popups;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Text.Json;
+using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 
 namespace FileManager.Views;
 
@@ -88,6 +80,46 @@ public partial class FileOverviewPage : ContentPage
 
         }
         viewModel.PassClickEvent(key);
+    }
+
+    ObservableCollection<object> favoritesCollection;
+
+    public ObservableCollection<object> FavoritesCollection
+    {
+        get { return favoritesCollection; }
+        set
+        {
+            _ = value;
+            OnPropertyChanged(nameof(FavoritesCollection));
+        }
+    }
+
+    public void OnFavoriteTapped(object sender, EventArgs e)
+    {
+        var label = (Label)sender;
+        object item = null;
+        Debug.WriteLine(label.BindingContext);
+        if (label.BindingContext is DirectoryItem)
+        {
+            item = (DirectoryItem)label.BindingContext;
+            Debug.WriteLine("DIR");
+            viewModel.FavoriteItem("directory");
+        }
+        else if (label.BindingContext is FileItem)
+        {
+            item = (FileItem)label.BindingContext;
+            Debug.WriteLine("FILE");
+            viewModel.FavoriteItem("file");
+        }
+
+        if (label.Text.Equals("★"))
+        {
+            label.Text = "☆";
+        }
+        else
+        {
+            label.Text = "★";
+        }
     }
 
     void OnItemTapped(object sender, EventArgs e)

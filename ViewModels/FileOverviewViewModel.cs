@@ -1,14 +1,17 @@
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Views;
 using FileManager.Models;
 using FileManager.Views.Popups;
+using Newtonsoft.Json;
 using Application = Microsoft.Maui.Controls.Application;
 
 namespace FileManager.ViewModels;
@@ -82,6 +85,144 @@ public class FileOverviewViewModel : ViewModelBase
         LeftSideViewModel = new FileListViewModel(_fileIconCache, 0);
         RightSideViewModel = new FileListViewModel(_fileIconCache, 1);
         ActiveSide = 0;
+    }
+
+    public async void FavoriteItem(object item)
+    {
+        string formattedJson = JsonConvert.SerializeObject(item, Formatting.Indented);
+        string path = $@"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\FileManager\";
+        string favPath = path + "favorites.json";
+
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
+
+
+        if (!File.Exists(favPath))
+        {
+            //Debug.WriteLine(json);
+            //string formattedJson = JsonConvert.SerializeObject(json, Formatting.Indented);
+            File.WriteAllText(favPath, formattedJson, Encoding.UTF8);
+        }
+        else
+        {
+            string jsonContent = File.ReadAllText(favPath);
+            
+            if (item is DirectoryItem)
+            {
+                ObservableCollection<DirectoryItem> favoriteDirectories = null;
+                if (string.IsNullOrEmpty(jsonContent))
+                {
+                    favoriteDirectories = new ObservableCollection<DirectoryItem>();
+                }
+                else
+                {
+                    favoriteDirectories = JsonConvert.DeserializeObject<ObservableCollection<DirectoryItem>>(jsonContent);
+                }
+            }
+            else if (item is FileItem)
+            {
+                ObservableCollection<FileItem> favoriteItems = null;
+                if (string.IsNullOrEmpty(jsonContent))
+                {
+                    favoriteItems = new ObservableCollection<FileItem>();
+                    Debug.WriteLine("JeMoeder");
+                }
+                else
+                {
+                    var currentItems = JsonConvert.DeserializeObject<ObservableCollection<object>>(jsonContent);
+                    List<string> testing = new();
+                    foreach (var fav in currentItems)
+                    {
+                        Debug.WriteLine("JAAAAs");
+                        var newItem = new FileItem(
+                              fav.FileName,
+                              fav.FilePath,
+                              fav.Size,
+                              fav.Type.ToString(),
+                              fav.Icon,
+                              fav.Side,
+                              bool.Parse(fav.FileInfo),
+                              (DateTime)fav.LastEdited
+                        );
+                        favoriteItems.Add(newItem);
+
+                        string defaultJsonContent = JsonConvert.SerializeObject(new
+                        {
+                            newItem
+                        }, Formatting.Indented);
+
+                        testing.Add(defaultJsonContent);
+                    }
+
+                   
+                    favoriteItems = JsonConvert.DeserializeObject<ObservableCollection<FileItem>>(jsonContent);
+                    foreach (var fileItem in favoriteItems)
+                    {
+                        Debug.WriteLine("NEEEE");
+                        var newItem = new FileItem(
+                              fileItem.FileName,
+                              fileItem.FilePath,
+                              fileItem.Size,
+                              fileItem.Type.ToString(),
+                              fileItem.Icon,
+                              fileItem.Side,
+                              bool.Parse(fileItem.FileInfo),
+                              (DateTime)fileItem.LastEdited
+                        );
+                        string defaultJsonContent = JsonConvert.SerializeObject(new
+                        {
+                            newItem
+                        }, Formatting.Indented);
+
+                        testing.Add(defaultJsonContent);
+
+                        favoriteItems.Add(newItem);
+                    }
+
+                    //Debug.WriteLine(favoriteItems.ToString());
+
+                    foreach (string itemList in testing)
+                    {
+                        Debug.WriteLine(itemList);
+                        File.WriteAllTextAsync(favPath, itemList);
+                    }
+                    
+                    //Debug.WriteLine(favoriteItems);
+                }
+            }
+
+            //if (favorites != null)
+            //{
+            //    foreach (var singleItem in favorites)
+            //    {
+            //        if (item is FileItem)
+            //        {
+
+            //            var newItem = new FileItem(
+            //            singleItem.FileName,
+            //            singleItem.FilePath,
+            //            singleItem.Size,
+            //            singleItem.Type.ToString(),
+            //            singleItem.Icon,
+            //            singleItem.Side,
+            //            singleItem,
+            //            (DateTime)singleItem.LastEdited
+            //        );
+            //        }
+            //        else if (item is DirectoryItem)
+            //        {
+
+            //        }
+            //        //var newItem = new Item
+            //        //{
+            //        //    FileName = singleItem.FileName,
+
+            //        //};
+            //    }
+            //}
+        }
     }
 
     public async Task<string> SelectActionAsync()
