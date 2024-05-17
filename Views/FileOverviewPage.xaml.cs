@@ -1,26 +1,16 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using FileManager.Models;
 using FileManager.ViewModels;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.UI.StartScreen;
 using SharpHook;
-using CommunityToolkit.Maui.Views;
-using FileManager.Views.Popups;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using Microsoft.Maui.Controls;
 
 namespace FileManager.Views;
 
 public partial class FileOverviewPage : ContentPage
 {
-    private FileOverviewViewModel viewModel;
+    private bool isRosterView = false;
+    private readonly FileOverviewViewModel viewModel;
 
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
@@ -30,6 +20,7 @@ public partial class FileOverviewPage : ContentPage
         InitializeComponent();
         viewModel = new FileOverviewViewModel();
         BindingContext = viewModel;
+
         Task.Run(() => RegisterKeybindingsAsync());
     }
 
@@ -57,14 +48,23 @@ public partial class FileOverviewPage : ContentPage
         //Force unfocus of collectionviews to prevent issues with keyboard selections.
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            LeftCollection.Unfocus();
-            RightCollection.Unfocus();
+            getCurrentView(0).Unfocus();
+            getCurrentView(1).Unfocus();
         });
 
         //Some more keyboard selection prevention.
-        if (key == "tab")
+        /*    if (key == "tab")
+            {
+                e.SuppressEvent = true;
+            }*/
+
+        if (key == "f2")
         {
-            e.SuppressEvent = true;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ToggleRosterView_Clicked();
+            });
+            return;
         }
 
         //Ignore enter and backspace if path entry field is focused.
@@ -84,13 +84,12 @@ public partial class FileOverviewPage : ContentPage
                     return;
                 }
             }
-
-
         }
         viewModel.PassClickEvent(key);
     }
 
-    void OnItemTapped(object sender, EventArgs e)
+
+    public void OnItemTapped(object sender, EventArgs e)
     {
         var item = ((sender as Grid).BindingContext as Item);
 
@@ -107,13 +106,13 @@ public partial class FileOverviewPage : ContentPage
             LeftPathField.Unfocus();
             LeftBorder.Stroke = Colors.Aqua;
             RightBorder.Stroke = Colors.Transparent;
-            if (LeftCollection.SelectedItems.Contains(item))
+            if (getCurrentView(0).SelectedItems.Contains(item))
             {
-                LeftCollection.SelectedItems.Remove(item);
+                getCurrentView(0).SelectedItems.Remove(item);
             }
             else
             {
-                LeftCollection.SelectedItems.Add(item);
+                getCurrentView(0).SelectedItems.Add(item);
             }
 
         }
@@ -123,21 +122,21 @@ public partial class FileOverviewPage : ContentPage
             RightPathField.Unfocus();
             RightBorder.Stroke = Colors.Aqua;
             LeftBorder.Stroke = Colors.Transparent;
-            if (RightCollection.SelectedItems.Contains(item))
+            if (getCurrentView(1).SelectedItems.Contains(item))
             {
-                RightCollection.SelectedItems.Remove(item);
+                getCurrentView(1).SelectedItems.Remove(item);
             }
             else
             {
-                RightCollection.SelectedItems.Add(item);
+                getCurrentView(1).SelectedItems.Add(item);
             }
         }
 
-        viewModel.UpdateSelected(LeftCollection.SelectedItems, RightCollection.SelectedItems);
+        viewModel.UpdateSelected(getCurrentView(0).SelectedItems, getCurrentView(1).SelectedItems);
     }
 
 
-    void OnDragStarting(object sender, DragStartingEventArgs e)
+    public void OnDragStarting(object sender, DragStartingEventArgs e)
     {
         var dragGestureRecognizer = (DragGestureRecognizer)sender;
         var grid = (Grid)dragGestureRecognizer.Parent;
@@ -149,47 +148,44 @@ public partial class FileOverviewPage : ContentPage
             return;
         }
 
-
         if (item.Side == 0)
         {
             //Left side.
-            if (!LeftCollection.SelectedItems.Contains(item))
+            if (!getCurrentView(0).SelectedItems.Contains(item))
             {
-                LeftCollection.SelectedItems.Add(item);
+                getCurrentView(0).SelectedItems.Add(item);
             }
-
-            viewModel.DroppedFiles = LeftCollection.SelectedItems.Cast<Item>();
+            viewModel.DroppedFiles = getCurrentView(0).SelectedItems.Cast<Item>();
             foreach (var debugItem in viewModel.DroppedFiles)
             {
                 System.Diagnostics.Debug.WriteLine(debugItem.ToString());
             }
 
             // e.Data.Properties.Add("files", viewModel.DroppedFiles);  
-            e.Data.Properties.Add("files", LeftCollection.SelectedItems);
+            e.Data.Properties.Add("files", getCurrentView(0).SelectedItems);
 
         }
         else if (item.Side == 1)
         {
             //Right side.
-            if (!RightCollection.SelectedItems.Contains(item))
+            if (!getCurrentView(1).SelectedItems.Contains(item))
             {
-                RightCollection.SelectedItems.Add(item);
+                getCurrentView(1).SelectedItems.Add(item);
             }
 
-            viewModel.DroppedFiles = RightCollection.SelectedItems.Cast<Item>();
+            viewModel.DroppedFiles = getCurrentView(1).SelectedItems.Cast<Item>();
             foreach (var debugItem in viewModel.DroppedFiles)
             {
                 System.Diagnostics.Debug.WriteLine(debugItem.ToString());
             }
 
-            e.Data.Properties.Add("files", RightCollection.SelectedItems);
+            e.Data.Properties.Add("files", getCurrentView(1).SelectedItems);
         }
     }
 
-    void OnItemDrop(object sender, DropEventArgs e)
+    public void OnItemDrop(object sender, DropEventArgs e)
     {
         var droppedItems = e.Data.Properties["files"] as IList<object>;
-
 
         if (droppedItems != null && droppedItems.Count > 0)
         {
@@ -197,55 +193,112 @@ public partial class FileOverviewPage : ContentPage
 
             _ = OnItemDropAsync(sender, itemList);
         }
-
     }
 
+    private void RefreshAllPages(string? side)
+    {
+        if (viewModel.LeftSideViewModel.GetCurrentPath().Equals(viewModel.RightSideViewModel.GetCurrentPath()))
+        {
+            viewModel.RightSideViewModel.RefreshAsync();
+            viewModel.LeftSideViewModel.RefreshAsync();
+        }
+        else
+        {
+            if (side.Equals("left"))
+            {
+                viewModel.LeftSideViewModel.RefreshAsync();
+            }
+            else if (side.Equals("right"))
+            {
+                viewModel.RightSideViewModel.RefreshAsync();
+            }
+        }
+    }
 
     private async void RightContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
-        if (item.Text == "Refresh")
+        if (item.Text.Equals("Refresh"))
         {
-            Task.Run(() => viewModel.RightSideViewModel.RefreshAsync());
+            viewModel.RightSideViewModel.RefreshAsync();
         }
-        else if (item.Text == "Rename")
+        else if (item.Text.Equals("Rename"))
         {
-            //TODO
-            viewModel.RightSideViewModel.RenameItem(null, null);
+            var menuItem = (MenuFlyoutItem)sender;
+            var selectedItem = (Item)menuItem.CommandParameter;
+            viewModel.PopupOpen = true;
+
+            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
+            viewModel.PopupOpen = false;
+            if (!string.IsNullOrEmpty(userInput))
+            {
+                FileInfo fileInfo = new(selectedItem.FilePath);
+                string extension = fileInfo.Extension;
+
+                FileListViewModel.RenameItem(selectedItem, userInput, extension);
+                RefreshAllPages("right");
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please enter a new name", "OK");
+            }
         }
         else if (item.Text == "Delete")
         {
-            if (RightCollection.SelectedItems.Count == 0)
+            if (getCurrentView(1).SelectedItems.Count == 0)
             {
                 await DisplayAlert("Alert", "You have to select first to delete", "OK");
                 return;
             }
-
             viewModel.RightSideViewModel.DeleteItem();
+        }
+        else if (item.Text == "Create symbolic link")
+        {
+            viewModel.CreateSymbolicLink(1);
         }
     }
 
     private async void LeftContextClick(object sender, EventArgs e)
     {
         MenuFlyoutItem item = (MenuFlyoutItem)sender;
-        if (item.Text == "Refresh")
+        if (item.Text.Equals("Refresh"))
         {
-            Task.Run(() => viewModel.LeftSideViewModel.RefreshAsync());
+            await Task.Run(() => viewModel.LeftSideViewModel.RefreshAsync());
         }
         else if (item.Text == "Rename")
         {
-            //TODO
-            viewModel.LeftSideViewModel.RenameItem(null, null);
+            var menuItem = (MenuFlyoutItem)sender;
+            Item selectedItem = (Item)menuItem.CommandParameter;
+            viewModel.PopupOpen = true;
+            string userInput = await DisplayPromptAsync("Rename", "Enter the new name:", "OK", "Cancel", "name...");
+            viewModel.PopupOpen = false;
+            if (!string.IsNullOrEmpty(userInput))
+            {
+                FileInfo fileInfo = new(selectedItem.FilePath);
+                string extension = fileInfo.Extension;
+
+                FileListViewModel.RenameItem(selectedItem, userInput, extension);
+                RefreshAllPages("left");
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please enter a new name", "OK");
+            }
         }
         else if (item.Text == "Delete")
         {
-            if (LeftCollection.SelectedItems.Count == 0)
+            if (getCurrentView(0).SelectedItems.Count == 0)
             {
-                await DisplayAlert("Alert", "You have to select first to delete", "OK");
+                await DisplayAlert("Alert", "Please select a file to delete first", "OK");
                 return;
             }
 
-            viewModel.LeftSideViewModel.DeleteItem();
+            await viewModel.LeftSideViewModel.DeleteItem();
+            RefreshAllPages("");
+        }
+        else if (item.Text == "Create symbolic link")
+        {
+            viewModel.CreateSymbolicLink(0);
         }
     }
 
@@ -260,11 +313,11 @@ public partial class FileOverviewPage : ContentPage
 
             // Get target path
             string targetPath = string.Empty;
-            if (collectionView == RightCollection)
+            if (collectionView == getCurrentView(1))
             {
                 targetPath = viewModel.RightSideViewModel.CurrentPath;
             }
-            else if (collectionView == LeftCollection)
+            else if (collectionView == getCurrentView(0))
             {
                 targetPath = viewModel.LeftSideViewModel.CurrentPath;
             }
@@ -282,6 +335,8 @@ public partial class FileOverviewPage : ContentPage
                         MoveFile(file, targetPath);
                     }
                 }
+
+                RefreshAllPages("");
 
                 viewModel.RightSideViewModel.RefreshFiles();
                 viewModel.LeftSideViewModel.RefreshFiles();
@@ -345,12 +400,29 @@ public partial class FileOverviewPage : ContentPage
         await Task.CompletedTask;
     }
 
+    void AddLeftTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.AddTabAsync(0));
+    }
+
+    void RemoveLeftTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.RemoveTabAsync(0));
+    }
+
+    void AddRightTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.AddTabAsync(1));
+    }
+
+    void RemoveRightTab(object sender, EventArgs e)
+    {
+        Task.Run(async () => await viewModel.RemoveTabAsync(1));
+    }
 
     // Helper method to copy directory recursively
     private void CopyDirectory(string sourceDirPath, string destDirPath)
     {
-        DirectoryInfo dir = new DirectoryInfo(sourceDirPath);
-
         // Create the destination directory if it doesn't exist
         if (!Directory.Exists(destDirPath))
         {
@@ -379,11 +451,11 @@ public partial class FileOverviewPage : ContentPage
         IList<Item> selectedItems = null;
         if (side == 0)
         {
-            selectedItems = LeftCollection.SelectedItems.Cast<Item>().ToList();
+            selectedItems = LeftListCollection.SelectedItems.Cast<Item>().ToList();
         }
         else if (side == 1)
         {
-            selectedItems = RightCollection.SelectedItems.Cast<Item>().ToList();
+            selectedItems = RightListCollection.SelectedItems.Cast<Item>().ToList();
         }
 
         if (selectedItems != null && selectedItems.Count == 1)
@@ -421,7 +493,7 @@ public partial class FileOverviewPage : ContentPage
             needsRegex = true;
         }
 
-        string action = await viewModel.SelectActionAsync();
+        string action = await FileOverviewViewModel.SelectActionAsync();
 
         if (action != null && action != "Cancel" && action != "Move")
         {
@@ -431,7 +503,7 @@ public partial class FileOverviewPage : ContentPage
                 string regex = null;
                 if(action.ToLower() != "copy")
                 {
-                    (string, string?) userInput = await viewModel.PromptUserAsync(action.ToLower(), needsRegex);
+                    (string, string?) userInput = await FileOverviewViewModel.PromptUserAsync(action.ToLower(), needsRegex);
                     numerOfThreads = userInput.Item1;
                     regex = userInput.Item2;
                 }
@@ -440,13 +512,13 @@ public partial class FileOverviewPage : ContentPage
                 {
                     if (int.TryParse(numerOfThreads, out int number) && number > 0 && number <= FileOverviewViewModel.MAX_THREADS)
                     {
-                        if (LeftCollection.SelectedItems.ToList().Count() >= 1)
+                        if (LeftListCollection.SelectedItems.ToList().Count() >= 1)
                         {
-                            await viewModel.ProcessActionAsync(action, number, regex, this, items, LeftCollection.SelectedItems.ToList(), GetSelectedFolderPath(1));
+                            await viewModel.ProcessActionAsync(action, number, regex, this, items, LeftListCollection.SelectedItems.ToList(), GetSelectedFolderPath(0));
                         }
-                        if (RightCollection.SelectedItems.ToList().Count() >= 1)
+                        if (RightListCollection.SelectedItems.ToList().Count() >= 1)
                         {
-                            await viewModel.ProcessActionAsync(action, number, regex, this, items, RightCollection.SelectedItems.ToList(), GetSelectedFolderPath(0));
+                            await viewModel.ProcessActionAsync(action, number, regex, this, items, RightListCollection.SelectedItems.ToList(), GetSelectedFolderPath(1));
                         }
                     }
                     else if (number < 1)
@@ -467,6 +539,87 @@ public partial class FileOverviewPage : ContentPage
             {
                 await DisplayAlert("Error", "Invalid input or non-positive number entered.", "OK");
             }
+        }
+        else if (action != null && action == "Move")
+        {
+            var dropGestureRecognizer = (DropGestureRecognizer)sender;
+            var collectionView = FindParentCollectionView(dropGestureRecognizer);
+
+            string targetPath = string.Empty;
+            if (collectionView == RightListCollection)
+            {
+                targetPath = viewModel.RightSideViewModel.CurrentPath;
+            }
+            else if (collectionView == LeftListCollection)
+            {
+                targetPath = viewModel.LeftSideViewModel.CurrentPath;
+            }
+
+            // Iterate over dropped files and move them to the target path
+            foreach (var file in viewModel.DroppedFiles)
+            {
+                // Ensure that the file is not null and the target path is valid
+                if (file != null && !string.IsNullOrEmpty(targetPath))
+                {
+                    //TODO: Needs to be connected to popups (@Monique).
+                    await MoveFile(file, targetPath);
+                }
+            }
+        }
+    }
+        private void ToggleRosterView_Clicked()
+        {
+            isRosterView = !isRosterView;
+            if (isRosterView)
+            {
+                LeftListCollection.IsEnabled = false;
+                LeftListCollection.IsVisible = false;
+
+                LeftRosterCollection.IsEnabled = true;
+                LeftRosterCollection.IsVisible = true;
+
+                RightListCollection.IsEnabled = false;
+                RightListCollection.IsVisible = false;
+
+                RightRosterCollection.IsEnabled = true;
+                RightRosterCollection.IsVisible = true;
+            }
+            else
+            {
+                LeftListCollection.IsEnabled = true;
+                LeftListCollection.IsVisible = true;
+
+                LeftRosterCollection.IsEnabled = false;
+                LeftRosterCollection.IsVisible = false;
+
+                RightListCollection.IsEnabled = true;
+                RightListCollection.IsVisible = true;
+
+                RightRosterCollection.IsEnabled = false;
+                RightRosterCollection.IsVisible = false;
+            }
+        }
+
+    private CollectionView getCurrentView(int side)
+    {
+        if (isRosterView)
+        {
+            if(side == 0)
+            {
+                return LeftRosterCollection;
+            }
+            else
+            {
+                return RightRosterCollection;
+            }
+        }
+        if (side == 0)
+        {
+            return LeftListCollection;
+        }
+        else
+        {
+            return RightListCollection;
         }
     }
 }
